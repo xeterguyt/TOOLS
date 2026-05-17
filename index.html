@@ -38,41 +38,16 @@
     --mono: 'JetBrains Mono', monospace;
   }
 
-  body {
-    font-family: var(--font);
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    line-height: 1.6;
-  }
-
+  body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; line-height: 1.6; }
   .app { display: flex; min-height: 100vh; }
 
   /* SIDEBAR */
-  .sidebar {
-    width: 210px;
-    flex-shrink: 0;
-    background: var(--bg2);
-    border-right: 1px solid var(--border);
-    display: flex;
-    flex-direction: column;
-    padding: 1.5rem 0;
-    position: sticky;
-    top: 0;
-    height: 100vh;
-    overflow-y: auto;
-  }
+  .sidebar { width: 210px; flex-shrink: 0; background: var(--bg2); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 1.5rem 0; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
   .logo { padding: 0 1.25rem 1.25rem; border-bottom: 1px solid var(--border); margin-bottom: 1rem; }
   .logo-title { font-size: 15px; font-weight: 600; color: var(--text); letter-spacing: 0.02em; }
   .logo-sub { font-size: 11px; color: var(--text3); font-family: var(--mono); margin-top: 2px; }
   .nav { flex: 1; padding: 0 0.75rem; }
-  .nav-item {
-    display: flex; align-items: center; gap: 10px;
-    padding: 9px 12px; border-radius: var(--radius-sm);
-    font-size: 13px; font-weight: 500; color: var(--text2);
-    cursor: pointer; transition: all 0.15s; margin-bottom: 2px;
-    border: none; background: none; width: 100%; text-align: left;
-  }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 500; color: var(--text2); cursor: pointer; transition: all 0.15s; margin-bottom: 2px; border: none; background: none; width: 100%; text-align: left; }
   .nav-item i { font-size: 13px; width: 15px; text-align: center; }
   .nav-item:hover { background: var(--bg3); color: var(--text); }
   .nav-item.active { background: var(--accent-bg); color: var(--accent2); }
@@ -83,15 +58,11 @@
   .panel { display: none; }
   .panel.active { display: block; }
 
-  /* TYPOGRAPHY */
   .page-title { font-size: 20px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
   .page-sub { font-size: 12px; color: var(--text3); margin-bottom: 1.5rem; }
 
   /* CARDS */
-  .card {
-    background: var(--bg2); border: 1px solid var(--border);
-    border-radius: var(--radius-lg); padding: 1rem 1.25rem; margin-bottom: 1rem;
-  }
+  .card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1rem 1.25rem; margin-bottom: 1rem; }
   .card-title { font-size: 11px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.75rem; }
 
   /* FORM */
@@ -101,24 +72,13 @@
   .form-row .field.full { flex: 1 1 100%; }
   .field { display: flex; flex-direction: column; gap: 4px; }
   .field label { font-size: 10px; color: var(--text3); font-family: var(--mono); letter-spacing: 0.03em; }
-  .field input, .field select, .field textarea {
-    background: var(--bg3); border: 1px solid var(--border);
-    border-radius: var(--radius-sm); color: var(--text);
-    font-family: var(--font); font-size: 12px; padding: 7px 10px;
-    outline: none; transition: border-color 0.15s; width: 100%;
-  }
+  .field input, .field select, .field textarea { background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-family: var(--font); font-size: 12px; padding: 7px 10px; outline: none; transition: border-color 0.15s; width: 100%; }
   .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); }
   .field select option { background: var(--bg3); }
   .field textarea { resize: vertical; min-height: 60px; font-family: var(--mono); font-size: 11px; }
 
   /* BUTTONS */
-  .btn {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 7px 14px; border-radius: var(--radius-sm);
-    font-family: var(--font); font-size: 12px; font-weight: 500;
-    cursor: pointer; border: 1px solid var(--border2);
-    background: var(--bg3); color: var(--text); transition: all 0.15s;
-  }
+  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: var(--radius-sm); font-family: var(--font); font-size: 12px; font-weight: 500; cursor: pointer; border: 1px solid var(--border2); background: var(--bg3); color: var(--text); transition: all 0.15s; }
   .btn:hover { background: var(--bg4); }
   .btn-primary { background: var(--accent-bg); border-color: var(--accent); color: var(--accent2); }
   .btn-primary:hover { background: rgba(124,111,255,0.2); }
@@ -128,85 +88,57 @@
   .btn-green:hover { background: rgba(74,222,128,0.18); }
   .btn-sm { padding: 5px 10px; font-size: 11px; }
   .btn-xs { padding: 3px 8px; font-size: 11px; }
-  .btn-icon { padding: 5px; width: 26px; height: 26px; justify-content: center; border-radius: var(--radius-sm); }
+  .btn-icon { padding: 0; width: 26px; height: 26px; justify-content: center; border-radius: var(--radius-sm); }
   .btn-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 
-  /* DATA EDITOR */
-  .data-table { display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px; }
-  .data-row { display: flex; gap: 6px; align-items: center; }
-  .data-row input { flex: 1; min-width: 60px; background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-family: var(--mono); font-size: 11px; padding: 5px 8px; outline: none; transition: border-color 0.15s; }
-  .data-row input:focus { border-color: var(--accent); }
-  .data-row-label { font-size: 10px; color: var(--text3); font-family: var(--mono); white-space: nowrap; align-self: center; }
-  .data-hint { font-size: 10px; color: var(--text3); font-family: var(--mono); padding: 6px 10px; background: var(--bg3); border-radius: var(--radius-sm); border: 1px dashed var(--border2); text-align: center; }
+  /* PT DATA ROWS */
+  .pt-data-rows { display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px; }
+  .pt-data-row { display: flex; align-items: center; gap: 6px; }
+  .pt-data-row select { flex: 0 0 110px; background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-family: var(--font); font-size: 11px; padding: 5px 8px; outline: none; transition: border-color 0.15s; cursor: pointer; }
+  .pt-data-row select:focus { border-color: var(--accent); }
+  .pt-data-row select option { background: var(--bg3); }
+  .pt-data-row input { flex: 1; background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-family: var(--mono); font-size: 11px; padding: 5px 8px; outline: none; transition: border-color 0.15s; }
+  .pt-data-row input:focus { border-color: var(--accent); }
+  .pt-data-row .row-colon { font-size: 12px; color: var(--text3); font-family: var(--mono); flex-shrink: 0; }
+
+  .add-pt-row-btn { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text3); background: none; border: 1px dashed var(--border2); border-radius: var(--radius-sm); padding: 5px 10px; cursor: pointer; transition: all 0.15s; font-family: var(--font); width: fit-content; }
+  .add-pt-row-btn:hover { border-color: var(--accent); color: var(--accent2); background: var(--accent-bg); }
+  .add-pt-row-btn:disabled { opacity: 0.35; cursor: not-allowed; pointer-events: none; }
+
+  .pt-result-line { display: flex; align-items: center; gap: 8px; margin-top: 6px; min-height: 22px; }
+  .pt-result-label { font-size: 10px; color: var(--text3); font-family: var(--mono); }
 
   /* SEARCH */
   .search-bar { display: flex; gap: 8px; margin-bottom: 1rem; }
-  .search-input {
-    flex: 1; background: var(--bg2); border: 1px solid var(--border);
-    border-radius: var(--radius-sm); color: var(--text);
-    font-family: var(--font); font-size: 12px; padding: 7px 12px 7px 32px;
-    outline: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='%23555568' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E");
-    background-repeat: no-repeat; background-position: 11px center; transition: border-color 0.15s;
-  }
+  .search-input { flex: 1; background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-family: var(--font); font-size: 12px; padding: 7px 12px 7px 32px; outline: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='%23555568' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: 11px center; transition: border-color 0.15s; }
   .search-input:focus { border-color: var(--accent); }
   .search-input::placeholder { color: var(--text3); }
-  .filter-sel {
-    background: var(--bg2); border: 1px solid var(--border);
-    border-radius: var(--radius-sm); color: var(--text);
-    font-family: var(--font); font-size: 12px; padding: 7px 10px;
-    outline: none; cursor: pointer;
-  }
+  .filter-sel { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-family: var(--font); font-size: 12px; padding: 7px 10px; outline: none; cursor: pointer; }
   .filter-sel:focus { border-color: var(--accent); }
   .filter-sel option { background: var(--bg2); }
 
-  /* ENTRIES — shared by titles and ranks */
+  /* ENTRIES */
   .entries { display: flex; flex-direction: column; gap: 6px; }
-  .entry {
-    background: var(--bg2); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 10px 12px;
-    display: flex; align-items: center; gap: 10px;
-    transition: border-color 0.15s; position: relative;
-  }
+  .entry { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 12px; display: flex; align-items: center; gap: 10px; transition: border-color 0.15s; position: relative; }
   .entry:hover { border-color: var(--border2); }
   .entry-info { flex: 1; min-width: 0; }
   .entry-key { font-size: 10px; color: var(--text3); font-family: var(--mono); margin-bottom: 2px; }
   .entry-display { font-size: 13px; font-weight: 500; line-height: 1.4; word-break: break-word; }
   .entry-meta { display: flex; gap: 5px; align-items: center; margin-top: 4px; flex-wrap: wrap; }
-  .badge {
-    display: inline-block; padding: 1px 7px; border-radius: 4px;
-    font-size: 9px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; font-family: var(--mono);
-  }
+  .badge { display: inline-block; padding: 1px 7px; border-radius: 4px; font-size: 9px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; font-family: var(--mono); }
   .badge-Badges    { background: var(--amber-bg); color: var(--amber); border: 1px solid rgba(251,191,36,0.3); }
   .badge-Gamepass  { background: var(--green-bg); color: var(--green); border: 1px solid rgba(74,222,128,0.3); }
   .badge-Exclusive { background: var(--pink-bg); color: var(--pink); border: 1px solid rgba(244,114,182,0.3); }
   .badge-Mixed     { background: rgba(124,111,255,0.12); color: var(--accent2); border: 1px solid rgba(124,111,255,0.3); }
+  .badge-none      { background: var(--bg3); color: var(--text3); border: 1px solid var(--border); }
   .desc-text { font-size: 10px; color: var(--text3); font-style: italic; }
 
-  /* CONTEXT MENU (Discord-style "...") */
-  .entry-more-btn {
-    flex-shrink: 0; width: 28px; height: 28px;
-    display: flex; align-items: center; justify-content: center;
-    border-radius: var(--radius-sm); border: 1px solid transparent;
-    background: transparent; color: var(--text3); cursor: pointer;
-    font-size: 14px; transition: all 0.15s;
-    opacity: 0;
-  }
-  .entry:hover .entry-more-btn,
-  .entry-more-btn:focus,
-  .entry-more-btn.open { opacity: 1; background: var(--bg3); border-color: var(--border); color: var(--text2); }
-
-  .ctx-menu {
-    position: fixed; background: var(--bg3); border: 1px solid var(--border2);
-    border-radius: var(--radius); min-width: 150px; z-index: 500;
-    box-shadow: 0 8px 28px rgba(0,0,0,0.5); display: none; overflow: hidden;
-  }
+  /* CONTEXT MENU */
+  .entry-more-btn { flex-shrink: 0; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); border: 1px solid transparent; background: transparent; color: var(--text3); cursor: pointer; font-size: 14px; transition: all 0.15s; opacity: 0; }
+  .entry:hover .entry-more-btn, .entry-more-btn:focus, .entry-more-btn.open { opacity: 1; background: var(--bg3); border-color: var(--border); color: var(--text2); }
+  .ctx-menu { position: fixed; background: var(--bg3); border: 1px solid var(--border2); border-radius: var(--radius); min-width: 150px; z-index: 500; box-shadow: 0 8px 28px rgba(0,0,0,0.5); display: none; overflow: hidden; }
   .ctx-menu.open { display: block; }
-  .ctx-item {
-    display: flex; align-items: center; gap: 8px;
-    padding: 8px 14px; font-size: 12px; font-weight: 500;
-    color: var(--text2); cursor: pointer; transition: background 0.1s; border: none; background: none; width: 100%; text-align: left;
-  }
+  .ctx-item { display: flex; align-items: center; gap: 8px; padding: 8px 14px; font-size: 12px; font-weight: 500; color: var(--text2); cursor: pointer; transition: background 0.1s; border: none; background: none; width: 100%; text-align: left; }
   .ctx-item i { font-size: 11px; width: 13px; text-align: center; }
   .ctx-item:hover { background: var(--bg4); color: var(--text); }
   .ctx-item.danger { color: var(--red); }
@@ -220,72 +152,39 @@
   .stat-label { font-size: 11px; color: var(--text3); margin-top: 1px; }
 
   /* PREVIEW */
-  .preview-dark {
-    background: #111118; border: 1px solid var(--border); border-radius: var(--radius);
-    padding: 14px 18px; margin-bottom: 1rem; min-height: 50px; display: flex; align-items: center;
-  }
+  .preview-dark { background: #111118; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 18px; margin-bottom: 1rem; min-height: 50px; display: flex; align-items: center; }
   .preview-dark .preview-text { font-size: 17px; font-weight: 500; }
-  .preview-light {
-    background: #f0f0f5; border: 1px solid #d0d0e0; border-radius: var(--radius);
-    padding: 14px 18px; margin-bottom: 1rem; min-height: 50px; display: flex; align-items: center;
-  }
+  .preview-light { background: #f0f0f5; border: 1px solid #d0d0e0; border-radius: var(--radius); padding: 14px 18px; margin-bottom: 1rem; min-height: 50px; display: flex; align-items: center; }
   .preview-light .preview-text { font-size: 17px; font-weight: 500; color: #111; }
 
   /* CODE BOX */
-  .code-box {
-    background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius);
-    padding: 12px; font-family: var(--mono); font-size: 11px; line-height: 1.7;
-    color: var(--text); overflow-x: auto; white-space: pre; max-height: 400px; overflow-y: auto;
-  }
+  .code-box { background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; font-family: var(--mono); font-size: 11px; line-height: 1.7; color: var(--text); overflow-x: auto; white-space: pre; max-height: 400px; overflow-y: auto; }
 
   /* DROP ZONE */
-  .drop-zone {
-    border: 2px dashed var(--border2); border-radius: var(--radius-lg);
-    padding: 2rem; text-align: center; cursor: pointer;
-    transition: all 0.2s; margin-bottom: 1rem;
-  }
+  .drop-zone { border: 2px dashed var(--border2); border-radius: var(--radius-lg); padding: 2rem; text-align: center; cursor: pointer; transition: all 0.2s; margin-bottom: 1rem; }
   .drop-zone:hover, .drop-zone.drag-over { border-color: var(--accent); background: var(--accent-bg); }
   .drop-zone i { font-size: 24px; color: var(--text3); margin-bottom: 8px; display: block; }
   .drop-zone p { font-size: 12px; color: var(--text2); }
   .drop-zone span { font-size: 10px; color: var(--text3); }
 
   /* MODAL */
-  .modal-bg {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.6);
-    display: none; align-items: center; justify-content: center;
-    z-index: 400; backdrop-filter: blur(3px);
-  }
+  .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 400; backdrop-filter: blur(3px); }
   .modal-bg.open { display: flex; }
-  .modal {
-    background: var(--bg2); border: 1px solid var(--border2);
-    border-radius: var(--radius-lg); padding: 1.25rem;
-    width: 420px; max-width: 95vw; max-height: 90vh; overflow-y: auto;
-  }
+  .modal { background: var(--bg2); border: 1px solid var(--border2); border-radius: var(--radius-lg); padding: 1.25rem; width: 420px; max-width: 95vw; max-height: 90vh; overflow-y: auto; }
   .modal-title { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
   .modal-body { font-size: 12px; color: var(--text2); margin-bottom: 1.25rem; line-height: 1.6; }
   .modal-footer { display: flex; justify-content: flex-end; gap: 8px; }
 
   /* PRICE TYPE MANAGER */
   .pt-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
-  .pt-item {
-    display: flex; align-items: center; gap: 8px;
-    background: var(--bg3); border: 1px solid var(--border);
-    border-radius: var(--radius-sm); padding: 7px 10px;
-  }
+  .pt-item { display: flex; align-items: center; gap: 8px; background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 7px 10px; }
   .pt-item-name { flex: 1; font-size: 12px; font-weight: 500; }
-  .pt-item-color { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
   .pt-new-row { display: flex; gap: 6px; }
   .pt-new-row input { flex: 1; background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-family: var(--font); font-size: 12px; padding: 6px 9px; outline: none; }
   .pt-new-row input:focus { border-color: var(--accent); }
 
   /* TOAST */
-  .toast {
-    position: fixed; bottom: 1.25rem; right: 1.25rem;
-    background: var(--bg3); border: 1px solid var(--border2);
-    border-radius: var(--radius); padding: 8px 14px; font-size: 12px; font-weight: 500;
-    z-index: 600; opacity: 0; transform: translateY(5px);
-    transition: opacity 0.2s, transform 0.2s; pointer-events: none; max-width: 280px;
-  }
+  .toast { position: fixed; bottom: 1.25rem; right: 1.25rem; background: var(--bg3); border: 1px solid var(--border2); border-radius: var(--radius); padding: 8px 14px; font-size: 12px; font-weight: 500; z-index: 600; opacity: 0; transform: translateY(5px); transition: opacity 0.2s, transform 0.2s; pointer-events: none; max-width: 280px; }
   .toast.show { opacity: 1; transform: translateY(0); }
   .toast.success { border-color: var(--green); color: var(--green); }
   .toast.error { border-color: var(--red); color: var(--red); }
@@ -295,18 +194,8 @@
   .divider { border: none; border-top: 1px solid var(--border); margin: 1rem 0; }
 
   /* MOBILE NAV */
-  .mobile-nav {
-    display: none; position: fixed; bottom: 0; left: 0; right: 0;
-    background: var(--bg2); border-top: 1px solid var(--border);
-    padding: 8px 0 env(safe-area-inset-bottom, 8px); z-index: 100;
-    justify-content: space-around;
-  }
-  .mobile-nav-btn {
-    display: flex; flex-direction: column; align-items: center; gap: 3px;
-    padding: 4px 10px; border-radius: var(--radius-sm);
-    font-size: 9px; font-weight: 500; color: var(--text3);
-    cursor: pointer; border: none; background: none; transition: color 0.15s;
-  }
+  .mobile-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg2); border-top: 1px solid var(--border); padding: 8px 0 env(safe-area-inset-bottom, 8px); z-index: 100; justify-content: space-around; }
+  .mobile-nav-btn { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 4px 10px; border-radius: var(--radius-sm); font-size: 9px; font-weight: 500; color: var(--text3); cursor: pointer; border: none; background: none; transition: color 0.15s; }
   .mobile-nav-btn i { font-size: 16px; }
   .mobile-nav-btn.active { color: var(--accent2); }
 
@@ -324,7 +213,7 @@
 <body>
 <div class="app">
 
-<!-- SIDEBAR (desktop) -->
+<!-- SIDEBAR -->
 <nav class="sidebar">
   <div class="logo">
     <div class="logo-title">TitleData</div>
@@ -374,30 +263,34 @@
 
     <div class="card">
       <div class="card-title">Add title</div>
-      <!-- Row 1: key + price type -->
       <div class="form-row">
         <div class="field"><label>key</label><input id="t-key" placeholder="Cool_Title"></div>
-        <div class="field narrow"><label>price type</label>
-          <select id="t-type" onchange="onPriceTypeChange()"></select>
-        </div>
       </div>
-      <!-- Row 2: display string -->
       <div class="form-row">
         <div class="field full"><label>display string</label><input id="t-display" placeholder='My Title //sentence{color<255,200,100>}'></div>
       </div>
-      <!-- Row 3: desc -->
       <div class="form-row">
         <div class="field full"><label>desc</label><input id="t-desc" placeholder="optional"></div>
       </div>
-      <!-- Data editor -->
+
+      <!-- PT-aware data editor -->
       <div style="margin-bottom:10px;">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-          <label style="font-size:10px;color:var(--text3);font-family:var(--mono);">data <span style="color:var(--text3);font-size:9px;">(press Enter in value field to add another row)</span></label>
-          <button class="btn btn-xs" onclick="addDataRow('t-data-table','t-data-rows')" style="font-size:10px;"><i class="fa-solid fa-plus"></i> Add field</button>
+          <label style="font-size:10px;color:var(--text3);font-family:var(--mono);">
+            data &amp; price type
+            <span style="color:var(--text3);font-size:9px;margin-left:4px;">one entry = that type · two+ = Mixed</span>
+          </label>
         </div>
-        <div class="data-table" id="t-data-table"></div>
-        <div class="data-hint" id="t-data-hint">No data fields — click "Add field" to add entries like Points: 100</div>
+        <div class="pt-data-rows" id="t-pt-rows"></div>
+        <button class="add-pt-row-btn" id="t-add-pt-btn" onclick="addPTRow('t')">
+          <i class="fa-solid fa-plus" style="font-size:10px;"></i> Add price type entry
+        </button>
+        <div class="pt-result-line" id="t-pt-result" style="display:none;">
+          <span class="pt-result-label">PriceType →</span>
+          <span class="badge" id="t-pt-badge">—</span>
+        </div>
       </div>
+
       <button class="btn btn-primary" onclick="addTitle()"><i class="fa-solid fa-plus"></i> Add title</button>
     </div>
 
@@ -414,7 +307,6 @@
   <div id="panel-ranks" class="panel">
     <div class="page-title">Ranks</div>
     <div class="page-sub">Manage rank levels and their display strings.</div>
-
     <div class="card">
       <div class="card-title">Add rank</div>
       <div class="form-row">
@@ -423,7 +315,6 @@
       </div>
       <button class="btn btn-primary" onclick="addRank()"><i class="fa-solid fa-plus"></i> Add rank</button>
     </div>
-
     <div id="ranks-list" class="entries"></div>
   </div>
 
@@ -530,17 +421,24 @@
     <div class="modal-title">Edit title</div>
     <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:1.25rem;">
       <div class="field"><label>key</label><input id="et-key" readonly style="opacity:0.45;cursor:not-allowed;"></div>
-      <div class="field"><label>display string</label><input id="et-display"></div>
-      <div class="field"><label>price type</label><select id="et-type"></select></div>
+      <div class="field"><label>display string</label><input id="et-display" oninput="updateEditTitlePreview()"></div>
       <div class="field"><label>desc</label><input id="et-desc"></div>
-      <!-- data editor inside edit modal -->
+      <!-- PT data rows in edit modal -->
       <div>
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-          <label style="font-size:10px;color:var(--text3);font-family:var(--mono);">data</label>
-          <button class="btn btn-xs" onclick="addDataRow('et-data-table','et-data-rows')" style="font-size:10px;"><i class="fa-solid fa-plus"></i> Add field</button>
+          <label style="font-size:10px;color:var(--text3);font-family:var(--mono);">
+            data &amp; price type
+            <span style="color:var(--text3);font-size:9px;margin-left:4px;">one entry = that type · two+ = Mixed</span>
+          </label>
         </div>
-        <div class="data-table" id="et-data-table"></div>
-        <div class="data-hint" id="et-data-hint" style="display:none;">No data fields</div>
+        <div class="pt-data-rows" id="et-pt-rows"></div>
+        <button class="add-pt-row-btn" id="et-add-pt-btn" onclick="addPTRow('et')">
+          <i class="fa-solid fa-plus" style="font-size:10px;"></i> Add price type entry
+        </button>
+        <div class="pt-result-line" id="et-pt-result" style="display:none;">
+          <span class="pt-result-label">PriceType →</span>
+          <span class="badge" id="et-pt-badge">—</span>
+        </div>
       </div>
       <div style="margin-top:4px;">
         <div style="font-size:10px;color:var(--text3);margin-bottom:5px;">Preview</div>
@@ -560,7 +458,7 @@
     <div class="modal-title">Edit rank</div>
     <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:1.25rem;">
       <div class="field"><label>level</label><input id="er-level" readonly style="opacity:0.45;cursor:not-allowed;"></div>
-      <div class="field"><label>display string</label><input id="er-display"></div>
+      <div class="field"><label>display string</label><input id="er-display" oninput="updateEditRankPreview()"></div>
       <div style="margin-top:4px;">
         <div style="font-size:10px;color:var(--text3);margin-bottom:5px;">Preview</div>
         <div class="preview-dark" style="min-height:38px;padding:8px 12px;"><span class="preview-text" id="er-preview" style="font-size:14px;"></span></div>
@@ -584,9 +482,9 @@
 <div class="toast" id="toast"></div>
 
 <script>
-// ═══════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 // COLOR PARSER
-// ═══════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 function clamp(v,lo,hi){return Math.max(lo,Math.min(hi,v));}
 function lerpColor(c1,c2,t){return[Math.floor(c1[0]+(c2[0]-c1[0])*t+0.5),Math.floor(c1[1]+(c2[1]-c1[1])*t+0.5),Math.floor(c1[2]+(c2[2]-c1[2])*t+0.5)];}
 function toHex(r,g,b){return'#'+[r,g,b].map(v=>clamp(v,0,255).toString(16).padStart(2,'0')).join('');}
@@ -598,17 +496,17 @@ function tokenise(msg){const tokens=[];let pos=0;const re=/\{([^}]*)\}/g;let m;w
 function extractDirectives(msg){const sentProps={},defProps={};msg=msg.replace(/\s*\/\/sentence\s*\{([^}]*)\}/g,(_,inner)=>{Object.assign(sentProps,parseBlock(inner));return'';});msg=msg.replace(/\s*\/\/default\s*\{([^}]*)\}/g,(_,inner)=>{Object.assign(defProps,parseBlock(inner));return'';});return[msg,sentProps,defProps];}
 function parseColorString(msg){if(!msg||!msg.trim())return'';const[cleaned,sentProps,defProps]=extractDirectives(msg);const gs={color:{solid:[255,255,255]},font:null,size:null,bold:false,italic:false};Object.assign(gs,defProps);const sentState=Object.assign({},gs,sentProps);const tokens=tokenise(cleaned);const sentHasGrad=sentState.color&&sentState.color.gradient;let totalNS=0;if(sentHasGrad)tokens.forEach(t=>totalNS+=countNonSpace(t.text));let result='',gradOffset=0;for(const tok of tokens){const fp={face:sentState.font,size:sentState.size};if(tok.kind==='inline'){const inlState=Object.assign({},sentState,tok.props);const fp2={face:inlState.font,size:inlState.size};const useColor=tok.props.color||null;if(useColor&&useColor.gradient){const total=countNonSpace(tok.text);const[rendered]=applyGradient(tok.text,useColor.gradient,total,0,fp2,inlState.bold,inlState.italic);result+=rendered;if(sentHasGrad)gradOffset+=countNonSpace(tok.text);}else if(useColor&&useColor.solid){const[r,g,b]=useColor.solid;fp2.color=toHex(r,g,b);result+=wrapTags(tok.text,fp2,inlState.bold,inlState.italic);if(sentHasGrad)gradOffset+=countNonSpace(tok.text);}else{if(sentHasGrad){const ns=countNonSpace(tok.text);const[rendered]=applyGradient(tok.text,sentState.color.gradient,totalNS,gradOffset,fp2,inlState.bold,inlState.italic);result+=rendered;gradOffset+=ns;}else if(sentState.color&&sentState.color.solid){const[r,g,b]=sentState.color.solid;fp2.color=toHex(r,g,b);result+=wrapTags(tok.text,fp2,inlState.bold,inlState.italic);}else{result+=wrapTags(tok.text,fp2,inlState.bold,inlState.italic);}}}else{if(sentHasGrad){const ns=countNonSpace(tok.text);const[rendered]=applyGradient(tok.text,sentState.color.gradient,totalNS,gradOffset,fp,sentState.bold,sentState.italic);result+=rendered;gradOffset+=ns;}else if(sentState.color&&sentState.color.solid){const[r,g,b]=sentState.color.solid;fp.color=toHex(r,g,b);result+=wrapTags(tok.text,fp,sentState.bold,sentState.italic);}else{result+=wrapTags(tok.text,fp,sentState.bold,sentState.italic);}}}return result;}
 
-// ═══════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 // DATA
-// ═══════════════════════════════════════════════════════════════════
-const DEFAULT_PRICE_TYPES = ['Badges','Gamepass','Exclusive'];
+// ═══════════════════════════════════════════════════════
+const DEFAULT_PRICE_TYPES = ['Badges','Gamepass','Exclusive','UserID','Prestige','Ascension','Restartion','Breakthrough'];
 const DEFAULT_TITLES = {
-  "Content_Creator": { Display: "Content Creator //sentence{color<255,170,255 | 255,110,235>}", PriceType: "Exclusive", Desc: ":3", Data: { UserID: ["796047707","2030595937"] } },
+  "Content_Creator": { Display: "Content Creator //sentence{color<255,170,255 | 255,110,235>}", PriceType: "Exclusive", Desc: ":3", Data: { Exclusive: ["796047707","2030595937"] } },
   "Peaceful":        { Display: "Peaceful{color<222,255,222>}", PriceType: "Gamepass", Desc: "", Data: { Gamepass: "1721657654" } },
-  "Evil_Path":       { Display: "Evil Path //sentence{color<200,0,0 | 255,0,0 | 200,0,0>}", PriceType: "Badges", Desc: "", Data: "" },
-  "The_Destroyer":   { Display: "The Destroyer //sentence{color<255,80,80>}", PriceType: "Badges", Desc: "", Data: "" },
-  "Chairlord":       { Display: "Chairlord //sentence{color<255,220,120 | 255,140,0>}", PriceType: "Mixed", Desc: "", Data: { Points: 155500000, Kills: 1000 } },
-  "Bastion":         { Display: "Bastion //sentence{color<50,50,50 | 100,100,100>}", PriceType: "Mixed", Desc: "", Data: { Badge: 2964295482109880, Points: 999999 } },
+  "Evil_Path":       { Display: "Evil Path //sentence{color<200,0,0 | 255,0,0 | 200,0,0>}", PriceType: "Badges", Desc: "", Data: { Badges: "" } },
+  "The_Destroyer":   { Display: "The Destroyer //sentence{color<255,80,80>}", PriceType: "Badges", Desc: "", Data: { Badges: "" } },
+  "Chairlord":       { Display: "Chairlord //sentence{color<255,220,120 | 255,140,0>}", PriceType: "Mixed", Desc: "", Data: { Gamepass: 155500000, Badges: 1000 } },
+  "Bastion":         { Display: "Bastion //sentence{color<50,50,50 | 100,100,100>}", PriceType: "Mixed", Desc: "", Data: { Badges: 2964295482109880, Gamepass: 999999 } },
 };
 const DEFAULT_RANKS = {
   "5":   { Display: "Overlord{color<255,140,0 | 220,42,0 | 195,0,0>, font<Merriweather>}" },
@@ -671,24 +569,16 @@ function updateLSStatus() {
   } catch(e) { el.textContent = 'Error reading localStorage.'; }
 }
 
-// ═══════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 // PRICE TYPE HELPERS
-// ═══════════════════════════════════════════════════════════════════
-function populatePriceTypeSelects() {
+// ═══════════════════════════════════════════════════════
+function populatePriceTypeFilters() {
   const allTypes = [...priceTypes, 'Mixed'];
-  ['t-type','et-type'].forEach(id => {
-    const sel = document.getElementById(id);
-    if (!sel) return;
-    const cur = sel.value;
-    sel.innerHTML = allTypes.map(t => `<option value="${t}">${t}</option>`).join('');
-    if (allTypes.includes(cur)) sel.value = cur;
-  });
-  // filter select
   const fs = document.getElementById('t-filter');
   if (fs) {
     const curF = fs.value;
     fs.innerHTML = '<option value="">All types</option>' + allTypes.map(t=>`<option value="${t}">${t}</option>`).join('');
-    fs.value = curF;
+    if ([...fs.options].some(o=>o.value===curF)) fs.value = curF;
   }
 }
 
@@ -696,7 +586,7 @@ function renderPriceTypeSettings() {
   const list = document.getElementById('pt-list');
   if (!list) return;
   if (priceTypes.length === 0) {
-    list.innerHTML = '<div class="data-hint">No custom price types</div>';
+    list.innerHTML = '<div style="font-size:11px;color:var(--text3);">No custom price types</div>';
     return;
   }
   list.innerHTML = priceTypes.map((pt,i) => `
@@ -714,7 +604,7 @@ function addPriceType() {
   if (priceTypes.includes(name) || name === 'Mixed') { showToast('Already exists', 'error'); return; }
   priceTypes.push(name);
   inp.value = '';
-  populatePriceTypeSelects();
+  populatePriceTypeFilters();
   renderPriceTypeSettings();
   saveToLS();
   showToast('Price type added', 'success');
@@ -722,93 +612,128 @@ function addPriceType() {
 
 function removePriceType(i) {
   const name = priceTypes[i];
-  const inUse = Object.values(titles).some(t => t.PriceType === name);
+  const inUse = Object.values(titles).some(t => t.PriceType === name || (t.Data && typeof t.Data === 'object' && name in t.Data));
   if (inUse && !confirm(`"${name}" is used by some titles. Remove anyway?`)) return;
   priceTypes.splice(i, 1);
-  populatePriceTypeSelects();
+  populatePriceTypeFilters();
   renderPriceTypeSettings();
   saveToLS();
   showToast('Removed', 'success');
 }
 
-function onPriceTypeChange() {
-  // auto Mixed is handled on addTitle, not on select change
+// ═══════════════════════════════════════════════════════
+// PT-AWARE DATA ROW EDITOR
+// ═══════════════════════════════════════════════════════
+// prefix: 't' (add form) or 'et' (edit modal)
+function getUsedPTs(prefix) {
+  const rows = document.querySelectorAll(`#${prefix}-pt-rows .pt-data-row`);
+  return [...rows].map(r => r.querySelector('select').value).filter(Boolean);
 }
 
-// ═══════════════════════════════════════════════════════════════════
-// DATA ROW EDITOR
-// ═══════════════════════════════════════════════════════════════════
-function addDataRow(tableId, _unused, key='', value='') {
-  const table = document.getElementById(tableId);
-  const hintId = tableId.replace('-table', '-hint');
-  const hint = document.getElementById(hintId);
-  if (hint) hint.style.display = 'none';
+function refreshPTSelects(prefix) {
+  const rows = [...document.querySelectorAll(`#${prefix}-pt-rows .pt-data-row`)];
+  const used = getUsedPTs(prefix);
+  rows.forEach(row => {
+    const sel = row.querySelector('select');
+    const cur = sel.value;
+    const others = used.filter(u => u !== cur);
+    sel.innerHTML = priceTypes
+      .filter(pt => !others.includes(pt))
+      .map(pt => `<option value="${pt}"${pt===cur?' selected':''}>${pt}</option>`)
+      .join('');
+  });
+  updatePTResult(prefix);
+}
+
+function updatePTResult(prefix) {
+  const used = getUsedPTs(prefix);
+  const resultLine = document.getElementById(`${prefix}-pt-result`);
+  const badge = document.getElementById(`${prefix}-pt-badge`);
+  const addBtn = document.getElementById(`${prefix}-add-pt-btn`);
+
+  if (used.length === 0) {
+    resultLine.style.display = 'none';
+  } else {
+    resultLine.style.display = 'flex';
+    const pt = used.length === 1 ? used[0] : 'Mixed';
+    badge.textContent = pt;
+    badge.className = 'badge badge-' + pt;
+  }
+  // hide add btn if all PTs used
+  if (addBtn) addBtn.disabled = used.length >= priceTypes.length;
+}
+
+function addPTRow(prefix, ptValue='', dataValue='') {
+  const container = document.getElementById(`${prefix}-pt-rows`);
+  const used = getUsedPTs(prefix);
+  const available = priceTypes.filter(pt => !used.includes(pt));
+  if (available.length === 0) return;
 
   const row = document.createElement('div');
-  row.className = 'data-row';
+  row.className = 'pt-data-row';
+
+  const chosenPT = ptValue && available.includes(ptValue) ? ptValue : (priceTypes.includes(ptValue) ? null : available[0]);
+
   row.innerHTML = `
-    <input type="text" placeholder="Field name" value="${key}" class="data-key-input" style="flex:0 0 120px;max-width:140px;">
-    <span class="data-row-label">:</span>
-    <input type="text" placeholder="Value" value="${value}" class="data-val-input">
-    <button class="btn btn-icon btn-danger btn-xs" onclick="removeDataRow(this, '${tableId}', '${hintId}')">
-      <i class="fa-solid fa-xmark"></i>
+    <select onchange="refreshPTSelects('${prefix}')">
+      ${priceTypes.filter(pt => !used.includes(pt) || pt === ptValue)
+        .map(pt => `<option value="${pt}"${pt===(chosenPT||available[0])?' selected':''}>${pt}</option>`).join('')}
+    </select>
+    <span class="row-colon">:</span>
+    <input type="text" placeholder="value or ID…" value="${escVal(dataValue)}" oninput="updatePTResult('${prefix}')">
+    <button class="btn btn-icon btn-danger btn-xs" onclick="removePTRow(this,'${prefix}')" title="Remove">
+      <i class="fa-solid fa-xmark" style="font-size:11px;"></i>
     </button>
   `;
-  // Enter on value field → add another row
-  row.querySelector('.data-val-input').addEventListener('keydown', e => {
-    if (e.key === 'Enter') { e.preventDefault(); addDataRow(tableId, _unused); }
-  });
-  table.appendChild(row);
+  container.appendChild(row);
+  refreshPTSelects(prefix);
 }
 
-function removeDataRow(btn, tableId, hintId) {
-  btn.closest('.data-row').remove();
-  const table = document.getElementById(tableId);
-  const hint = document.getElementById(hintId);
-  if (hint && table.children.length === 0) hint.style.display = '';
+function removePTRow(btn, prefix) {
+  btn.closest('.pt-data-row').remove();
+  refreshPTSelects(prefix);
 }
 
-function getDataFromTable(tableId) {
-  const table = document.getElementById(tableId);
-  const rows = table.querySelectorAll('.data-row');
-  if (rows.length === 0) return '';
+function getPTData(prefix) {
+  // returns { data: obj|'', priceType: string }
+  const rows = [...document.querySelectorAll(`#${prefix}-pt-rows .pt-data-row`)];
+  if (rows.length === 0) return { data: '', priceType: '' };
   const obj = {};
   rows.forEach(row => {
-    const k = row.querySelector('.data-key-input').value.trim();
-    const v = row.querySelector('.data-val-input').value.trim();
-    if (k) {
-      const num = Number(v);
-      obj[k] = (!isNaN(num) && v !== '') ? num : v;
-    }
+    const pt = row.querySelector('select').value;
+    const val = row.querySelector('input').value.trim();
+    if (pt) obj[pt] = (!isNaN(val) && val !== '') ? Number(val) : val;
   });
-  return Object.keys(obj).length > 0 ? obj : '';
+  const keys = Object.keys(obj);
+  const priceType = keys.length === 0 ? '' : keys.length === 1 ? keys[0] : 'Mixed';
+  return { data: keys.length > 0 ? obj : '', priceType };
 }
 
-function populateDataTable(tableId, data) {
-  const table = document.getElementById(tableId);
-  table.innerHTML = '';
-  const hintId = tableId.replace('-table', '-hint');
-  const hint = document.getElementById(hintId);
-  if (!data || data === '' || data === '""') {
-    if (hint) hint.style.display = '';
+function populatePTRows(prefix, data) {
+  const container = document.getElementById(`${prefix}-pt-rows`);
+  container.innerHTML = '';
+  if (!data || data === '' || typeof data !== 'object') {
+    updatePTResult(prefix);
     return;
   }
-  if (typeof data === 'object' && !Array.isArray(data)) {
-    if (hint) hint.style.display = 'none';
-    for (const [k, v] of Object.entries(data)) {
-      addDataRow(tableId, null, k, Array.isArray(v) ? v.join(', ') : String(v));
+  for (const [pt, val] of Object.entries(data)) {
+    if (priceTypes.includes(pt)) {
+      addPTRow(prefix, pt, Array.isArray(val) ? val.join(', ') : String(val));
     }
-  } else if (typeof data === 'string' && data && data !== '""') {
-    if (hint) hint.style.display = 'none';
-    addDataRow(tableId, null, 'value', data);
   }
+  refreshPTSelects(prefix);
 }
 
-// ═══════════════════════════════════════════════════════════════════
+function clearPTRows(prefix) {
+  document.getElementById(`${prefix}-pt-rows`).innerHTML = '';
+  updatePTResult(prefix);
+}
+
+// ═══════════════════════════════════════════════════════
 // RENDER
-// ═══════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 function badgeCls(type) {
-  return `badge badge-${type || 'Badges'}`;
+  return `badge badge-${type || 'none'}`;
 }
 
 function renderDashboard() {
@@ -831,7 +756,7 @@ function renderDashboard() {
       <div class="entry-info">
         <div class="entry-key">${key}</div>
         <div class="entry-display">${parsed || '<em style="color:#555568;font-size:11px;">no display</em>'}</div>
-        <div class="entry-meta"><span class="${badgeCls(t.PriceType)}">${t.PriceType}</span></div>
+        <div class="entry-meta"><span class="${badgeCls(t.PriceType)}">${t.PriceType||'—'}</span></div>
       </div>
     </div>`;
   }).join('');
@@ -855,6 +780,8 @@ function renderTitles() {
   list.innerHTML = filtered.map(key => {
     const t = titles[key];
     const parsed = parseColorString(t.Display || '');
+    const dataKeys = (t.Data && typeof t.Data === 'object') ? Object.keys(t.Data) : [];
+    const dataBits = dataKeys.map(k => `<span style="font-size:9px;color:var(--text3);font-family:var(--mono);">${k}</span>`).join(' ');
     return `<div class="entry" data-key="${escAttr(key)}" data-kind="title"
       oncontextmenu="openCtxMenu(event,'title','${escAttr(key)}')"
       ontouchstart="startHold(event,'title','${escAttr(key)}')"
@@ -864,6 +791,7 @@ function renderTitles() {
         <div class="entry-display">${parsed || '<em style="color:#555568;font-size:11px;">no display</em>'}</div>
         <div class="entry-meta">
           <span class="${badgeCls(t.PriceType)}">${t.PriceType||'—'}</span>
+          ${dataBits}
           ${t.Desc ? `<span class="desc-text">${t.Desc}</span>` : ''}
         </div>
       </div>
@@ -902,7 +830,7 @@ function renderRanks() {
 }
 
 function renderAll() {
-  populatePriceTypeSelects();
+  populatePriceTypeFilters();
   renderDashboard();
   renderTitles();
   renderRanks();
@@ -910,10 +838,11 @@ function renderAll() {
 }
 
 function escAttr(s) { return String(s).replace(/'/g, "\\'").replace(/"/g, '&quot;'); }
+function escVal(s)  { return String(s).replace(/"/g, '&quot;'); }
 
-// ═══════════════════════════════════════════════════════════════════
-// CONTEXT MENU (Discord-style)
-// ═══════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
+// CONTEXT MENU
+// ═══════════════════════════════════════════════════════
 let ctxKind = null, ctxKey = null;
 let holdTimer = null;
 
@@ -921,29 +850,20 @@ function openCtxMenu(event, kind, key) {
   event.preventDefault();
   event.stopPropagation();
   ctxKind = kind; ctxKey = key;
-
   const menu = document.getElementById('ctx-menu');
   menu.classList.add('open');
-
-  // position
   const vw = window.innerWidth, vh = window.innerHeight;
   let x = event.clientX, y = event.clientY;
-  if (event.touches && event.touches.length > 0) {
-    x = event.touches[0].clientX; y = event.touches[0].clientY;
-  }
+  if (event.touches && event.touches.length > 0) { x = event.touches[0].clientX; y = event.touches[0].clientY; }
   menu.style.left = '0'; menu.style.top = '0';
   requestAnimationFrame(() => {
     const mw = menu.offsetWidth, mh = menu.offsetHeight;
     menu.style.left = Math.min(x, vw - mw - 8) + 'px';
     menu.style.top  = Math.min(y, vh - mh - 8) + 'px';
   });
-
-  // wire up buttons
   document.getElementById('ctx-copy').onclick = () => { closeCtx(); copyAction(kind, key); };
   document.getElementById('ctx-edit').onclick = () => { closeCtx(); editAction(kind, key); };
   document.getElementById('ctx-delete').onclick = () => { closeCtx(); promptDelete(kind, key); };
-
-  // mark the "..." btn as open
   document.querySelectorAll('.entry-more-btn.open').forEach(b => b.classList.remove('open'));
   const entry = document.querySelector(`.entry[data-key="${CSS.escape(key)}"][data-kind="${kind}"]`);
   if (entry) entry.querySelector('.entry-more-btn').classList.add('open');
@@ -956,23 +876,15 @@ function closeCtx() {
 
 function startHold(event, kind, key) {
   endHold();
-  holdTimer = setTimeout(() => {
-    holdTimer = null;
-    openCtxMenu(event, kind, key);
-  }, 500);
+  holdTimer = setTimeout(() => { holdTimer = null; openCtxMenu(event, kind, key); }, 500);
 }
+function endHold() { if (holdTimer !== null) { clearTimeout(holdTimer); holdTimer = null; } }
 
-function endHold() {
-  if (holdTimer !== null) { clearTimeout(holdTimer); holdTimer = null; }
-}
-
-document.addEventListener('click', e => {
-  if (!document.getElementById('ctx-menu').contains(e.target)) closeCtx();
-});
+document.addEventListener('click', e => { if (!document.getElementById('ctx-menu').contains(e.target)) closeCtx(); });
 document.addEventListener('scroll', closeCtx, true);
 
 function copyAction(kind, key) {
-  const disp = kind === 'title' ? (titles[key] && titles[key].Display) : (ranks[key] && ranks[key].Display);
+  const disp = kind === 'title' ? (titles[key]&&titles[key].Display) : (ranks[key]&&ranks[key].Display);
   navigator.clipboard.writeText(disp || '').then(() => showToast('Copied', 'success'));
 }
 function editAction(kind, key) {
@@ -980,29 +892,22 @@ function editAction(kind, key) {
   else openEditRank(key);
 }
 
-// ═══════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 // ACTIONS
-// ═══════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 function addTitle() {
   const key = document.getElementById('t-key').value.trim();
   const display = document.getElementById('t-display').value.trim();
-  const desc  = document.getElementById('t-desc').value.trim();
-  const data  = getDataFromTable('t-data-table');
-  // determine price type
-  let type = document.getElementById('t-type').value;
-  // if data has content, force Mixed
-  const hasData = data && data !== '';
-  if (hasData && type !== 'Mixed') type = 'Mixed';
-
+  const desc = document.getElementById('t-desc').value.trim();
   if (!key) { showToast('Key is required', 'error'); return; }
   if (titles[key]) { showToast('Key already exists', 'error'); return; }
-  titles[key] = { Display: display, PriceType: type, Desc: desc, Data: data };
+  const { data, priceType } = getPTData('t');
+  titles[key] = { Display: display, PriceType: priceType || '', Desc: desc, Data: data };
   // clear form
   document.getElementById('t-key').value = '';
   document.getElementById('t-display').value = '';
   document.getElementById('t-desc').value = '';
-  document.getElementById('t-data-table').innerHTML = '';
-  document.getElementById('t-data-hint').style.display = '';
+  clearPTRows('t');
   saveToLS(); renderTitles(); renderDashboard();
   showToast('Title added', 'success');
 }
@@ -1040,7 +945,6 @@ function closeModal(id) {
   if (id === 'del-modal') deleteTarget = null;
 }
 
-// close modals on bg click
 document.querySelectorAll('.modal-bg').forEach(bg => {
   bg.addEventListener('click', e => { if (e.target === bg) bg.classList.remove('open'); });
 });
@@ -1053,12 +957,13 @@ function openEditTitle(key) {
   editingKey = key;
   document.getElementById('et-key').value = key;
   document.getElementById('et-display').value = t.Display || '';
-  populatePriceTypeSelects();
-  document.getElementById('et-type').value = t.PriceType || priceTypes[0];
   document.getElementById('et-desc').value = t.Desc || '';
-  populateDataTable('et-data-table', t.Data);
+  clearPTRows('et');
+  // populate pt rows from existing data
+  if (t.Data && typeof t.Data === 'object') {
+    populatePTRows('et', t.Data);
+  }
   updateEditTitlePreview();
-  document.getElementById('et-display').oninput = updateEditTitlePreview;
   document.getElementById('edit-title-modal').classList.add('open');
 }
 function updateEditTitlePreview() {
@@ -1067,12 +972,10 @@ function updateEditTitlePreview() {
 function saveEditTitle() {
   const key = editingKey;
   if (!key || !titles[key]) return;
-  const data = getDataFromTable('et-data-table');
-  let type = document.getElementById('et-type').value;
-  if (data && data !== '' && type !== 'Mixed') type = 'Mixed';
+  const { data, priceType } = getPTData('et');
   titles[key] = {
     Display: document.getElementById('et-display').value.trim(),
-    PriceType: type,
+    PriceType: priceType || '',
     Desc: document.getElementById('et-desc').value.trim(),
     Data: data
   };
@@ -1089,7 +992,6 @@ function openEditRank(key) {
   document.getElementById('er-level').value = key;
   document.getElementById('er-display').value = r.Display || '';
   updateEditRankPreview();
-  document.getElementById('er-display').oninput = updateEditRankPreview;
   document.getElementById('edit-rank-modal').classList.add('open');
 }
 function updateEditRankPreview() {
@@ -1104,9 +1006,9 @@ function saveEditRank() {
   showToast('Rank updated', 'success');
 }
 
-// ═══════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 // PREVIEW
-// ═══════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 function runPreview() {
   const richText = parseColorString(document.getElementById('cp-input').value);
   document.getElementById('cp-dark').querySelector('.preview-text').innerHTML = richText || '';
@@ -1114,9 +1016,9 @@ function runPreview() {
   document.getElementById('cp-raw').textContent = richText;
 }
 
-// ═══════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 // LUA EXPORT
-// ═══════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 function buildLua() {
   const lines = [];
   lines.push('local TitleData = {}');
@@ -1129,7 +1031,7 @@ function buildLua() {
     lines.push(`\t\tPriceType = ${JSON.stringify(t.PriceType || '')},`);
     lines.push(`\t\tDesc = ${JSON.stringify(t.Desc || '')},`);
     const data = t.Data;
-    if (!data || data === '' || data === '""') {
+    if (!data || data === '') {
       lines.push('\t\tData = ""');
     } else if (typeof data === 'object' && !Array.isArray(data)) {
       lines.push('\t\tData = {');
@@ -1162,9 +1064,9 @@ function downloadLua() {
   a.href = URL.createObjectURL(blob); a.download = 'TitleData.lua'; a.click();
 }
 
-// ═══════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 // JSON IMPORT / EXPORT
-// ═══════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 function exportJSON() {
   const blob = new Blob([JSON.stringify({ titles, ranks, priceTypes, exportedAt: new Date().toISOString() }, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
@@ -1203,18 +1105,16 @@ function processImport(text) {
   } catch(e) { showToast('Invalid JSON: ' + e.message, 'error'); }
 }
 
-// ═══════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 // TABS
-// ═══════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 function switchTab(id) {
   document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.mobile-nav-btn').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.getElementById('panel-' + id).classList.add('active');
-
   document.querySelectorAll(`.nav-item[onclick="switchTab('${id}')"]`).forEach(b => b.classList.add('active'));
   document.querySelectorAll(`.mobile-nav-btn[onclick="switchTab('${id}')"]`).forEach(b => b.classList.add('active'));
-
   if (id === 'export') document.getElementById('lua-out').textContent = buildLua();
   if (id === 'preview') runPreview();
   if (id === 'importexport') updateLSStatus();
@@ -1222,9 +1122,9 @@ function switchTab(id) {
   closeCtx();
 }
 
-// ═══════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 // TOAST
-// ═══════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 let toastTimer = null;
 function showToast(msg, type='') {
   const t = document.getElementById('toast');
@@ -1234,9 +1134,9 @@ function showToast(msg, type='') {
   toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
 }
 
-// ═══════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 // INIT
-// ═══════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 (function init() {
   const hadSaved = loadFromLS();
   renderAll();

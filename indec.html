@@ -1,0 +1,1302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TitleData Manager</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Syne:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0e0e12;
+    --bg2: #15151c;
+    --bg3: #1c1c26;
+    --bg4: #222230;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.14);
+    --text: #e8e8f0;
+    --text2: #9090a8;
+    --text3: #555568;
+    --accent: #7c6fff;
+    --accent2: #a896ff;
+    --accent-bg: rgba(124,111,255,0.12);
+    --green: #4ade80;
+    --green-bg: rgba(74,222,128,0.1);
+    --amber: #fbbf24;
+    --amber-bg: rgba(251,191,36,0.1);
+    --red: #f87171;
+    --red-bg: rgba(248,113,113,0.1);
+    --pink: #f472b6;
+    --pink-bg: rgba(244,114,182,0.1);
+    --radius: 10px;
+    --radius-sm: 6px;
+    --radius-lg: 14px;
+    --font: 'Syne', sans-serif;
+    --mono: 'JetBrains Mono', monospace;
+  }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  /* ── Layout ── */
+  .app { display: flex; min-height: 100vh; }
+
+  .sidebar {
+    width: 220px;
+    flex-shrink: 0;
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem 0;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+  }
+
+  .logo {
+    padding: 0 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 1rem;
+  }
+  .logo-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: 0.02em;
+  }
+  .logo-sub {
+    font-size: 11px;
+    color: var(--text3);
+    font-family: var(--mono);
+    margin-top: 2px;
+  }
+
+  .nav { flex: 1; padding: 0 0.75rem; }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text2);
+    cursor: pointer;
+    transition: all 0.15s;
+    margin-bottom: 2px;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+  }
+  .nav-item i { font-size: 14px; width: 16px; text-align: center; }
+  .nav-item:hover { background: var(--bg3); color: var(--text); }
+  .nav-item.active { background: var(--accent-bg); color: var(--accent2); }
+  .nav-item.active i { color: var(--accent); }
+
+  .sidebar-footer {
+    padding: 1rem 1.25rem 0;
+    border-top: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .main { flex: 1; padding: 2rem 2.5rem; max-width: 900px; }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* ── Typography ── */
+  .page-title {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .page-sub {
+    font-size: 13px;
+    color: var(--text3);
+    margin-bottom: 1.75rem;
+  }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1rem;
+  }
+  .card-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-bottom: 1rem;
+  }
+
+  /* ── Form ── */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+  .form-grid.cols3 { grid-template-columns: 1fr 1fr 1fr; }
+  .form-grid.full { grid-template-columns: 1fr; }
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field label { font-size: 11px; color: var(--text3); font-family: var(--mono); letter-spacing: 0.03em; }
+  .field input, .field select, .field textarea {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 13px;
+    padding: 8px 11px;
+    outline: none;
+    transition: border-color 0.15s;
+    width: 100%;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus {
+    border-color: var(--accent);
+  }
+  .field select option { background: var(--bg3); }
+  .field textarea { resize: vertical; min-height: 70px; font-family: var(--mono); font-size: 12px; }
+
+  /* ── Buttons ── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 16px;
+    border-radius: var(--radius-sm);
+    font-family: var(--font);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid var(--border2);
+    background: var(--bg3);
+    color: var(--text);
+    transition: all 0.15s;
+  }
+  .btn:hover { background: var(--bg4); border-color: var(--border2); }
+  .btn-primary { background: var(--accent-bg); border-color: var(--accent); color: var(--accent2); }
+  .btn-primary:hover { background: rgba(124,111,255,0.2); }
+  .btn-danger { background: var(--red-bg); border-color: var(--red); color: var(--red); }
+  .btn-danger:hover { background: rgba(248,113,113,0.2); }
+  .btn-green { background: var(--green-bg); border-color: var(--green); color: var(--green); }
+  .btn-green:hover { background: rgba(74,222,128,0.18); }
+  .btn-sm { padding: 5px 10px; font-size: 12px; }
+  .btn-icon { padding: 6px; width: 30px; height: 30px; justify-content: center; border-radius: var(--radius-sm); }
+
+  .btn-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+  /* ── Search bar ── */
+  .search-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 1rem;
+  }
+  .search-input {
+    flex: 1;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 13px;
+    padding: 8px 12px 8px 36px;
+    outline: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23555568' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: 12px center;
+    transition: border-color 0.15s;
+  }
+  .search-input:focus { border-color: var(--accent); }
+  .search-input::placeholder { color: var(--text3); }
+  .filter-sel {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 13px;
+    padding: 8px 11px;
+    outline: none;
+    cursor: pointer;
+  }
+  .filter-sel:focus { border-color: var(--accent); }
+  .filter-sel option { background: var(--bg2); }
+
+  /* ── Entry list ── */
+  .entries { display: flex; flex-direction: column; gap: 8px; }
+  .entry {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: border-color 0.15s;
+  }
+  .entry:hover { border-color: var(--border2); }
+  .entry-info { flex: 1; min-width: 0; }
+  .entry-key { font-size: 10px; color: var(--text3); font-family: var(--mono); margin-bottom: 3px; }
+  .entry-display { font-size: 14px; font-weight: 500; line-height: 1.4; word-break: break-word; }
+  .entry-meta { display: flex; gap: 6px; align-items: center; margin-top: 5px; flex-wrap: wrap; }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    font-family: var(--mono);
+  }
+  .badge-badges { background: var(--amber-bg); color: var(--amber); border: 1px solid rgba(251,191,36,0.3); }
+  .badge-gamepass { background: var(--green-bg); color: var(--green); border: 1px solid rgba(74,222,128,0.3); }
+  .badge-exclusive { background: var(--pink-bg); color: var(--pink); border: 1px solid rgba(244,114,182,0.3); }
+  .desc-text { font-size: 11px; color: var(--text3); font-style: italic; }
+
+  .entry-actions { display: flex; gap: 4px; flex-shrink: 0; }
+
+  /* ── Rank grid ── */
+  .rank-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+  .rank-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px;
+    transition: border-color 0.15s;
+  }
+  .rank-card:hover { border-color: var(--border2); }
+  .rank-card-head { display: flex; justify-content: space-between; align-items: flex-start; }
+  .rank-level { font-size: 10px; font-family: var(--mono); color: var(--text3); margin-bottom: 6px; }
+  .rank-display { font-size: 16px; font-weight: 600; }
+
+  /* ── Preview panel ── */
+  .preview-dark {
+    background: #111118;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    margin-bottom: 1rem;
+    min-height: 54px;
+    display: flex;
+    align-items: center;
+  }
+  .preview-dark .preview-text { font-size: 18px; font-weight: 500; }
+  .preview-light {
+    background: #f0f0f5;
+    border: 1px solid #d0d0e0;
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    margin-bottom: 1rem;
+    min-height: 54px;
+    display: flex;
+    align-items: center;
+  }
+  .preview-light .preview-text { font-size: 18px; font-weight: 500; color: #111; }
+
+  /* ── Code box ── */
+  .code-box {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px;
+    font-family: var(--mono);
+    font-size: 11.5px;
+    line-height: 1.7;
+    color: var(--text);
+    overflow-x: auto;
+    white-space: pre;
+    max-height: 420px;
+    overflow-y: auto;
+  }
+
+  /* ── Import/Export ── */
+  .drop-zone {
+    border: 2px dashed var(--border2);
+    border-radius: var(--radius-lg);
+    padding: 2.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 1rem;
+  }
+  .drop-zone:hover, .drop-zone.drag-over {
+    border-color: var(--accent);
+    background: var(--accent-bg);
+  }
+  .drop-zone i { font-size: 28px; color: var(--text3); margin-bottom: 8px; display: block; }
+  .drop-zone p { font-size: 13px; color: var(--text2); }
+  .drop-zone span { font-size: 11px; color: var(--text3); }
+
+  /* ── Stats ── */
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 1.5rem; }
+  .stat-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+  }
+  .stat-val { font-size: 26px; font-weight: 600; color: var(--text); font-family: var(--mono); }
+  .stat-label { font-size: 11px; color: var(--text3); margin-top: 2px; }
+
+  /* ── Modal ── */
+  .modal-bg {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.6);
+    display: none; align-items: center; justify-content: center;
+    z-index: 200;
+    backdrop-filter: blur(2px);
+  }
+  .modal-bg.open { display: flex; }
+  .modal {
+    background: var(--bg2);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    width: 420px;
+    max-width: 94vw;
+  }
+  .modal-title { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+  .modal-body { font-size: 13px; color: var(--text2); margin-bottom: 1.25rem; line-height: 1.6; }
+  .modal-footer { display: flex; justify-content: flex-end; gap: 8px; }
+
+  /* ── Toast ── */
+  .toast {
+    position: fixed; bottom: 1.5rem; right: 1.5rem;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius);
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    z-index: 300;
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity 0.2s, transform 0.2s;
+    pointer-events: none;
+    max-width: 300px;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+  .toast.success { border-color: var(--green); color: var(--green); }
+  .toast.error { border-color: var(--red); color: var(--red); }
+
+  .empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--text3);
+    font-size: 13px;
+  }
+  .empty-state i { font-size: 32px; display: block; margin-bottom: 10px; opacity: 0.4; }
+
+  .divider { border: none; border-top: 1px solid var(--border); margin: 1.25rem 0; }
+
+  @media (max-width: 700px) {
+    .sidebar { display: none; }
+    .main { padding: 1rem; }
+    .stats { grid-template-columns: 1fr 1fr; }
+    .form-grid { grid-template-columns: 1fr; }
+    .form-grid.cols3 { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="logo">
+    <div class="logo-title">TitleData</div>
+    <div class="logo-sub">Manager v1.0</div>
+  </div>
+  <div class="nav">
+    <button class="nav-item active" onclick="switchTab('dashboard')">
+      <i class="fa-solid fa-gauge"></i> Dashboard
+    </button>
+    <button class="nav-item" onclick="switchTab('titles')">
+      <i class="fa-solid fa-tags"></i> Titles
+    </button>
+    <button class="nav-item" onclick="switchTab('ranks')">
+      <i class="fa-solid fa-ranking-star"></i> Ranks
+    </button>
+    <button class="nav-item" onclick="switchTab('preview')">
+      <i class="fa-solid fa-eye"></i> Color Preview
+    </button>
+    <button class="nav-item" onclick="switchTab('export')">
+      <i class="fa-solid fa-code"></i> Export Lua
+    </button>
+    <button class="nav-item" onclick="switchTab('importexport')">
+      <i class="fa-solid fa-arrows-rotate"></i> Import / Export
+    </button>
+  </div>
+  <div class="sidebar-footer">
+    <button class="btn btn-sm" onclick="switchTab('importexport')" style="justify-content:center;">
+      <i class="fa-solid fa-floppy-disk"></i> Save / Load
+    </button>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- DASHBOARD -->
+  <div id="panel-dashboard" class="panel active">
+    <div class="page-title">Dashboard</div>
+    <div class="page-sub">Overview of your TitleData configuration.</div>
+    <div class="stats" id="stats-grid"></div>
+    <div class="card">
+      <div class="card-title">Recent titles</div>
+      <div id="recent-titles"></div>
+    </div>
+  </div>
+
+  <!-- TITLES -->
+  <div id="panel-titles" class="panel">
+    <div class="page-title">Titles</div>
+    <div class="page-sub">Add, remove, and browse all player titles.</div>
+
+    <div class="card">
+      <div class="card-title">Add title</div>
+      <div class="form-grid">
+        <div class="field"><label>key</label><input id="t-key" placeholder="Cool_Title"></div>
+        <div class="field"><label>price type</label>
+          <select id="t-type">
+            <option>Badges</option><option>Gamepass</option><option>Exclusive</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-grid full">
+        <div class="field"><label>display string</label><input id="t-display" placeholder='My Title //sentence{color<255,200,100>}'></div>
+      </div>
+      <div class="form-grid">
+        <div class="field"><label>desc</label><input id="t-desc" placeholder="optional"></div>
+        <div class="field"><label>data (raw or blank)</label><input id="t-data" placeholder='""'></div>
+      </div>
+      <button class="btn btn-primary" onclick="addTitle()"><i class="fa-solid fa-plus"></i> Add title</button>
+    </div>
+
+    <div class="search-bar">
+      <input class="search-input" id="t-search" placeholder="Search titles..." oninput="renderTitles()">
+      <select class="filter-sel" id="t-filter" onchange="renderTitles()">
+        <option value="">All types</option>
+        <option value="Badges">Badges</option>
+        <option value="Gamepass">Gamepass</option>
+        <option value="Exclusive">Exclusive</option>
+      </select>
+    </div>
+    <div id="titles-list" class="entries"></div>
+  </div>
+
+  <!-- RANKS -->
+  <div id="panel-ranks" class="panel">
+    <div class="page-title">Ranks</div>
+    <div class="page-sub">Manage rank levels and their display strings.</div>
+
+    <div class="card">
+      <div class="card-title">Add rank</div>
+      <div class="form-grid">
+        <div class="field"><label>level (number, e.g. 3 or 2.1)</label><input id="r-level" placeholder="3" type="text"></div>
+        <div class="field"><label>display string</label><input id="r-display" placeholder='Commander{color<102,0,255>}'></div>
+      </div>
+      <button class="btn btn-primary" onclick="addRank()"><i class="fa-solid fa-plus"></i> Add rank</button>
+    </div>
+
+    <div id="ranks-grid" class="rank-grid"></div>
+  </div>
+
+  <!-- PREVIEW -->
+  <div id="panel-preview" class="panel">
+    <div class="page-title">Color Preview</div>
+    <div class="page-sub">Test any display string with the color parser.</div>
+
+    <div class="card">
+      <div class="card-title">Input</div>
+      <div class="field" style="margin-bottom:12px;">
+        <label>display string</label>
+        <input id="cp-input" value='Hello{color<255,100,100>} World //sentence{color<100,200,255 | 255,100,255>}'>
+      </div>
+      <button class="btn btn-primary" onclick="runPreview()"><i class="fa-solid fa-play"></i> Render</button>
+    </div>
+
+    <div class="card-title" style="margin-bottom:8px;">Preview — dark background</div>
+    <div class="preview-dark" id="cp-dark"><span class="preview-text"></span></div>
+    <div class="card-title" style="margin-bottom:8px;">Preview — light background</div>
+    <div class="preview-light" id="cp-light"><span class="preview-text"></span></div>
+    <div class="card-title" style="margin-bottom:8px;">Generated rich text</div>
+    <div class="code-box" id="cp-raw" style="max-height:120px;"></div>
+  </div>
+
+  <!-- EXPORT LUA -->
+  <div id="panel-export" class="panel">
+    <div class="page-title">Export Lua</div>
+    <div class="page-sub">Copy the full TitleData module back into Roblox Studio.</div>
+    <div class="btn-row" style="margin-bottom:1rem;">
+      <button class="btn btn-primary" onclick="copyLua()"><i class="fa-solid fa-copy"></i> Copy all</button>
+      <button class="btn" onclick="downloadLua()"><i class="fa-solid fa-download"></i> Download .lua</button>
+    </div>
+    <div class="code-box" id="lua-out" style="max-height:520px;"></div>
+  </div>
+
+  <!-- IMPORT / EXPORT -->
+  <div id="panel-importexport" class="panel">
+    <div class="page-title">Import / Export</div>
+    <div class="page-sub">Save your data as JSON or load it back. Data is also auto-saved to localStorage.</div>
+
+    <div class="card">
+      <div class="card-title">Export JSON</div>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:12px;">Download your current titles and ranks as a JSON backup file.</p>
+      <button class="btn btn-green" onclick="exportJSON()"><i class="fa-solid fa-download"></i> Download backup.json</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Import JSON</div>
+      <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()"
+        ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropFile(event)">
+        <i class="fa-solid fa-cloud-arrow-up"></i>
+        <p>Click to browse or drag & drop</p>
+        <span>Accepts .json backup files</span>
+      </div>
+      <input type="file" id="file-input" accept=".json" style="display:none" onchange="loadFile(event)">
+      <div style="display:flex;gap:8px;align-items:center;">
+        <select class="filter-sel" id="import-mode">
+          <option value="replace">Replace all data</option>
+          <option value="merge">Merge (keep existing, add new)</option>
+        </select>
+        <span style="font-size:12px;color:var(--text3);">Import mode</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">localStorage status</div>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:12px;" id="ls-status">—</p>
+      <div class="btn-row">
+        <button class="btn" onclick="saveToLS()"><i class="fa-solid fa-floppy-disk"></i> Save now</button>
+        <button class="btn btn-danger" onclick="clearLS()"><i class="fa-solid fa-trash"></i> Clear saved data</button>
+      </div>
+    </div>
+  </div>
+
+</main>
+</div>
+
+<!-- Delete modal -->
+<div class="modal-bg" id="del-modal">
+  <div class="modal">
+    <div class="modal-title" id="del-modal-title">Remove entry?</div>
+    <div class="modal-body" id="del-modal-body">This will remove the entry from the data.</div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-danger" onclick="confirmDelete()">Remove</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Title modal -->
+<div class="modal-bg" id="edit-title-modal">
+  <div class="modal" style="width:520px;">
+    <div class="modal-title">Edit title</div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:1.25rem;">
+      <div class="field"><label>key</label><input id="et-key" readonly style="opacity:0.5;cursor:not-allowed;"></div>
+      <div class="field"><label>display string</label><input id="et-display"></div>
+      <div class="field"><label>price type</label>
+        <select id="et-type">
+          <option>Badges</option><option>Gamepass</option><option>Exclusive</option>
+        </select>
+      </div>
+      <div class="field"><label>desc</label><input id="et-desc"></div>
+      <div class="field"><label>data</label><input id="et-data"></div>
+      <div style="margin-top:4px;">
+        <div style="font-size:11px;color:var(--text3);margin-bottom:6px;">Preview</div>
+        <div class="preview-dark" style="min-height:40px;padding:10px 14px;"><span class="preview-text" id="et-preview" style="font-size:15px;"></span></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeEditModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEditTitle()"><i class="fa-solid fa-check"></i> Save changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Rank modal -->
+<div class="modal-bg" id="edit-rank-modal">
+  <div class="modal" style="width:480px;">
+    <div class="modal-title">Edit rank</div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:1.25rem;">
+      <div class="field"><label>level</label><input id="er-level" readonly style="opacity:0.5;cursor:not-allowed;"></div>
+      <div class="field"><label>display string</label><input id="er-display"></div>
+      <div style="margin-top:4px;">
+        <div style="font-size:11px;color:var(--text3);margin-bottom:6px;">Preview</div>
+        <div class="preview-dark" style="min-height:40px;padding:10px 14px;"><span class="preview-text" id="er-preview" style="font-size:15px;"></span></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeEditModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEditRank()"><i class="fa-solid fa-check"></i> Save changes</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════
+// COLOR PARSER (JS port of Lua ColorParser v2)
+// ═══════════════════════════════════════════════════════════════════
+function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+function lerpColor(c1, c2, t) {
+  return [
+    Math.floor(c1[0] + (c2[0]-c1[0])*t + 0.5),
+    Math.floor(c1[1] + (c2[1]-c1[1])*t + 0.5),
+    Math.floor(c1[2] + (c2[2]-c1[2])*t + 0.5)
+  ];
+}
+function toHex(r, g, b) {
+  return '#' + [r,g,b].map(v => clamp(v,0,255).toString(16).padStart(2,'0')).join('');
+}
+function wrapTags(text, props, bold, italic) {
+  let attrs = [];
+  if (props.color) attrs.push(`color="${props.color}"`);
+  if (props.face)  attrs.push(`face="${props.face}"`);
+  if (props.size)  attrs.push(`size="${props.size}"`);
+  let out = text;
+  if (attrs.length) out = `<font ${attrs.join(' ')}>${out}</font>`;
+  if (bold)   out = '<b>' + out + '</b>';
+  if (italic) out = '<i>' + out + '</i>';
+  return out;
+}
+function parseBlock(inner) {
+  const props = {};
+  const colorM = inner.match(/color\s*<\s*([\s\S]*?)\s*>/);
+  if (colorM) {
+    const cc = colorM[1];
+    if (cc.includes('|')) {
+      const stops = cc.split('|').map(p => {
+        p = p.trim();
+        const m = p.match(/(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/);
+        return m ? [+m[1],+m[2],+m[3]] : null;
+      }).filter(Boolean);
+      if (stops.length >= 2) props.color = { gradient: stops };
+    } else {
+      const m = cc.match(/(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/);
+      if (m) props.color = { solid: [+m[1],+m[2],+m[3]] };
+    }
+  }
+  const fontM = inner.match(/font\s*<\s*(.*?)\s*>/);
+  if (fontM && fontM[1]) props.font = fontM[1];
+  const sizeM = inner.match(/size\s*<\s*(\d+)\s*>/);
+  if (sizeM) props.size = +sizeM[1];
+  const styleM = inner.match(/style\s*<\s*(.*?)\s*>/);
+  if (styleM) {
+    const s = styleM[1].toLowerCase();
+    if (s.includes('bold'))   props.bold   = true;
+    if (s.includes('italic')) props.italic = true;
+  }
+  return props;
+}
+function countNonSpace(s) { return [...s].filter(c => /\S/.test(c)).length; }
+function applyGradient(text, stops, total, offset, fontProps, bold, italic) {
+  const segs = stops.length - 1;
+  let out = '', count = offset;
+  for (const ch of text) {
+    if (/\S/.test(ch)) {
+      const t = total <= 1 ? 0 : clamp(count / (total-1), 0, 1);
+      const sf = t * segs;
+      const si = Math.min(Math.floor(sf), segs-1);
+      const lt = sf - si;
+      const [r,g,b] = lerpColor(stops[si], stops[si+1] || stops[si], lt);
+      const fp = { color: toHex(r,g,b), face: fontProps.face, size: fontProps.size };
+      out += wrapTags(ch, fp, bold, italic);
+      count++;
+    } else { out += ch; }
+  }
+  return [out, count - offset];
+}
+function tokenise(msg) {
+  const tokens = [];
+  let pos = 0;
+  const re = /\{([^}]*)\}/g;
+  let m;
+  while ((m = re.exec(msg)) !== null) {
+    const before = msg.slice(pos, m.index);
+    const inner = m[1];
+    const pm = before.match(/^([\s\S]*\s)(\S+)\s*$/);
+    let prefix = '', word = '';
+    if (pm) { prefix = pm[1]; word = pm[2]; }
+    else { prefix = ''; word = before.replace(/^\s*|\s*$/g,''); }
+    if (prefix) tokens.push({ kind:'plain', text: prefix });
+    const props = parseBlock(inner);
+    const hasProps = props.color || props.font || props.size || props.bold || props.italic;
+    if (word && hasProps) tokens.push({ kind:'inline', text: word, props });
+    else tokens.push({ kind:'plain', text: word + '{' + inner + '}' });
+    pos = m.index + m[0].length;
+  }
+  const tail = msg.slice(pos);
+  if (tail) tokens.push({ kind:'plain', text: tail });
+  return tokens;
+}
+function extractDirectives(msg) {
+  const sentProps = {}, defProps = {};
+  msg = msg.replace(/\s*\/\/sentence\s*\{([^}]*)\}/g, (_,inner) => {
+    Object.assign(sentProps, parseBlock(inner)); return '';
+  });
+  msg = msg.replace(/\s*\/\/default\s*\{([^}]*)\}/g, (_,inner) => {
+    Object.assign(defProps, parseBlock(inner)); return '';
+  });
+  return [msg, sentProps, defProps];
+}
+function parseColorString(msg) {
+  if (!msg || !msg.trim()) return '';
+  const [cleaned, sentProps, defProps] = extractDirectives(msg);
+  const gs = { color: { solid:[255,255,255] }, font:null, size:null, bold:false, italic:false };
+  Object.assign(gs, defProps);
+  const sentState = Object.assign({}, gs, sentProps);
+  const tokens = tokenise(cleaned);
+  const sentHasGrad = sentState.color && sentState.color.gradient;
+  let totalNS = 0;
+  if (sentHasGrad) tokens.forEach(t => totalNS += countNonSpace(t.text));
+  let result = '', gradOffset = 0;
+  for (const tok of tokens) {
+    const fp = { face: sentState.font, size: sentState.size };
+    if (tok.kind === 'inline') {
+      const inlState = Object.assign({}, sentState, tok.props);
+      const fp2 = { face: inlState.font, size: inlState.size };
+      const useColor = tok.props.color || null;
+      if (useColor && useColor.gradient) {
+        const total = countNonSpace(tok.text);
+        const [rendered] = applyGradient(tok.text, useColor.gradient, total, 0, fp2, inlState.bold, inlState.italic);
+        result += rendered;
+        if (sentHasGrad) gradOffset += countNonSpace(tok.text);
+      } else if (useColor && useColor.solid) {
+        const [r,g,b] = useColor.solid;
+        fp2.color = toHex(r,g,b);
+        result += wrapTags(tok.text, fp2, inlState.bold, inlState.italic);
+        if (sentHasGrad) gradOffset += countNonSpace(tok.text);
+      } else {
+        if (sentHasGrad) {
+          const ns = countNonSpace(tok.text);
+          const [rendered] = applyGradient(tok.text, sentState.color.gradient, totalNS, gradOffset, fp2, inlState.bold, inlState.italic);
+          result += rendered; gradOffset += ns;
+        } else if (sentState.color && sentState.color.solid) {
+          const [r,g,b] = sentState.color.solid;
+          fp2.color = toHex(r,g,b);
+          result += wrapTags(tok.text, fp2, inlState.bold, inlState.italic);
+        } else { result += wrapTags(tok.text, fp2, inlState.bold, inlState.italic); }
+      }
+    } else {
+      if (sentHasGrad) {
+        const ns = countNonSpace(tok.text);
+        const [rendered] = applyGradient(tok.text, sentState.color.gradient, totalNS, gradOffset, fp, sentState.bold, sentState.italic);
+        result += rendered; gradOffset += ns;
+      } else if (sentState.color && sentState.color.solid) {
+        const [r,g,b] = sentState.color.solid;
+        fp.color = toHex(r,g,b);
+        result += wrapTags(tok.text, fp, sentState.bold, sentState.italic);
+      } else { result += wrapTags(tok.text, fp, sentState.bold, sentState.italic); }
+    }
+  }
+  return result;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════════════════════════════
+const DEFAULT_TITLES = {
+  "Content_Creator": { Display: "Content Creator //sentence{color<255,170,255 | 255,110,235>}", PriceType: "Exclusive", Desc: ":3", Data: { UserID: ["796047707","2030595937"] } },
+  "Peaceful":        { Display: "Peaceful{color<222,255,222>}", PriceType: "Gamepass", Desc: "", Data: { Gamepass: "1721657654" } },
+  "Evil_Path":       { Display: "Evil Path //sentence{color<200,0,0 | 255,0,0 | 200,0,0>}", PriceType: "Badges", Desc: "", Data: "" },
+  "The_Destroyer":   { Display: "The Destroyer //sentence{color<255,80,80>}", PriceType: "Badges", Desc: "", Data: "" },
+  "The_Lancer":      { Display: "The Lancer //sentence{color<120,200,255 | 255,255,255 | 40,120,255>}", PriceType: "Badges", Desc: "", Data: "" },
+  "The_Fish":        { Display: "The Fish //sentence{color<120,220,255 | 0,140,255>}", PriceType: "Badges", Desc: "", Data: "" },
+  "Chairlord":       { Display: "Chairlord //sentence{color<255,220,120 | 255,140,0>}", PriceType: "Badges", Desc: "", Data: { Points: 155500000, Kills: 1000 } },
+  "Most_Evil_Being": { Display: "Most Evil Being //sentence{color<255,0,0 | 100,0,0 | 255,0,0 | 100,0,0>}", PriceType: "Badges", Desc: "", Data: "" },
+  "The_Staring_One": { Display: "The Staring One //sentence{color<255,255,255 | 220,220,160 | 255,255,0>, font<Arimo>}", PriceType: "Badges", Desc: "", Data: "" },
+  "Professional_Idiot": { Display: "Professional Idiot //sentence{color<255,255,120>}", PriceType: "Badges", Desc: "", Data: "" },
+  "Bastion":         { Display: "Bastion //sentence{color<50,50,50 | 100,100,100>}", PriceType: "Badges", Desc: "", Data: { Badge: 2964295482109880, Points: 999999 } },
+  "Certified_Problem": { Display: "Certified Problem //sentence{color<255,120,120>}", PriceType: "Badges", Desc: "", Data: "" },
+  "Too_Angry_To_Die":  { Display: "Too Angry To Die //sentence{color<255,60,60 | 120,0,0 | 255,60,60 | 120,0,0 | 255,60,60 | 120,0,0>}", PriceType: "Badges", Desc: "", Data: "" },
+  "Void_Touched":    { Display: "Void Touched //sentence{color<180,0,255 | 80,0,120 | 180,0,255>}", PriceType: "Badges", Desc: "", Data: "" },
+  "Astral_Walker":   { Display: "Astral Walker //sentence{color<180,255,255 | 100,120,255 | 180,255,255 | 100,120,255>}", PriceType: "Badges", Desc: "", Data: "" },
+  "Forgotten_One":   { Display: "Forgotten One //sentence{color<180,180,180 | 80,80,80>}", PriceType: "Badges", Desc: "", Data: "" },
+  "The_Watcher":     { Display: "The Watcher //sentence{color<255,255,200 | 120,120,80>}", PriceType: "Badges", Desc: "", Data: "" },
+  "Beyond_Reality":  { Display: "Beyond Reality //sentence{color<20,10,25 | 30,0,220>}", PriceType: "Badges", Desc: "", Data: "" },
+};
+const DEFAULT_RANKS = {
+  "5":   { Display: "Overlord{color<255,140,0 | 220,42,0 | 195,0,0>, font<Merriweather>}" },
+  "4":   { Display: "Overseer{color<180,120,255 | 173,13,248>, font<Merriweather>}" },
+  "3":   { Display: "Commander{color<102,0,255 | 20,0,247>}" },
+  "2.1": { Display: "Elite Guard //sentence{color<255,215,0 | 190,120,0>}" },
+  "2":   { Display: "Guard{color<100,180,255>}" },
+  "1.1": { Display: "Special Guest //sentence{color<100,149,237>}" },
+  "1":   { Display: "VIP{color<255,255,100>}" },
+  "0":   { Display: "" },
+};
+
+const LS_KEY = 'titledata_manager_v1';
+let titles = {}, ranks = {};
+
+function loadFromLS() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      titles = parsed.titles || JSON.parse(JSON.stringify(DEFAULT_TITLES));
+      ranks  = parsed.ranks  || JSON.parse(JSON.stringify(DEFAULT_RANKS));
+      return true;
+    }
+  } catch(e) {}
+  titles = JSON.parse(JSON.stringify(DEFAULT_TITLES));
+  ranks  = JSON.parse(JSON.stringify(DEFAULT_RANKS));
+  return false;
+}
+
+function saveToLS() {
+  try {
+    localStorage.setItem(LS_KEY, JSON.stringify({ titles, ranks, savedAt: new Date().toISOString() }));
+    updateLSStatus();
+    showToast('Saved to localStorage', 'success');
+  } catch(e) {
+    showToast('Failed to save: ' + e.message, 'error');
+  }
+}
+
+function clearLS() {
+  if (!confirm('Clear all saved data? This cannot be undone.')) return;
+  localStorage.removeItem(LS_KEY);
+  titles = JSON.parse(JSON.stringify(DEFAULT_TITLES));
+  ranks  = JSON.parse(JSON.stringify(DEFAULT_RANKS));
+  updateLSStatus();
+  renderTitles(); renderRanks(); renderDashboard();
+  showToast('Cleared — defaults restored', 'success');
+}
+
+function updateLSStatus() {
+  const el = document.getElementById('ls-status');
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      const d = parsed.savedAt ? new Date(parsed.savedAt).toLocaleString() : 'unknown time';
+      el.textContent = `Last saved: ${d} · ${Object.keys(parsed.titles||{}).length} titles, ${Object.keys(parsed.ranks||{}).length} ranks`;
+    } else {
+      el.textContent = 'No saved data found in localStorage.';
+    }
+  } catch(e) { el.textContent = 'Error reading localStorage.'; }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════════════════════════
+function badgeClass(type) {
+  if (!type) return 'badge';
+  const t = type.toLowerCase();
+  if (t === 'exclusive') return 'badge badge-exclusive';
+  if (t === 'gamepass')  return 'badge badge-gamepass';
+  if (t === 'badges')    return 'badge badge-badges';
+  return 'badge';
+}
+
+function renderDashboard() {
+  const titleCount = Object.keys(titles).length;
+  const rankCount  = Object.keys(ranks).length;
+  const badgesCount = Object.values(titles).filter(t => t.PriceType === 'Badges').length;
+  const exclusiveCount = Object.values(titles).filter(t => t.PriceType === 'Exclusive').length;
+  document.getElementById('stats-grid').innerHTML = `
+    <div class="stat-card"><div class="stat-val">${titleCount}</div><div class="stat-label">Titles</div></div>
+    <div class="stat-card"><div class="stat-val">${rankCount}</div><div class="stat-label">Ranks</div></div>
+    <div class="stat-card"><div class="stat-val">${badgesCount}</div><div class="stat-label">Badge titles</div></div>
+    <div class="stat-card"><div class="stat-val">${exclusiveCount}</div><div class="stat-label">Exclusive titles</div></div>
+  `;
+  const recentKeys = Object.keys(titles).slice(0, 5);
+  const recentEl = document.getElementById('recent-titles');
+  if (recentKeys.length === 0) {
+    recentEl.innerHTML = '<div class="empty-state"><i class="fa-solid fa-tags"></i>No titles yet</div>';
+    return;
+  }
+  recentEl.innerHTML = recentKeys.map(key => {
+    const t = titles[key];
+    const parsed = parseColorString(t.Display || '');
+    return `<div class="entry" style="margin-bottom:6px;">
+      <div class="entry-info">
+        <div class="entry-key">${key}</div>
+        <div class="entry-display">${parsed || '<em style="color:#555568;font-size:12px;">no display</em>'}</div>
+        <div class="entry-meta"><span class="${badgeClass(t.PriceType)}">${t.PriceType}</span></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderTitles() {
+  const search = document.getElementById('t-search').value.toLowerCase();
+  const filter = document.getElementById('t-filter').value;
+  const list = document.getElementById('titles-list');
+  const keys = Object.keys(titles).sort();
+  const filtered = keys.filter(key => {
+    const t = titles[key];
+    if (filter && t.PriceType !== filter) return false;
+    if (search && !key.toLowerCase().includes(search) && !(t.Display||'').toLowerCase().includes(search)) return false;
+    return true;
+  });
+  if (filtered.length === 0) {
+    list.innerHTML = '<div class="empty-state"><i class="fa-solid fa-tags"></i>No titles found</div>';
+    return;
+  }
+  list.innerHTML = filtered.map(key => {
+    const t = titles[key];
+    const parsed = parseColorString(t.Display || '');
+    return `<div class="entry">
+      <div class="entry-info">
+        <div class="entry-key">${key}</div>
+        <div class="entry-display">${parsed || '<em style="color:#555568;font-size:12px;">no display</em>'}</div>
+        <div class="entry-meta">
+          <span class="${badgeClass(t.PriceType)}">${t.PriceType||'—'}</span>
+          ${t.Desc ? `<span class="desc-text">${t.Desc}</span>` : ''}
+        </div>
+      </div>
+      <div class="entry-actions">
+        <button class="btn btn-icon" title="Copy display string" onclick="copyDisplay('${key}')"><i class="fa-solid fa-copy"></i></button>
+        <button class="btn btn-icon" title="Edit" onclick="openEditTitle('${key}')"><i class="fa-solid fa-pen"></i></button>
+        <button class="btn btn-icon btn-danger" title="Remove" onclick="promptDelete('title','${key}')"><i class="fa-solid fa-trash"></i></button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderRanks() {
+  const grid = document.getElementById('ranks-grid');
+  const keys = Object.keys(ranks).sort((a,b) => +b - +a);
+  if (keys.length === 0) {
+    grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><i class="fa-solid fa-ranking-star"></i>No ranks defined</div>';
+    return;
+  }
+  grid.innerHTML = keys.map(key => {
+    const r = ranks[key];
+    const parsed = parseColorString(r.Display || '');
+    return `<div class="rank-card">
+      <div class="rank-card-head">
+        <div>
+          <div class="rank-level">level ${key}</div>
+          <div class="rank-display">${parsed || '<em style="color:#555568;font-size:12px;font-weight:400;">empty rank</em>'}</div>
+        </div>
+        <div style="display:flex;gap:4px;flex-shrink:0;">
+          <button class="btn btn-icon btn-sm" title="Copy display string" onclick="copyRankDisplay('${key}')"><i class="fa-solid fa-copy"></i></button>
+          <button class="btn btn-icon btn-sm" title="Edit" onclick="openEditRank('${key}')"><i class="fa-solid fa-pen"></i></button>
+          <button class="btn btn-icon btn-danger btn-sm" title="Remove" onclick="promptDelete('rank','${key}')"><i class="fa-solid fa-trash"></i></button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// ACTIONS
+// ═══════════════════════════════════════════════════════════════════
+function addTitle() {
+  const key = document.getElementById('t-key').value.trim();
+  const display = document.getElementById('t-display').value.trim();
+  const type = document.getElementById('t-type').value;
+  const desc = document.getElementById('t-desc').value.trim();
+  const data = document.getElementById('t-data').value.trim();
+  if (!key) { showToast('Key is required', 'error'); return; }
+  if (titles[key]) { showToast('Key already exists', 'error'); return; }
+  titles[key] = { Display: display, PriceType: type, Desc: desc, Data: data || '' };
+  document.getElementById('t-key').value = '';
+  document.getElementById('t-display').value = '';
+  document.getElementById('t-desc').value = '';
+  document.getElementById('t-data').value = '';
+  saveToLS(); renderTitles(); renderDashboard();
+  showToast('Title added', 'success');
+}
+
+function addRank() {
+  const level = document.getElementById('r-level').value.trim();
+  const display = document.getElementById('r-display').value.trim();
+  if (!level || isNaN(+level)) { showToast('Valid level number required', 'error'); return; }
+  if (ranks[level]) { showToast('Rank level already exists', 'error'); return; }
+  ranks[level] = { Display: display };
+  document.getElementById('r-level').value = '';
+  document.getElementById('r-display').value = '';
+  saveToLS(); renderRanks(); renderDashboard();
+  showToast('Rank added', 'success');
+}
+
+let deleteTarget = null;
+function promptDelete(kind, key) {
+  deleteTarget = { kind, key };
+  document.getElementById('del-modal-title').textContent = `Remove ${kind} "${key}"?`;
+  document.getElementById('del-modal-body').textContent = `This will permanently remove "${key}" from your ${kind} data.`;
+  document.getElementById('del-modal').classList.add('open');
+}
+function closeModal() {
+  document.getElementById('del-modal').classList.remove('open');
+  deleteTarget = null;
+}
+function confirmDelete() {
+  if (!deleteTarget) return;
+  if (deleteTarget.kind === 'title') { delete titles[deleteTarget.key]; renderTitles(); }
+  else { delete ranks[deleteTarget.key]; renderRanks(); }
+  saveToLS(); renderDashboard();
+  showToast('Removed', 'success');
+  closeModal();
+}
+
+function copyDisplay(key) {
+  const t = titles[key];
+  if (!t) return;
+  navigator.clipboard.writeText(t.Display || '').then(() => showToast('Display string copied', 'success'));
+}
+
+function copyRankDisplay(key) {
+  const r = ranks[key];
+  if (!r) return;
+  navigator.clipboard.writeText(r.Display || '').then(() => showToast('Display string copied', 'success'));
+}
+
+let editingKey = null;
+
+function openEditTitle(key) {
+  const t = titles[key];
+  if (!t) return;
+  editingKey = key;
+  document.getElementById('et-key').value = key;
+  document.getElementById('et-display').value = t.Display || '';
+  document.getElementById('et-type').value = t.PriceType || 'Badges';
+  document.getElementById('et-desc').value = t.Desc || '';
+  const data = t.Data;
+  document.getElementById('et-data').value = (data && typeof data === 'object') ? JSON.stringify(data) : (data || '');
+  updateEditTitlePreview();
+  document.getElementById('et-display').oninput = updateEditTitlePreview;
+  document.getElementById('edit-title-modal').classList.add('open');
+}
+
+function updateEditTitlePreview() {
+  const val = document.getElementById('et-display').value;
+  document.getElementById('et-preview').innerHTML = parseColorString(val) || '';
+}
+
+function saveEditTitle() {
+  const key = editingKey;
+  if (!key || !titles[key]) return;
+  const display = document.getElementById('et-display').value.trim();
+  const type    = document.getElementById('et-type').value;
+  const desc    = document.getElementById('et-desc').value.trim();
+  const dataRaw = document.getElementById('et-data').value.trim();
+  let data = dataRaw;
+  if (dataRaw && dataRaw !== '""') {
+    try { data = JSON.parse(dataRaw); } catch(e) { data = dataRaw; }
+  }
+  titles[key] = { Display: display, PriceType: type, Desc: desc, Data: data || '' };
+  saveToLS(); renderTitles(); renderDashboard();
+  closeEditModal();
+  showToast('Title updated', 'success');
+}
+
+function openEditRank(key) {
+  const r = ranks[key];
+  if (!r) return;
+  editingKey = key;
+  document.getElementById('er-level').value = key;
+  document.getElementById('er-display').value = r.Display || '';
+  updateEditRankPreview();
+  document.getElementById('er-display').oninput = updateEditRankPreview;
+  document.getElementById('edit-rank-modal').classList.add('open');
+}
+
+function updateEditRankPreview() {
+  const val = document.getElementById('er-display').value;
+  document.getElementById('er-preview').innerHTML = parseColorString(val) || '';
+}
+
+function saveEditRank() {
+  const key = editingKey;
+  if (!key || !ranks[key]) return;
+  ranks[key] = { Display: document.getElementById('er-display').value.trim() };
+  saveToLS(); renderRanks(); renderDashboard();
+  closeEditModal();
+  showToast('Rank updated', 'success');
+}
+
+function closeEditModal() {
+  document.getElementById('edit-title-modal').classList.remove('open');
+  document.getElementById('edit-rank-modal').classList.remove('open');
+  editingKey = null;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// PREVIEW
+// ═══════════════════════════════════════════════════════════════════
+function runPreview() {
+  const input = document.getElementById('cp-input').value;
+  const richText = parseColorString(input);
+  document.getElementById('cp-dark').querySelector('.preview-text').innerHTML = richText || '';
+  document.getElementById('cp-light').querySelector('.preview-text').innerHTML = richText || '';
+  document.getElementById('cp-raw').textContent = richText;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// LUA EXPORT
+// ═══════════════════════════════════════════════════════════════════
+function buildLua() {
+  const lines = [];
+  lines.push('local TitleData = {}');
+  lines.push('');
+  lines.push('TitleData.Title = {');
+  lines.push('\t["none"] = "",');
+  for (const [key, t] of Object.entries(titles)) {
+    lines.push(`\t["${key}"] = {`);
+    lines.push(`\t\tDisplay = ${JSON.stringify(t.Display || '')},`);
+    lines.push(`\t\tPriceType = ${JSON.stringify(t.PriceType || '')},`);
+    lines.push(`\t\tDesc = ${JSON.stringify(t.Desc || '')},`);
+    const data = t.Data;
+    if (!data || data === '' || data === '""') {
+      lines.push('\t\tData = ""');
+    } else if (typeof data === 'object' && !Array.isArray(data)) {
+      lines.push('\t\tData = {');
+      for (const [dk, dv] of Object.entries(data)) {
+        if (Array.isArray(dv)) {
+          lines.push(`\t\t\t${dk} = {${dv.map(v => JSON.stringify(String(v))).join(', ')}},`);
+        } else {
+          lines.push(`\t\t\t${dk} = ${typeof dv === 'number' ? dv : JSON.stringify(dv)},`);
+        }
+      }
+      lines.push('\t\t}');
+    } else {
+      lines.push(`\t\tData = ${JSON.stringify(String(data))}`);
+    }
+    lines.push('\t},');
+  }
+  lines.push('}');
+  lines.push('');
+  lines.push('TitleData.Rank = {');
+  const rkeys = Object.keys(ranks).sort((a,b) => +b - +a);
+  for (const key of rkeys) {
+    const r = ranks[key];
+    lines.push(`\t[${key}]   = { Display = ${JSON.stringify(r.Display || '')} },`);
+  }
+  lines.push('}');
+  lines.push('');
+  lines.push('return TitleData');
+  return lines.join('\n');
+}
+
+function copyLua() {
+  navigator.clipboard.writeText(buildLua()).then(() => showToast('Copied to clipboard', 'success'));
+}
+
+function downloadLua() {
+  const blob = new Blob([buildLua()], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'TitleData.lua';
+  a.click();
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// JSON IMPORT / EXPORT
+// ═══════════════════════════════════════════════════════════════════
+function exportJSON() {
+  const data = JSON.stringify({ titles, ranks, exportedAt: new Date().toISOString() }, null, 2);
+  const blob = new Blob([data], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'titledata-backup.json';
+  a.click();
+  showToast('Backup downloaded', 'success');
+}
+
+function loadFile(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => processImport(e.target.result);
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+function dragOver(e) {
+  e.preventDefault();
+  document.getElementById('drop-zone').classList.add('drag-over');
+}
+function dragLeave(e) {
+  document.getElementById('drop-zone').classList.remove('drag-over');
+}
+function dropFile(e) {
+  e.preventDefault();
+  document.getElementById('drop-zone').classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => processImport(ev.target.result);
+  reader.readAsText(file);
+}
+
+function processImport(text) {
+  try {
+    const data = JSON.parse(text);
+    const mode = document.getElementById('import-mode').value;
+    if (mode === 'replace') {
+      titles = data.titles || {};
+      ranks  = data.ranks  || {};
+    } else {
+      Object.assign(titles, data.titles || {});
+      Object.assign(ranks,  data.ranks  || {});
+    }
+    saveToLS(); renderTitles(); renderRanks(); renderDashboard();
+    showToast(`Imported (${mode} mode) — ${Object.keys(data.titles||{}).length} titles, ${Object.keys(data.ranks||{}).length} ranks`, 'success');
+  } catch(e) {
+    showToast('Invalid JSON file: ' + e.message, 'error');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// TABS & UTILS
+// ═══════════════════════════════════════════════════════════════════
+function switchTab(id) {
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  const btn = document.querySelector(`.nav-item[onclick="switchTab('${id}')"]`);
+  if (btn) btn.classList.add('active');
+  if (id === 'export') document.getElementById('lua-out').textContent = buildLua();
+  if (id === 'ranks') renderRanks();
+  if (id === 'preview') runPreview();
+  if (id === 'importexport') updateLSStatus();
+  if (id === 'dashboard') renderDashboard();
+}
+
+let toastTimer = null;
+function showToast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (type ? ' ' + type : '');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════════
+(function init() {
+  const hadSaved = loadFromLS();
+  renderDashboard();
+  renderTitles();
+  runPreview();
+  if (!hadSaved) saveToLS();
+  if (!hadSaved) showToast('Loaded default data', 'success');
+  else showToast('Restored from localStorage', 'success');
+})();
+</script>
+</body>
+</html>

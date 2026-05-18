@@ -113,7 +113,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 
 /* BADGES */
 .badge{display:inline-block;padding:1px 7px;border-radius:4px;font-size:9px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;font-family:var(--mono);}
-.badge-Badges   {background:var(--amber-bg);color:var(--amber);border:1px solid rgba(251,191,36,.3);}
+.badge-Badge   {background:var(--amber-bg);color:var(--amber);border:1px solid rgba(251,191,36,.3);}
 .badge-Gamepass {background:var(--green-bg);color:var(--green);border:1px solid rgba(74,222,128,.3);}
 .badge-Exclusive{background:var(--pink-bg);color:var(--pink);border:1px solid rgba(244,114,182,.3);}
 .badge-Mixed    {background:rgba(124,111,255,.12);color:var(--accent2);border:1px solid rgba(124,111,255,.3);}
@@ -248,11 +248,13 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
     <button class="nav-item" onclick="switchTab('export')"><i class="fa-solid fa-code"></i> Export Lua</button>
     <button class="nav-item" onclick="switchTab('importexport')"><i class="fa-solid fa-arrows-rotate"></i> Import / Export</button>
     <button class="nav-item" onclick="switchTab('auditlog')"><i class="fa-solid fa-clock-rotate-left"></i> Audit Log</button>
+    <button class="nav-item" onclick="switchTab('versionhistory')"><i class="fa-solid fa-code-branch"></i> Version History</button>
     <button class="nav-item" onclick="switchTab('howto')"><i class="fa-solid fa-circle-question"></i> How to Use</button>
     <button class="nav-item" onclick="switchTab('settings')"><i class="fa-solid fa-gear"></i> Settings</button>
   </div>
   <div class="sidebar-footer">
     <button class="btn btn-sm" onclick="saveToLS()" style="justify-content:center;"><i class="fa-solid fa-floppy-disk"></i> Save</button>
+    <button class="btn btn-sm" id="drive-btn" onclick="driveToggle()" style="justify-content:center;"><i class="fa-brands fa-google-drive"></i> <span id="drive-btn-label">Connect Drive</span></button>
   </div>
 </nav>
 
@@ -266,6 +268,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
     <button class="mobile-nav-btn" onclick="switchTab('export')"><i class="fa-solid fa-code"></i>Export</button>
     <button class="mobile-nav-btn" onclick="switchTab('importexport')"><i class="fa-solid fa-arrows-rotate"></i>I/E</button>
     <button class="mobile-nav-btn" onclick="switchTab('auditlog')"><i class="fa-solid fa-clock-rotate-left"></i>Log</button>
+    <button class="mobile-nav-btn" onclick="switchTab('versionhistory')"><i class="fa-solid fa-code-branch"></i>Versions</button>
     <button class="mobile-nav-btn" onclick="switchTab('howto')"><i class="fa-solid fa-circle-question"></i>Help</button>
     <button class="mobile-nav-btn" onclick="switchTab('settings')"><i class="fa-solid fa-gear"></i>Settings</button>
   </div>
@@ -370,6 +373,17 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   <div id="panel-importexport" class="panel">
     <div class="page-title">Import / Export</div>
     <div class="page-sub">Save your data as JSON or load it back.</div>
+    <div class="card" id="drive-card">
+      <div class="card-title"><i class="fa-brands fa-google-drive" style="margin-right:5px;"></i>Google Drive Sync</div>
+      <div id="drive-status-text" style="font-size:12px;color:var(--text2);margin-bottom:10px;">Not connected. Connect to sync your data across devices.</div>
+      <div class="btn-row" id="drive-actions" style="display:none;">
+        <button class="btn btn-sm btn-primary" onclick="driveSyncNow()"><i class="fa-solid fa-rotate"></i> Sync now</button>
+        <button class="btn btn-sm btn-green" onclick="driveUpload()"><i class="fa-solid fa-cloud-arrow-up"></i> Upload local</button>
+        <button class="btn btn-sm" onclick="driveDownload()"><i class="fa-solid fa-cloud-arrow-down"></i> Download from Drive</button>
+        <button class="btn btn-sm btn-danger" onclick="driveSignOut()"><i class="fa-solid fa-right-from-bracket"></i> Sign out</button>
+      </div>
+      <button class="btn btn-sm btn-primary" id="drive-connect-btn" onclick="driveSignIn()"><i class="fa-brands fa-google"></i> Sign in with Google</button>
+    </div>
     <div class="card">
       <div class="card-title">Export JSON</div>
       <p style="font-size:12px;color:var(--text2);margin-bottom:10px;">Download your current titles and ranks as a JSON backup.</p>
@@ -425,7 +439,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
           <li>Enter a <strong>key</strong> — this is the Lua table key, e.g. <code>Evil_Path</code>. Use underscores, no spaces.</li>
           <li>Enter a <strong>display string</strong> — supports color parser syntax (see below).</li>
           <li>Optionally add a <strong>desc</strong>.</li>
-          <li>Add <strong>data &amp; price type</strong> entries — click "Add price type entry", pick the type (e.g. <code>Badges</code>), and enter the value/ID. One entry = that type. Two or more = <code>Mixed</code>.</li>
+          <li>Add <strong>data &amp; price type</strong> entries — click "Add price type entry", pick the type (e.g. <code>Badge</code>), and enter the value/ID. One entry = that type. Two or more = <code>Mixed</code>.</li>
           <li>Click <strong>Add title</strong>.</li>
         </ol>
       </div>
@@ -494,6 +508,18 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 
 </main>
 </div>
+
+
+  <!-- VERSION HISTORY -->
+  <div id="panel-versionhistory" class="panel">
+    <div class="page-title">Version History</div>
+    <div class="page-sub">Full snapshots saved locally and to Google Drive. Click a version to preview or restore it.</div>
+    <div class="btn-row" style="margin-bottom:.85rem;">
+      <button class="btn btn-sm btn-green" onclick="saveSnapshot('manual')"><i class="fa-solid fa-camera"></i> Save snapshot now</button>
+      <button class="btn btn-sm btn-danger" onclick="clearAllSnapshots()"><i class="fa-solid fa-trash"></i> Clear all</button>
+    </div>
+    <div id="vh-list" class="entries"></div>
+  </div>
 
 <!-- Delete modal -->
 <div class="modal-bg" id="del-modal">
@@ -565,6 +591,41 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   <button class="ctx-item danger" id="ctx-delete"><i class="fa-solid fa-trash"></i> Remove</button>
 </div>
 
+<!-- Conflict resolution modal -->
+<div class="modal-bg" id="conflict-modal">
+  <div class="modal" style="width:500px;">
+    <div class="modal-title"><i class="fa-solid fa-triangle-exclamation" style="color:#fbbf24;margin-right:6px;"></i>Data conflict detected</div>
+    <div class="modal-body">Your local data and Google Drive data are different. Which one do you want to keep?</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1rem;">
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;">
+        <div style="font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:4px;">LOCAL</div>
+        <div style="font-size:12px;color:var(--text);" id="conflict-local-info">—</div>
+      </div>
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;">
+        <div style="font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:4px;">DRIVE</div>
+        <div style="font-size:12px;color:var(--text);" id="conflict-drive-info">—</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="resolveConflict('local')"><i class="fa-solid fa-floppy-disk"></i> Keep local</button>
+      <button class="btn btn-primary" onclick="resolveConflict('drive')"><i class="fa-brands fa-google-drive"></i> Use Drive</button>
+    </div>
+  </div>
+</div>
+
+<!-- Version preview modal -->
+<div class="modal-bg" id="vh-preview-modal">
+  <div class="modal" style="width:520px;">
+    <div class="modal-title">Snapshot preview</div>
+    <div id="vh-preview-body" style="font-size:12px;color:var(--text2);margin-bottom:1rem;"></div>
+    <div class="code-box" id="vh-preview-code" style="max-height:200px;margin-bottom:1rem;"></div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('vh-preview-modal')">Close</button>
+      <button class="btn btn-primary" id="vh-restore-btn" onclick="restoreSnapshot()"><i class="fa-solid fa-rotate-left"></i> Restore this version</button>
+    </div>
+  </div>
+</div>
+
 <!-- PWA install banner -->
 <div class="install-banner" id="install-banner">
   <i class="fa-solid fa-mobile-screen" style="color:var(--accent);font-size:18px;flex-shrink:0;"></i>
@@ -593,9 +654,9 @@ function parseColorString(msg){if(!msg||!msg.trim())return'';const[cleaned,sentP
 // ════════════════════════════════════════════════
 // DATA
 // ════════════════════════════════════════════════
-const BUILTIN_TYPES = ['Badges','Gamepass','Exclusive','UserID','Prestige','Ascension','Restartion','Breakthrough','Kills','Points'];
+const BUILTIN_TYPES = ['Badge','Gamepass','Exclusive','UserID','Prestige','Ascension','Restartion','Breakthrough','Kills','Points'];
 const BUILTIN_COLORS = {
-  Badges:'#fbbf24',Gamepass:'#4ade80',Exclusive:'#f472b6',
+  Badge:'#fbbf24',Gamepass:'#4ade80',Exclusive:'#f472b6',
   UserID:'#60a5fa',Prestige:'#fb7185',Ascension:'#34d399',
   Restartion:'#fbbf24',Breakthrough:'#a78bfa',Kills:'#f87171',Points:'#facc15',
   Mixed:'#a896ff'
@@ -609,10 +670,10 @@ const PRESET_COLORS = [
 const DEFAULT_TITLES = {
   "Content_Creator":{Display:"Content Creator //sentence{color<255,170,255 | 255,110,235>}",PriceType:"Exclusive",Desc:":3",Data:{Exclusive:["796047707","2030595937"]}},
   "Peaceful":{Display:"Peaceful{color<222,255,222>}",PriceType:"Gamepass",Desc:"",Data:{Gamepass:"1721657654"}},
-  "Evil_Path":{Display:"Evil Path //sentence{color<200,0,0 | 255,0,0 | 200,0,0>}",PriceType:"Badges",Desc:"",Data:{Badges:""}},
-  "The_Destroyer":{Display:"The Destroyer //sentence{color<255,80,80>}",PriceType:"Badges",Desc:"",Data:{Badges:""}},
-  "Chairlord":{Display:"Chairlord //sentence{color<255,220,120 | 255,140,0>}",PriceType:"Mixed",Desc:"",Data:{Gamepass:155500000,Badges:1000}},
-  "Bastion":{Display:"Bastion //sentence{color<50,50,50 | 100,100,100>}",PriceType:"Mixed",Desc:"",Data:{Badges:2964295482109880,Gamepass:999999}},
+  "Evil_Path":{Display:"Evil Path //sentence{color<200,0,0 | 255,0,0 | 200,0,0>}",PriceType:"Badge",Desc:"",Data:{Badge:""}},
+  "The_Destroyer":{Display:"The Destroyer //sentence{color<255,80,80>}",PriceType:"Badge",Desc:"",Data:{Badge:""}},
+  "Chairlord":{Display:"Chairlord //sentence{color<255,220,120 | 255,140,0>}",PriceType:"Mixed",Desc:"",Data:{Gamepass:155500000,Badge:1000}},
+  "Bastion":{Display:"Bastion //sentence{color<50,50,50 | 100,100,100>}",PriceType:"Mixed",Desc:"",Data:{Badge:2964295482109880,Gamepass:999999}},
 };
 const DEFAULT_RANKS = {
   "5":{Display:"Overlord{color<255,140,0 | 220,42,0 | 195,0,0>, font<Merriweather>}"},
@@ -654,11 +715,15 @@ function loadFromLS(){
   customPTColors={};
   return false;
 }
+let _saveCount=0;
 function saveToLS(){
   try{
     localStorage.setItem(LS_KEY,JSON.stringify({titles,ranks,priceTypes,customPTColors,savedAt:new Date().toISOString()}));
     updateLSStatus();
     showToast('Saved','success');
+    _saveCount++;
+    if(_saveCount%10===0) saveSnapshot('Auto snapshot #'+(_saveCount/10));
+    if(driveReady) driveUpload();
   }catch(e){showToast('Save failed: '+e.message,'error');}
 }
 function clearLS(){
@@ -1178,9 +1243,10 @@ function switchTab(id){
   });
   if(id==='export')document.getElementById('lua-out').textContent=buildLua();
   if(id==='preview')runPreview();
-  if(id==='importexport')updateLSStatus();
   if(id==='settings')renderPriceTypeSettings();
   if(id==='auditlog')renderAuditLog();
+  if(id==='versionhistory')renderVH();
+  if(id==='importexport'){updateLSStatus();updateDriveUI();}
   closeCtx();
 }
 
@@ -1219,16 +1285,336 @@ if('serviceWorker' in navigator){
   });
 }
 
+
+// ════════════════════════════════════════════════
+// VERSION HISTORY (local + drive)
+// ════════════════════════════════════════════════
+const LS_VH = 'titledata_vh_v1';
+const VH_MAX_LOCAL = 30;
+let snapshots = []; // [{id, label, ts, source, data:{titles,ranks,priceTypes,customPTColors}}]
+let previewSnapshotId = null;
+
+function loadSnapshots(){
+  try{ const r=localStorage.getItem(LS_VH); if(r) snapshots=JSON.parse(r); }
+  catch(e){ snapshots=[]; }
+}
+function saveSnapshots(){
+  try{ localStorage.setItem(LS_VH, JSON.stringify(snapshots.slice(-VH_MAX_LOCAL))); }
+  catch(e){}
+}
+function saveSnapshot(label='auto', source='local'){
+  const snap = {
+    id: Date.now().toString(),
+    label: label==='manual'?'Manual snapshot':label,
+    ts: new Date().toLocaleString(),
+    source,
+    data: JSON.parse(JSON.stringify({titles,ranks,priceTypes,customPTColors}))
+  };
+  snapshots.push(snap);
+  saveSnapshots();
+  renderVH();
+  if(driveReady && source !== 'drive') driveUploadSnapshots();
+  if(label==='manual') showToast('Snapshot saved','success');
+}
+function renderVH(){
+  const list = document.getElementById('vh-list');
+  if(!list) return;
+  if(!snapshots.length){ list.innerHTML='<div class="empty-state"><i class="fa-solid fa-code-branch"></i>No snapshots yet.</div>'; return; }
+  list.innerHTML = [...snapshots].reverse().map(s=>`
+    <div class="entry">
+      <div class="entry-info">
+        <div class="entry-key">${s.ts} · <span style="color:${s.source==='drive'?'#60a5fa':'#4ade80'}">${s.source==='drive'?'Drive':'Local'}</span></div>
+        <div class="entry-display" style="font-size:12px;">${s.label}</div>
+        <div class="entry-meta" style="font-size:10px;color:var(--text3);">${Object.keys(s.data.titles||{}).length} titles · ${Object.keys(s.data.ranks||{}).length} ranks</div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-xs" onclick="openVHPreview('${s.id}')"><i class="fa-solid fa-eye"></i></button>
+        <button class="btn btn-xs btn-danger" onclick="deleteSnapshot('${s.id}')"><i class="fa-solid fa-trash"></i></button>
+      </div>
+    </div>`).join('');
+}
+function openVHPreview(id){
+  const s = snapshots.find(x=>x.id===id);
+  if(!s) return;
+  previewSnapshotId = id;
+  document.getElementById('vh-preview-body').innerHTML =
+    `<strong>${s.label}</strong><br><span style="color:var(--text3);">${s.ts} · ${s.source==='drive'?'Google Drive':'Local'}</span><br><br>` +
+    `${Object.keys(s.data.titles||{}).length} titles, ${Object.keys(s.data.ranks||{}).length} ranks, ${(s.data.priceTypes||[]).length} price types`;
+  document.getElementById('vh-preview-code').textContent = JSON.stringify(s.data, null, 2);
+  document.getElementById('vh-preview-modal').classList.add('open');
+}
+function restoreSnapshot(){
+  const s = snapshots.find(x=>x.id===previewSnapshotId);
+  if(!s) return;
+  if(!confirm(`Restore snapshot "${s.label}" from ${s.ts}? Current data will be saved as a snapshot first.`)) return;
+  saveSnapshot('Before restore: '+s.label);
+  titles = JSON.parse(JSON.stringify(s.data.titles||{}));
+  ranks  = JSON.parse(JSON.stringify(s.data.ranks||{}));
+  priceTypes = s.data.priceTypes||[...BUILTIN_TYPES];
+  customPTColors = s.data.customPTColors||{};
+  saveToLS(); renderAll();
+  addAudit('system','Restored snapshot: '+s.label+' ('+s.ts+')');
+  closeModal('vh-preview-modal');
+  showToast('Restored!','success');
+}
+function deleteSnapshot(id){
+  snapshots = snapshots.filter(x=>x.id!==id);
+  saveSnapshots(); renderVH();
+}
+function clearAllSnapshots(){
+  if(!confirm('Delete all snapshots?')) return;
+  snapshots=[];saveSnapshots();renderVH();
+  showToast('All snapshots cleared','success');
+}
+
+// ════════════════════════════════════════════════
+// GOOGLE DRIVE SYNC
+// ════════════════════════════════════════════════
+const DRIVE_CLIENT_ID = 'YOUR_CLIENT_ID_HERE';
+const DRIVE_SCOPES = 'https://www.googleapis.com/auth/drive.appdata';
+const DRIVE_FILE_NAME = 'titledata-manager.json';
+const DRIVE_VH_FILE_NAME = 'titledata-snapshots.json';
+
+let driveReady = false;
+let driveToken = null;
+let driveFileId = null;
+let driveVHFileId = null;
+let pendingConflictDrive = null;
+
+function driveInit(){
+  // Load GIS (Google Identity Services)
+  if(typeof google === 'undefined' || !google.accounts){
+    const s = document.createElement('script');
+    s.src = 'https://accounts.google.com/gsi/client';
+    s.onload = driveInitClient;
+    document.head.appendChild(s);
+  } else { driveInitClient(); }
+}
+function driveInitClient(){
+  if(!window.google||!google.accounts) return;
+  const stored = localStorage.getItem('drive_token');
+  if(stored){
+    try{
+      const t = JSON.parse(stored);
+      if(t.expires > Date.now()){
+        driveToken = t.access_token;
+        driveReady = true;
+        updateDriveUI();
+        driveSyncNow();
+        return;
+      }
+    }catch(e){}
+  }
+  updateDriveUI();
+}
+function driveToggle(){
+  if(driveReady) { switchTab('importexport'); } 
+  else { driveSignIn(); }
+}
+function driveSignIn(){
+  if(typeof google === 'undefined'){
+    driveInit();
+    setTimeout(driveSignIn, 1200);
+    return;
+  }
+  const client = google.accounts.oauth2.initTokenClient({
+    client_id: DRIVE_CLIENT_ID,
+    scope: DRIVE_SCOPES,
+    callback: (resp) => {
+      if(resp.error){ showToast('Drive sign-in failed: '+resp.error,'error'); return; }
+      driveToken = resp.access_token;
+      driveReady = true;
+      localStorage.setItem('drive_token', JSON.stringify({
+        access_token: resp.access_token,
+        expires: Date.now() + (resp.expires_in||3600)*1000
+      }));
+      updateDriveUI();
+      addAudit('system','Signed in to Google Drive');
+      showToast('Connected to Google Drive!','success');
+      driveSyncNow();
+    }
+  });
+  client.requestAccessToken();
+}
+function driveSignOut(){
+  if(!confirm('Disconnect Google Drive?')) return;
+  driveToken = null; driveReady = false;
+  driveFileId = null; driveVHFileId = null;
+  localStorage.removeItem('drive_token');
+  updateDriveUI();
+  addAudit('system','Signed out from Google Drive');
+  showToast('Disconnected from Drive','success');
+}
+function updateDriveUI(){
+  const lbl = document.getElementById('drive-btn-label');
+  const btn = document.getElementById('drive-btn');
+  const statusTxt = document.getElementById('drive-status-text');
+  const actions = document.getElementById('drive-actions');
+  const connectBtn = document.getElementById('drive-connect-btn');
+  if(lbl) lbl.textContent = driveReady ? 'Drive ✓' : 'Connect Drive';
+  if(btn){ btn.style.borderColor = driveReady ? 'var(--green)' : ''; btn.style.color = driveReady ? 'var(--green)' : ''; }
+  if(statusTxt) statusTxt.textContent = driveReady ? 'Connected. Data syncs automatically when you save.' : 'Not connected. Connect to sync your data across devices.';
+  if(actions) actions.style.display = driveReady ? 'flex' : 'none';
+  if(connectBtn) connectBtn.style.display = driveReady ? 'none' : 'inline-flex';
+}
+
+async function driveRequest(method, url, body){
+  const headers = { 'Authorization': 'Bearer '+driveToken };
+  if(body && typeof body === 'object' && !(body instanceof FormData)){
+    headers['Content-Type'] = 'application/json';
+    body = JSON.stringify(body);
+  }
+  const resp = await fetch(url, {method, headers, body});
+  if(resp.status === 401){ driveSignOut(); throw new Error('Token expired'); }
+  return resp;
+}
+
+async function driveFindFile(name){
+  const q = encodeURIComponent(`name='${name}' and spaces='appDataFolder' and trashed=false`);
+  const r = await driveRequest('GET',`https://www.googleapis.com/drive/v3/files?q=${q}&spaces=appDataFolder&fields=files(id,name,modifiedTime)`);
+  const data = await r.json();
+  return data.files&&data.files.length ? data.files[0] : null;
+}
+async function driveReadFile(fileId){
+  const r = await driveRequest('GET',`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`);
+  return r.json();
+}
+async function driveWriteFile(fileId, name, data){
+  const meta = JSON.stringify({name, parents: fileId ? undefined : ['appDataFolder']});
+  const body = new FormData();
+  body.append('metadata', new Blob([meta],{type:'application/json'}));
+  body.append('media', new Blob([JSON.stringify(data)],{type:'application/json'}));
+  const url = fileId
+    ? `https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=multipart`
+    : `https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart`;
+  const method = fileId ? 'PATCH' : 'POST';
+  const r = await fetch(url,{method,headers:{'Authorization':'Bearer '+driveToken},body});
+  return r.json();
+}
+
+async function driveUpload(){
+  if(!driveReady) return;
+  try{
+    const data = {titles,ranks,priceTypes,customPTColors,savedAt:new Date().toISOString()};
+    const f = driveFileId || (await driveFindFile(DRIVE_FILE_NAME))?.id || null;
+    const result = await driveWriteFile(f, DRIVE_FILE_NAME, data);
+    driveFileId = result.id || f;
+    addAudit('system','Uploaded data to Google Drive');
+    showToast('Uploaded to Drive','success');
+  }catch(e){ showToast('Drive upload failed: '+e.message,'error'); }
+}
+async function driveDownload(){
+  if(!driveReady) return;
+  try{
+    const file = await driveFindFile(DRIVE_FILE_NAME);
+    if(!file){ showToast('No data found on Drive','error'); return; }
+    driveFileId = file.id;
+    const data = await driveReadFile(file.id);
+    titles = data.titles||{};
+    ranks  = data.ranks||{};
+    priceTypes = data.priceTypes||[...BUILTIN_TYPES];
+    customPTColors = data.customPTColors||{};
+    BUILTIN_TYPES.forEach(bt=>{ if(!priceTypes.includes(bt)) priceTypes.unshift(bt); });
+    saveToLS(); renderAll();
+    addAudit('system','Downloaded data from Google Drive');
+    showToast('Downloaded from Drive','success');
+  }catch(e){ showToast('Drive download failed: '+e.message,'error'); }
+}
+async function driveSyncNow(){
+  if(!driveReady) return;
+  try{
+    const file = await driveFindFile(DRIVE_FILE_NAME);
+    if(!file){
+      // Nothing on drive yet, upload
+      await driveUpload(); return;
+    }
+    driveFileId = file.id;
+    const driveData = await driveReadFile(file.id);
+    const localSavedAt = (() => { try{ const r=localStorage.getItem(LS_KEY); return r?JSON.parse(r).savedAt:null; }catch(e){return null;} })();
+    const driveSavedAt = driveData.savedAt;
+    if(!localSavedAt || !driveSavedAt){
+      // No timestamps, just upload local
+      await driveUpload(); return;
+    }
+    const localDate = new Date(localSavedAt);
+    const driveDate = new Date(driveSavedAt);
+    const diffMs = Math.abs(localDate - driveDate);
+    if(diffMs < 5000){ /* same, no conflict */ return; }
+    if(localDate > driveDate){
+      // Local is newer, upload
+      await driveUpload();
+    } else {
+      // Drive is newer, show conflict
+      showConflict(driveData, localSavedAt, driveSavedAt);
+    }
+  }catch(e){ console.warn('Drive sync error:',e); }
+}
+function showConflict(driveData, localTs, driveTs){
+  pendingConflictDrive = driveData;
+  document.getElementById('conflict-local-info').innerHTML =
+    `${Object.keys(titles).length} titles, ${Object.keys(ranks).length} ranks<br><span style="font-size:10px;color:var(--text3);">Saved: ${localTs||'unknown'}</span>`;
+  document.getElementById('conflict-drive-info').innerHTML =
+    `${Object.keys(driveData.titles||{}).length} titles, ${Object.keys(driveData.ranks||{}).length} ranks<br><span style="font-size:10px;color:var(--text3);">Saved: ${driveTs||'unknown'}</span>`;
+  document.getElementById('conflict-modal').classList.add('open');
+}
+function resolveConflict(choice){
+  closeModal('conflict-modal');
+  if(choice==='drive' && pendingConflictDrive){
+    saveSnapshot('Before Drive merge');
+    const d = pendingConflictDrive;
+    titles = d.titles||{};
+    ranks  = d.ranks||{};
+    priceTypes = d.priceTypes||[...BUILTIN_TYPES];
+    customPTColors = d.customPTColors||{};
+    BUILTIN_TYPES.forEach(bt=>{ if(!priceTypes.includes(bt)) priceTypes.unshift(bt); });
+    saveToLS(); renderAll();
+    addAudit('system','Conflict resolved: used Drive data');
+    showToast('Using Drive data','success');
+  } else {
+    driveUpload();
+    addAudit('system','Conflict resolved: kept local data, uploaded to Drive');
+    showToast('Kept local data, uploaded to Drive','success');
+  }
+  pendingConflictDrive = null;
+}
+async function driveUploadSnapshots(){
+  if(!driveReady) return;
+  try{
+    const f = driveVHFileId || (await driveFindFile(DRIVE_VH_FILE_NAME))?.id || null;
+    const result = await driveWriteFile(f, DRIVE_VH_FILE_NAME, snapshots);
+    driveVHFileId = result.id || f;
+  }catch(e){ console.warn('VH upload error:',e); }
+}
+async function driveDownloadSnapshots(){
+  if(!driveReady) return;
+  try{
+    const file = await driveFindFile(DRIVE_VH_FILE_NAME);
+    if(!file) return;
+    driveVHFileId = file.id;
+    const data = await driveReadFile(file.id);
+    if(Array.isArray(data)){
+      // Merge: add drive snapshots not already in local
+      const localIds = new Set(snapshots.map(s=>s.id));
+      data.forEach(s=>{ if(!localIds.has(s.id)){ s.source='drive'; snapshots.push(s); } });
+      snapshots.sort((a,b)=>+a.id - +b.id);
+      saveSnapshots(); renderVH();
+    }
+  }catch(e){ console.warn('VH download error:',e); }
+}
+
 // ════════════════════════════════════════════════
 // INIT
 // ════════════════════════════════════════════════
 (function init(){
   loadAudit();
+  loadSnapshots();
   const hadSaved=loadFromLS();
   renderAll();runPreview();
+  updateDriveUI();
   if(!hadSaved){saveToLS();addAudit('system','First launch — loaded default data');}
   else addAudit('system','Session started — restored from localStorage');
   showToast(hadSaved?'Restored from localStorage':'Loaded default data','success');
+  driveInit();
 })();
 </script>
 </body>

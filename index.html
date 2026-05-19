@@ -12,6 +12,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Syne:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 :root{
@@ -254,7 +255,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   </div>
   <div class="sidebar-footer">
     <button class="btn btn-sm" onclick="saveToLS()" style="justify-content:center;"><i class="fa-solid fa-floppy-disk"></i> Save</button>
-    <button class="btn btn-sm" id="drive-btn" onclick="driveToggle()" style="justify-content:center;"><i class="fa-brands fa-google-drive"></i> <span id="drive-btn-label">Connect Drive</span></button>
+    <button class="btn btn-sm" id="drive-btn" onclick="driveToggle()" style="justify-content:center;color:var(--text2);"><i class="fa-brands fa-google-drive"></i> <span id="drive-btn-label">Connect Drive</span></button>
   </div>
 </nav>
 
@@ -1382,13 +1383,15 @@ let driveVHFileId = null;
 let pendingConflictDrive = null;
 
 function driveInit(){
-  // Load GIS (Google Identity Services)
-  if(typeof google === 'undefined' || !google.accounts){
-    const s = document.createElement('script');
-    s.src = 'https://accounts.google.com/gsi/client';
-    s.onload = driveInitClient;
-    document.head.appendChild(s);
-  } else { driveInitClient(); }
+  // GIS loaded via <script> in <head>
+  if(typeof google !== 'undefined' && google.accounts){
+    driveInitClient();
+  } else {
+    // Wait for GIS to load
+    window.addEventListener('load', () => {
+      if(typeof google !== 'undefined' && google.accounts) driveInitClient();
+    });
+  }
 }
 function driveInitClient(){
   if(!window.google||!google.accounts) return;
@@ -1412,9 +1415,8 @@ function driveToggle(){
   else { driveSignIn(); }
 }
 function driveSignIn(){
-  if(typeof google === 'undefined'){
-    driveInit();
-    setTimeout(driveSignIn, 1200);
+  if(typeof google === 'undefined' || !google.accounts){
+    showToast('Google API not loaded yet, try again','error');
     return;
   }
   const client = google.accounts.oauth2.initTokenClient({

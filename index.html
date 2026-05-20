@@ -3,232 +3,424 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#0e0e12">
+<title>UTM — Universal Table Manager</title>
+<meta name="theme-color" content="#08080d">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="TitleData">
+<meta name="apple-mobile-web-app-title" content="UTM">
 <link rel="manifest" href="manifest.json">
-<title>TitleData Manager</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Syne:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 :root{
-  --bg:#0e0e12;--bg2:#15151c;--bg3:#1c1c26;--bg4:#222230;
-  --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.14);
-  --text:#e8e8f0;--text2:#9090a8;--text3:#555568;
-  --accent:#7c6fff;--accent2:#a896ff;--accent-bg:rgba(124,111,255,0.12);
-  --green:#4ade80;--green-bg:rgba(74,222,128,0.1);
-  --amber:#fbbf24;--amber-bg:rgba(251,191,36,0.1);
-  --red:#f87171;--red-bg:rgba(248,113,113,0.1);
-  --pink:#f472b6;--pink-bg:rgba(244,114,182,0.1);
-  --radius:10px;--radius-sm:6px;--radius-lg:14px;
-  --font:'Syne',sans-serif;--mono:'JetBrains Mono',monospace;
+  --bg:#08080d;--bg2:#0f0f17;--bg3:#161622;--bg4:#1e1e2e;--bg5:#252538;
+  --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.11);--border3:rgba(255,255,255,0.18);
+  --text:#eeeef5;--text2:#8888a8;--text3:#44445a;
+  --accent:#6e57ff;--accent2:#9d8fff;--accent-bg:rgba(110,87,255,0.1);--accent-border:rgba(110,87,255,0.35);
+  --green:#3dd68c;--green-bg:rgba(61,214,140,0.09);--green-border:rgba(61,214,140,0.3);
+  --red:#ff5c6b;--red-bg:rgba(255,92,107,0.09);--red-border:rgba(255,92,107,0.3);
+  --amber:#f5a623;--amber-bg:rgba(245,166,35,0.09);--amber-border:rgba(245,166,35,0.3);
+  --blue:#4ea8de;--blue-bg:rgba(78,168,222,0.09);--blue-border:rgba(78,168,222,0.3);
+  --pink:#e879b6;--pink-bg:rgba(232,121,182,0.09);--pink-border:rgba(232,121,182,0.3);
+  --teal:#2dd4bf;--teal-bg:rgba(45,212,191,0.09);
+  --r:8px;--rsm:5px;--rlg:12px;--rxl:18px;
+  --font:'DM Sans',sans-serif;--mono:'JetBrains Mono',monospace;--serif:'Instrument Serif',serif;
+  --sidebar:260px;
 }
-body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6;}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--bg5);border-radius:2px;}
+
+/* ── LAYOUT ── */
 .app{display:flex;min-height:100vh;}
+.sidebar{
+  width:var(--sidebar);flex-shrink:0;
+  background:var(--bg2);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;
+  position:fixed;top:0;left:0;height:100vh;z-index:50;
+  overflow:hidden;
+}
+.main{margin-left:var(--sidebar);flex:1;min-height:100vh;display:flex;flex-direction:column;}
 
-/* SIDEBAR */
-.sidebar{width:210px;flex-shrink:0;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:1.5rem 0;position:sticky;top:0;height:100vh;overflow-y:auto;}
-.logo{padding:0 1.25rem 1.25rem;border-bottom:1px solid var(--border);margin-bottom:1rem;}
-.logo-title{font-size:15px;font-weight:600;color:var(--text);letter-spacing:.02em;}
-.logo-sub{font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:2px;}
-.nav{flex:1;padding:0 .75rem;}
-.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--radius-sm);font-size:13px;font-weight:500;color:var(--text2);cursor:pointer;transition:all .15s;margin-bottom:2px;border:none;background:none;width:100%;text-align:left;}
-.nav-item i{font-size:13px;width:15px;text-align:center;}
-.nav-item:hover{background:var(--bg3);color:var(--text);}
-.nav-item.active{background:var(--accent-bg);color:var(--accent2);}
-.nav-item.active i{color:var(--accent);}
-.sidebar-footer{padding:1rem .75rem 0;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:6px;}
+/* ── SIDEBAR ── */
+.sidebar-header{padding:1.25rem 1rem 1rem;border-bottom:1px solid var(--border);flex-shrink:0;}
+.brand{display:flex;align-items:center;gap:9px;margin-bottom:1rem;}
+.brand-icon{width:30px;height:30px;background:var(--accent);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff;flex-shrink:0;}
+.brand-name{font-family:var(--serif);font-size:17px;color:var(--text);letter-spacing:.01em;}
+.brand-version{font-size:9px;font-family:var(--mono);color:var(--text3);margin-top:1px;}
+.search-global{
+  display:flex;align-items:center;gap:8px;
+  background:var(--bg3);border:1px solid var(--border2);border-radius:var(--rsm);
+  padding:7px 10px;cursor:text;transition:border-color .15s;
+}
+.search-global:focus-within{border-color:var(--accent);}
+.search-global i{font-size:12px;color:var(--text3);}
+.search-global input{background:none;border:none;outline:none;color:var(--text);font-family:var(--font);font-size:12px;flex:1;}
+.search-global input::placeholder{color:var(--text3);}
 
-.main{flex:1;padding:1.75rem 2rem;max-width:860px;min-width:0;}
+.sidebar-body{flex:1;overflow-y:auto;padding:.5rem 0;}
+.sidebar-section{padding:.5rem 1rem .25rem;font-size:9px;font-weight:600;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;font-family:var(--mono);}
+
+/* project tree */
+.proj-tree{padding:0 .5rem;}
+.proj-node{position:relative;}
+.proj-item{
+  display:flex;align-items:center;gap:6px;
+  padding:5px 8px;border-radius:var(--rsm);
+  font-size:12px;font-weight:500;color:var(--text2);
+  cursor:pointer;transition:all .12s;
+  user-select:none;position:relative;
+}
+.proj-item:hover{background:var(--bg3);color:var(--text);}
+.proj-item.active{background:var(--accent-bg);color:var(--accent2);border:1px solid var(--accent-border);}
+.proj-item .drag-handle{
+  opacity:0;color:var(--text3);font-size:10px;cursor:grab;
+  transition:opacity .15s;flex-shrink:0;
+}
+.proj-item:hover .drag-handle{opacity:1;}
+.proj-item.dragging{opacity:.4;}
+.proj-item.drag-over{border-top:2px solid var(--accent);}
+.proj-item .proj-icon{font-size:11px;width:14px;text-align:center;flex-shrink:0;}
+.proj-item .proj-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.proj-item .proj-chevron{font-size:9px;color:var(--text3);transition:transform .15s;flex-shrink:0;}
+.proj-item .proj-chevron.open{transform:rotate(90deg);}
+.proj-item .proj-actions{display:none;gap:2px;flex-shrink:0;}
+.proj-item:hover .proj-actions{display:flex;}
+.proj-children{padding-left:16px;border-left:1px solid var(--border);margin-left:11px;margin-top:1px;}
+
+.sidebar-footer{padding:.75rem 1rem;border-top:1px solid var(--border);flex-shrink:0;display:flex;flex-direction:column;gap:5px;}
+
+/* ── TOPBAR ── */
+.topbar{
+  height:52px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:10px;
+  padding:0 1.5rem;flex-shrink:0;background:var(--bg);
+  position:sticky;top:0;z-index:40;
+}
+.topbar-breadcrumb{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2);flex:1;min-width:0;overflow:hidden;}
+.topbar-breadcrumb .crumb{color:var(--text2);cursor:pointer;white-space:nowrap;}
+.topbar-breadcrumb .crumb:hover{color:var(--text);}
+.topbar-breadcrumb .crumb.active{color:var(--text);font-weight:500;}
+.topbar-breadcrumb .sep{color:var(--text3);font-size:10px;}
+.topbar-actions{display:flex;gap:6px;align-items:center;flex-shrink:0;}
+
+/* ── PANELS ── */
+.panel-area{flex:1;padding:1.5rem;overflow-y:auto;}
 .panel{display:none;}
 .panel.active{display:block;}
-.page-title{font-size:20px;font-weight:600;color:var(--text);margin-bottom:2px;}
-.page-sub{font-size:12px;color:var(--text3);margin-bottom:1.5rem;}
 
-/* CARDS */
-.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1rem 1.25rem;margin-bottom:1rem;}
-.card-title{font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.75rem;}
+/* HOME */
+.home-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-bottom:1.5rem;}
+.home-proj-card{
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--rlg);
+  padding:1rem;cursor:pointer;transition:all .15s;position:relative;overflow:hidden;
+}
+.home-proj-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,transparent 60%,rgba(110,87,255,.05));pointer-events:none;}
+.home-proj-card:hover{border-color:var(--border2);transform:translateY(-1px);}
+.home-proj-card .hpc-icon{font-size:20px;margin-bottom:.6rem;}
+.home-proj-card .hpc-name{font-size:13px;font-weight:600;color:var(--text);margin-bottom:3px;}
+.home-proj-card .hpc-meta{font-size:10px;color:var(--text3);font-family:var(--mono);}
+.home-proj-card .hpc-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:.5rem;}
 
-/* FORM */
-.form-row{display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap;}
-.form-row .field{flex:1;min-width:120px;}
-.form-row .field.narrow{flex:0 0 140px;min-width:110px;}
-.form-row .field.full{flex:1 1 100%;}
-.field{display:flex;flex-direction:column;gap:4px;}
+/* ── PAGE TITLE ── */
+.page-header{margin-bottom:1.25rem;}
+.page-title{font-size:18px;font-weight:600;color:var(--text);margin-bottom:2px;display:flex;align-items:center;gap:8px;}
+.page-sub{font-size:11px;color:var(--text3);}
+
+/* ── TABS (inside project) ── */
+.proj-tabs{display:flex;gap:2px;margin-bottom:1.25rem;border-bottom:1px solid var(--border);padding-bottom:0;}
+.proj-tab{
+  padding:7px 14px;font-size:12px;font-weight:500;color:var(--text2);
+  border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;
+  transition:all .15s;font-family:var(--font);margin-bottom:-1px;
+}
+.proj-tab:hover{color:var(--text);}
+.proj-tab.active{color:var(--accent2);border-bottom-color:var(--accent);}
+
+/* ── CARDS ── */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rlg);padding:1rem 1.25rem;margin-bottom:.85rem;}
+.card-title{font-size:10px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.7rem;font-family:var(--mono);}
+
+/* ── FORM ── */
+.field{display:flex;flex-direction:column;gap:4px;margin-bottom:.65rem;}
 .field label{font-size:10px;color:var(--text3);font-family:var(--mono);letter-spacing:.03em;}
-.field input,.field select,.field textarea{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:var(--font);font-size:12px;padding:7px 10px;outline:none;transition:border-color .15s;width:100%;}
+.field input,.field select,.field textarea{
+  background:var(--bg3);border:1px solid var(--border2);border-radius:var(--rsm);
+  color:var(--text);font-family:var(--font);font-size:12px;padding:7px 10px;
+  outline:none;transition:border-color .15s;width:100%;
+}
 .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent);}
 .field select option{background:var(--bg3);}
 .field textarea{resize:vertical;min-height:60px;font-family:var(--mono);font-size:11px;}
+.form-row{display:flex;gap:8px;flex-wrap:wrap;}
+.form-row .field{flex:1;min-width:120px;}
 
-/* BUTTONS */
-.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:var(--radius-sm);font-family:var(--font);font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--border2);background:var(--bg3);color:var(--text);transition:all .15s;}
+/* ── BUTTONS ── */
+.btn{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:6px 12px;border-radius:var(--rsm);
+  font-family:var(--font);font-size:12px;font-weight:500;
+  cursor:pointer;border:1px solid var(--border2);
+  background:var(--bg3);color:var(--text);transition:all .15s;
+}
 .btn:hover{background:var(--bg4);}
 .btn-primary{background:var(--accent-bg);border-color:var(--accent);color:var(--accent2);}
-.btn-primary:hover{background:rgba(124,111,255,.2);}
-.btn-danger{background:var(--red-bg);border-color:var(--red);color:var(--red);}
-.btn-danger:hover{background:rgba(248,113,113,.2);}
-.btn-green{background:var(--green-bg);border-color:var(--green);color:var(--green);}
-.btn-green:hover{background:rgba(74,222,128,.18);}
-.btn-sm{padding:5px 10px;font-size:11px;}
-.btn-xs{padding:3px 8px;font-size:11px;}
-.btn-icon{padding:0;width:26px;height:26px;justify-content:center;border-radius:var(--radius-sm);}
-.btn-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.btn-primary:hover{background:rgba(110,87,255,.18);}
+.btn-danger{background:var(--red-bg);border-color:var(--red-border);color:var(--red);}
+.btn-danger:hover{background:rgba(255,92,107,.18);}
+.btn-green{background:var(--green-bg);border-color:var(--green-border);color:var(--green);}
+.btn-sm{padding:4px 9px;font-size:11px;}
+.btn-xs{padding:2px 7px;font-size:10px;}
+.btn-icon{padding:0;width:24px;height:24px;justify-content:center;font-size:11px;}
+.btn-ghost{background:none;border-color:transparent;color:var(--text3);}
+.btn-ghost:hover{background:var(--bg3);color:var(--text);border-color:var(--border);}
+.btn-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
 
-/* PT DATA ROWS */
-.pt-data-rows{display:flex;flex-direction:column;gap:6px;margin-bottom:8px;}
-.pt-data-row{display:flex;align-items:center;gap:6px;}
-.pt-data-row select{flex:0 0 110px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:var(--font);font-size:11px;padding:5px 8px;outline:none;transition:border-color .15s;cursor:pointer;}
-.pt-data-row select:focus{border-color:var(--accent);}
-.pt-data-row select option{background:var(--bg3);}
-.pt-data-row input{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:var(--mono);font-size:11px;padding:5px 8px;outline:none;transition:border-color .15s;}
-.pt-data-row input:focus{border-color:var(--accent);}
-.pt-data-row .row-colon{font-size:12px;color:var(--text3);font-family:var(--mono);flex-shrink:0;}
-.add-pt-row-btn{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text3);background:none;border:1px dashed var(--border2);border-radius:var(--radius-sm);padding:5px 10px;cursor:pointer;transition:all .15s;font-family:var(--font);width:fit-content;}
-.add-pt-row-btn:hover{border-color:var(--accent);color:var(--accent2);background:var(--accent-bg);}
-.add-pt-row-btn:disabled{opacity:.35;cursor:not-allowed;pointer-events:none;}
-.pt-result-line{display:flex;align-items:center;gap:8px;margin-top:6px;min-height:22px;}
-.pt-result-label{font-size:10px;color:var(--text3);font-family:var(--mono);}
+.tag-input{
+  background:var(--bg3);border:1px solid var(--border2);border-radius:var(--rsm);
+  color:var(--text);font-family:var(--font);font-size:12px;padding:6px 10px;
+  outline:none;transition:border-color .15s;flex:1;
+}
+.tag-input:focus{border-color:var(--accent);}
+.tag-input::placeholder{color:var(--text3);}
+/* ── TAGS ── */
+.tag{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:2px 8px;border-radius:20px;font-size:10px;font-weight:500;
+  font-family:var(--mono);letter-spacing:.03em;
+}
+.tag-default{background:var(--bg4);color:var(--text2);border:1px solid var(--border2);}
+.tag-remove{background:none;border:none;cursor:pointer;color:inherit;opacity:.6;font-size:9px;padding:0;line-height:1;}
+.tag-remove:hover{opacity:1;}
+.tags-wrap{display:flex;flex-wrap:wrap;gap:4px;min-height:22px;}
 
-/* SEARCH */
-.search-bar{display:flex;gap:8px;margin-bottom:1rem;}
-.search-input{flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:var(--font);font-size:12px;padding:7px 12px 7px 32px;outline:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='%23555568' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:11px center;transition:border-color .15s;}
-.search-input:focus{border-color:var(--accent);}
-.search-input::placeholder{color:var(--text3);}
-.filter-sel{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:var(--font);font-size:12px;padding:7px 10px;outline:none;cursor:pointer;}
-.filter-sel:focus{border-color:var(--accent);}
-.filter-sel option{background:var(--bg2);}
+/* ── VARIABLE SCOPE BADGE ── */
+.scope-badge{
+  display:inline-flex;align-items:center;gap:3px;
+  font-size:9px;font-family:var(--mono);font-weight:600;
+  padding:1px 6px;border-radius:3px;letter-spacing:.04em;
+}
+.scope-global{background:rgba(110,87,255,.12);color:var(--accent2);border:1px solid var(--accent-border);}
+.scope-local{background:var(--bg4);color:var(--text3);border:1px solid var(--border);}
+.scope-exclusive{background:rgba(245,166,35,.1);color:var(--amber);border:1px solid var(--amber-border);}
 
-/* ENTRIES */
-.entries{display:flex;flex-direction:column;gap:6px;}
-.entry{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;display:flex;align-items:center;gap:10px;transition:border-color .15s;position:relative;}
-.entry:hover{border-color:var(--border2);}
-.entry-info{flex:1;min-width:0;}
-.entry-key{font-size:10px;color:var(--text3);font-family:var(--mono);margin-bottom:2px;}
-.entry-display{font-size:13px;font-weight:500;line-height:1.4;word-break:break-word;}
-.entry-meta{display:flex;gap:5px;align-items:center;margin-top:4px;flex-wrap:wrap;}
+/* ── FIELD TYPE BADGE ── */
+.ftype{
+  display:inline-flex;align-items:center;gap:3px;
+  font-size:9px;font-family:var(--mono);padding:1px 6px;border-radius:3px;
+}
+.ftype-text{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-border);}
+.ftype-number{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border);}
+.ftype-date{background:var(--teal-bg);color:var(--teal);border:1px solid rgba(45,212,191,.3);}
+.ftype-boolean{background:var(--pink-bg);color:var(--pink);border:1px solid var(--pink-border);}
+.ftype-mixed{background:var(--accent-bg);color:var(--accent2);border:1px solid var(--accent-border);}
+.ftype-relation{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border);}
 
-/* BADGES */
-.badge{display:inline-block;padding:1px 7px;border-radius:4px;font-size:9px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;font-family:var(--mono);}
-.badge-Badge   {background:var(--amber-bg);color:var(--amber);border:1px solid rgba(251,191,36,.3);}
-.badge-Gamepass {background:var(--green-bg);color:var(--green);border:1px solid rgba(74,222,128,.3);}
-.badge-Exclusive{background:var(--pink-bg);color:var(--pink);border:1px solid rgba(244,114,182,.3);}
-.badge-Mixed    {background:rgba(124,111,255,.12);color:var(--accent2);border:1px solid rgba(124,111,255,.3);}
-.badge-UserID   {background:rgba(96,165,250,.1);color:#60a5fa;border:1px solid rgba(96,165,250,.3);}
-.badge-Prestige {background:rgba(251,113,133,.1);color:#fb7185;border:1px solid rgba(251,113,133,.3);}
-.badge-Ascension{background:rgba(52,211,153,.1);color:#34d399;border:1px solid rgba(52,211,153,.3);}
-.badge-Restartion{background:rgba(251,191,36,.1);color:#fbbf24;border:1px solid rgba(251,191,36,.3);}
-.badge-Breakthrough{background:rgba(167,139,250,.1);color:#a78bfa;border:1px solid rgba(167,139,250,.3);}
-.badge-Kills    {background:rgba(248,113,113,.1);color:#f87171;border:1px solid rgba(248,113,113,.3);}
-.badge-Points   {background:rgba(250,204,21,.1);color:#facc15;border:1px solid rgba(250,204,21,.3);}
-.badge-none     {background:var(--bg3);color:var(--text3);border:1px solid var(--border);}
-.desc-text{font-size:10px;color:var(--text3);font-style:italic;}
+/* ── ENTRY LIST ── */
+.entry-list{display:flex;flex-direction:column;gap:4px;}
+.entry-row{
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);
+  transition:border-color .12s;position:relative;
+}
+.entry-row:hover{border-color:var(--border2);}
+.entry-row.drag-over-top{border-top:2px solid var(--accent);}
+.entry-row.drag-over-bot{border-bottom:2px solid var(--accent);}
+.entry-row.dragging{opacity:.35;}
 
-/* CONTEXT MENU */
-.entry-more-btn{flex-shrink:0;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:var(--radius-sm);border:1px solid transparent;background:transparent;color:var(--text3);cursor:pointer;font-size:14px;transition:all .15s;opacity:0;}
-.entry:hover .entry-more-btn,.entry-more-btn:focus,.entry-more-btn.open{opacity:1;background:var(--bg3);border-color:var(--border);color:var(--text2);}
-.ctx-menu{position:fixed;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius);min-width:150px;z-index:500;box-shadow:0 8px 28px rgba(0,0,0,.5);display:none;overflow:hidden;}
+.entry-header{
+  display:flex;align-items:center;gap:8px;
+  padding:9px 10px;cursor:pointer;
+}
+.entry-drag{
+  color:var(--text3);font-size:11px;cursor:grab;opacity:0;
+  transition:opacity .12s;flex-shrink:0;line-height:1;
+}
+.entry-row:hover .entry-drag{opacity:1;}
+.entry-chevron{font-size:9px;color:var(--text3);transition:transform .15s;flex-shrink:0;}
+.entry-chevron.open{transform:rotate(90deg);}
+.entry-main{flex:1;min-width:0;}
+.entry-name{font-size:12px;font-weight:500;color:var(--text);display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.entry-name-text{cursor:pointer;}
+.entry-name-text:hover{color:var(--accent2);}
+.entry-sub{font-size:10px;color:var(--text3);font-family:var(--mono);margin-top:2px;display:flex;gap:6px;flex-wrap:wrap;}
+.entry-actions{display:none;gap:3px;flex-shrink:0;}
+.entry-row:hover .entry-actions{display:flex;}
+.entry-children{padding:0 10px 8px 32px;display:none;}
+.entry-children.open{display:block;}
+.entry-depth-line{position:absolute;left:19px;top:0;bottom:0;width:1px;background:var(--border);pointer-events:none;}
+
+/* ── FIELD EDITOR ── */
+.field-editor-list{display:flex;flex-direction:column;gap:4px;margin-bottom:8px;}
+.field-def-row{
+  display:flex;align-items:center;gap:6px;
+  background:var(--bg3);border:1px solid var(--border);border-radius:var(--rsm);
+  padding:7px 10px;cursor:default;
+}
+.field-def-row .fd-drag{color:var(--text3);font-size:10px;cursor:grab;opacity:0;transition:opacity .12s;}
+.field-def-row:hover .fd-drag{opacity:1;}
+.field-def-name{flex:1;font-size:11px;font-weight:500;color:var(--text);}
+.field-def-actions{display:none;gap:3px;}
+.field-def-row:hover .field-def-actions{display:flex;}
+
+/* ── VARIABLE EDITOR ── */
+.var-list{display:flex;flex-direction:column;gap:4px;margin-bottom:8px;}
+.var-row{
+  display:flex;align-items:center;gap:6px;
+  background:var(--bg3);border:1px solid var(--border);border-radius:var(--rsm);
+  padding:6px 10px;
+}
+.var-row .vr-name{flex:1;font-size:11px;font-family:var(--mono);color:var(--text);}
+.var-row .vr-val{font-size:11px;font-family:var(--mono);color:var(--text2);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+
+/* ── ENTRY DETAIL (field values) ── */
+.field-val-list{display:flex;flex-direction:column;gap:6px;margin-bottom:1rem;}
+.field-val-row{
+  display:grid;grid-template-columns:140px 1fr;gap:8px;align-items:start;
+  padding:6px 0;border-bottom:1px solid var(--border);
+}
+.field-val-row:last-child{border-bottom:none;}
+.fvr-label{font-size:11px;color:var(--text3);font-family:var(--mono);padding-top:7px;}
+.fvr-value input,.fvr-value select,.fvr-value textarea{
+  width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--rsm);
+  color:var(--text);font-family:var(--font);font-size:12px;padding:6px 9px;outline:none;
+  transition:border-color .15s;
+}
+.fvr-value input:focus,.fvr-value select:focus,.fvr-value textarea:focus{border-color:var(--accent);}
+.fvr-value textarea{resize:vertical;min-height:50px;font-family:var(--mono);font-size:11px;}
+.bool-toggle{display:flex;align-items:center;gap:8px;padding-top:7px;}
+.bool-switch{position:relative;width:36px;height:20px;flex-shrink:0;}
+.bool-switch input{opacity:0;width:0;height:0;}
+.bool-switch-slider{
+  position:absolute;inset:0;background:var(--bg4);border:1px solid var(--border2);
+  border-radius:20px;cursor:pointer;transition:.2s;
+}
+.bool-switch-slider::before{
+  content:'';position:absolute;width:14px;height:14px;
+  left:2px;top:2px;background:var(--text3);border-radius:50%;transition:.2s;
+}
+.bool-switch input:checked + .bool-switch-slider{background:var(--accent-bg);border-color:var(--accent);}
+.bool-switch input:checked + .bool-switch-slider::before{transform:translateX(16px);background:var(--accent2);}
+
+/* ── RELATION PICKER ── */
+.relation-pick{
+  display:flex;align-items:center;gap:6px;
+  background:var(--bg3);border:1px solid var(--border);border-radius:var(--rsm);
+  padding:6px 9px;font-size:11px;color:var(--text2);cursor:pointer;
+  transition:border-color .15s;
+}
+.relation-pick:hover{border-color:var(--accent);}
+.relation-pick .rp-clear{margin-left:auto;color:var(--text3);font-size:10px;cursor:pointer;}
+.relation-pick .rp-clear:hover{color:var(--red);}
+
+/* ── SEARCH RESULTS ── */
+.search-results{display:flex;flex-direction:column;gap:6px;}
+.search-hit{
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);
+  padding:10px 12px;cursor:pointer;transition:border-color .12s;
+}
+.search-hit:hover{border-color:var(--border2);}
+.search-hit-path{font-size:9px;font-family:var(--mono);color:var(--text3);margin-bottom:4px;}
+.search-hit-title{font-size:12px;font-weight:500;color:var(--text);}
+.search-hit-preview{font-size:11px;color:var(--text2);margin-top:3px;}
+.search-hit mark{background:rgba(110,87,255,.25);color:var(--accent2);border-radius:2px;padding:0 2px;}
+
+/* ── MODAL ── */
+.modal-bg{
+  position:fixed;inset:0;background:rgba(0,0,0,.65);
+  display:none;align-items:center;justify-content:center;
+  z-index:200;backdrop-filter:blur(4px);padding:1rem;
+}
+.modal-bg.open{display:flex;}
+.modal{
+  background:var(--bg2);border:1px solid var(--border2);
+  border-radius:var(--rxl);padding:1.25rem;
+  width:480px;max-width:100%;max-height:88vh;overflow-y:auto;
+}
+.modal-lg{width:620px;}
+.modal-title{font-size:14px;font-weight:600;margin-bottom:.85rem;display:flex;align-items:center;gap:8px;}
+.modal-footer{display:flex;justify-content:flex-end;gap:6px;margin-top:1rem;}
+
+/* ── CTX MENU ── */
+.ctx-menu{
+  position:fixed;background:var(--bg3);border:1px solid var(--border2);
+  border-radius:var(--r);min-width:160px;z-index:500;
+  box-shadow:0 8px 32px rgba(0,0,0,.6);display:none;overflow:hidden;
+}
 .ctx-menu.open{display:block;}
-.ctx-item{display:flex;align-items:center;gap:8px;padding:8px 14px;font-size:12px;font-weight:500;color:var(--text2);cursor:pointer;transition:background .1s;border:none;background:none;width:100%;text-align:left;}
+.ctx-item{
+  display:flex;align-items:center;gap:8px;padding:8px 12px;
+  font-size:12px;font-weight:500;color:var(--text2);
+  cursor:pointer;border:none;background:none;width:100%;text-align:left;
+  transition:background .1s;
+}
 .ctx-item i{font-size:11px;width:13px;text-align:center;}
 .ctx-item:hover{background:var(--bg4);color:var(--text);}
 .ctx-item.danger{color:var(--red);}
 .ctx-item.danger:hover{background:var(--red-bg);}
-.ctx-divider{border:none;border-top:1px solid var(--border);margin:3px 0;}
+.ctx-sep{border:none;border-top:1px solid var(--border);margin:3px 0;}
 
-/* STATS */
-.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:1.5rem;}
-.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;}
-.stat-val{font-size:28px;font-weight:600;color:var(--text);font-family:var(--mono);}
-.stat-label{font-size:11px;color:var(--text3);margin-top:1px;}
-
-/* PREVIEW */
-.preview-dark{background:#111118;border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px;margin-bottom:1rem;min-height:50px;display:flex;align-items:center;}
-.preview-dark .preview-text{font-size:17px;font-weight:500;}
-.preview-light{background:#f0f0f5;border:1px solid #d0d0e0;border-radius:var(--radius);padding:14px 18px;margin-bottom:1rem;min-height:50px;display:flex;align-items:center;}
-.preview-light .preview-text{font-size:17px;font-weight:500;color:#111;}
-
-/* CODE BOX */
-.code-box{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:12px;font-family:var(--mono);font-size:11px;line-height:1.7;color:var(--text);overflow-x:auto;white-space:pre;max-height:400px;overflow-y:auto;}
-
-/* DROP ZONE */
-.drop-zone{border:2px dashed var(--border2);border-radius:var(--radius-lg);padding:2rem;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:1rem;}
-.drop-zone:hover,.drop-zone.drag-over{border-color:var(--accent);background:var(--accent-bg);}
-.drop-zone i{font-size:24px;color:var(--text3);margin-bottom:8px;display:block;}
-.drop-zone p{font-size:12px;color:var(--text2);}
-.drop-zone span{font-size:10px;color:var(--text3);}
-
-/* MODAL */
-.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:400;backdrop-filter:blur(3px);}
-.modal-bg.open{display:flex;}
-.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:1.25rem;width:420px;max-width:95vw;max-height:90vh;overflow-y:auto;}
-.modal-title{font-size:15px;font-weight:600;margin-bottom:8px;}
-.modal-body{font-size:12px;color:var(--text2);margin-bottom:1.25rem;line-height:1.6;}
-.modal-footer{display:flex;justify-content:flex-end;gap:8px;}
-
-/* PRICE TYPE SETTINGS */
-.pt-list{display:flex;flex-direction:column;gap:6px;margin-bottom:12px;}
-.pt-item{display:flex;align-items:center;gap:8px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:7px 10px;}
-.pt-item-name{flex:1;font-size:12px;font-weight:500;}
-.pt-color-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
-.pt-new-row{display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
-.pt-new-row input{flex:1;min-width:120px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:var(--font);font-size:12px;padding:6px 9px;outline:none;}
-.pt-new-row input:focus{border-color:var(--accent);}
-
-/* COLOR PICKER SWATCHES */
-.color-swatches{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px;}
-.color-swatch{width:22px;height:22px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:transform .1s,border-color .1s;flex-shrink:0;}
-.color-swatch:hover{transform:scale(1.15);}
-.color-swatch.selected{border-color:white;}
-
-/* AUDIT LOG */
-.audit-log{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);font-family:var(--mono);font-size:11px;line-height:1.8;color:var(--text2);overflow-y:auto;max-height:320px;padding:10px 12px;white-space:pre-wrap;word-break:break-word;user-select:text;}
-.audit-log .log-add{color:#4ade80;}
-.audit-log .log-remove{color:#f87171;}
-.audit-log .log-edit{color:#a896ff;}
-.audit-log .log-system{color:#555568;}
-
-/* INSTALL BANNER */
-.install-banner{display:none;position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--bg3);border:1px solid var(--accent);border-radius:var(--radius-lg);padding:12px 16px;z-index:300;align-items:center;gap:10px;font-size:12px;box-shadow:0 4px 20px rgba(0,0,0,.5);max-width:320px;width:90%;}
-.install-banner.show{display:flex;}
-
-/* HOW TO USE */
-.how-section{margin-bottom:1.5rem;}
-.how-section h3{font-size:13px;font-weight:600;color:var(--accent2);margin-bottom:.5rem;}
-.how-section p,.how-section li{font-size:12px;color:var(--text2);line-height:1.7;}
-.how-section ul,.how-section ol{padding-left:1.25rem;}
-.how-section code{font-family:var(--mono);font-size:11px;background:var(--bg3);padding:1px 5px;border-radius:3px;color:var(--text);}
-
-/* MOBILE NAV — slideable */
-.mobile-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--bg2);border-top:1px solid var(--border);padding:8px 0 env(safe-area-inset-bottom,8px);z-index:100;}
-.mobile-nav-track{display:flex;overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none;padding:0 8px;gap:0;}
-.mobile-nav-track::-webkit-scrollbar{display:none;}
-.mobile-nav-btn{display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 12px;border-radius:var(--radius-sm);font-size:9px;font-weight:500;color:var(--text3);cursor:pointer;border:none;background:none;transition:color .15s;flex-shrink:0;min-width:56px;}
-.mobile-nav-btn i{font-size:16px;}
-.mobile-nav-btn.active{color:var(--accent2);}
-
-/* TOAST */
-.toast{position:fixed;bottom:1.25rem;right:1.25rem;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius);padding:8px 14px;font-size:12px;font-weight:500;z-index:600;opacity:0;transform:translateY(5px);transition:opacity .2s,transform .2s;pointer-events:none;max-width:280px;}
+/* ── TOAST ── */
+.toast{
+  position:fixed;bottom:1.25rem;right:1.25rem;
+  background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);
+  padding:8px 14px;font-size:12px;font-weight:500;z-index:600;
+  opacity:0;transform:translateY(6px);transition:opacity .2s,transform .2s;
+  pointer-events:none;max-width:260px;
+}
 .toast.show{opacity:1;transform:translateY(0);}
-.toast.success{border-color:var(--green);color:var(--green);}
-.toast.error{border-color:var(--red);color:var(--red);}
+.toast.success{border-color:var(--green-border);color:var(--green);}
+.toast.error{border-color:var(--red-border);color:var(--red);}
 
-.empty-state{text-align:center;padding:2.5rem 1rem;color:var(--text3);font-size:12px;}
-.empty-state i{font-size:28px;display:block;margin-bottom:8px;opacity:.35;}
-.divider{border:none;border-top:1px solid var(--border);margin:1rem 0;}
+.empty{text-align:center;padding:2rem 1rem;color:var(--text3);font-size:12px;}
+.audit-log{
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);
+  font-family:var(--mono);font-size:11px;line-height:1.9;color:var(--text2);
+  overflow-y:auto;max-height:420px;padding:10px 12px;
+  white-space:pre-wrap;word-break:break-word;user-select:text;
+}
+.log-add{color:#3dd68c;}.log-remove{color:#ff5c6b;}.log-edit{color:#9d8fff;}.log-system{color:#44445a;}
+/* PWA install banner */
+.pwa-banner{
+  display:none;position:fixed;bottom:1.25rem;left:50%;transform:translateX(-50%);
+  background:var(--bg3);border:1px solid var(--accent-border);border-radius:var(--r);
+  padding:10px 14px;z-index:300;align-items:center;gap:10px;font-size:12px;
+  box-shadow:0 4px 20px rgba(0,0,0,.5);max-width:320px;width:90%;
+}
+.pwa-banner.show{display:flex;}
+.empty i{font-size:24px;display:block;margin-bottom:8px;opacity:.3;}
+.divider{border:none;border-top:1px solid var(--border);margin:.85rem 0;}
 
-@media(max-width:640px){
-  .sidebar{display:none;}
-  .mobile-nav{display:block;}
-  .main{padding:1rem .875rem 80px;}
-  .stats{grid-template-columns:1fr 1fr;}
-  .form-row{flex-direction:column;gap:8px;}
-  .form-row .field.narrow{flex:1 1 100%;}
-  .modal{width:95vw;}
+/* ── CLIPBOARD BANNER ── */
+.clipboard-banner{
+  display:none;position:fixed;bottom:1.25rem;left:50%;transform:translateX(-50%);
+  background:var(--bg3);border:1px solid var(--accent-border);border-radius:var(--r);
+  padding:8px 14px;font-size:12px;z-index:300;
+  align-items:center;gap:10px;box-shadow:0 4px 20px rgba(0,0,0,.5);
+}
+.clipboard-banner.show{display:flex;}
+
+.sidebar-overlay{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:49;backdrop-filter:blur(2px);
+}
+.sidebar-overlay.show{display:block;}
+.sidebar-close-btn{
+  display:none;position:absolute;top:1rem;right:.75rem;
+  background:var(--bg3);border:1px solid var(--border2);border-radius:var(--rsm);
+  color:var(--text2);cursor:pointer;padding:5px 7px;font-size:13px;
+  transition:all .15s;z-index:2;
+}
+.sidebar-close-btn:hover{background:var(--bg4);color:var(--text);}
+@media(max-width:700px){
+  .sidebar-close-btn{display:flex;align-items:center;justify-content:center;}
+  :root{--sidebar:0px;}
+  .sidebar{transform:translateX(-260px);width:260px;transition:transform .25s;}
+  .sidebar.mobile-open{transform:translateX(0);}
+  .main{margin-left:0;}
 }
 </style>
 </head>
@@ -236,1023 +428,1271 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 <div class="app">
 
 <!-- SIDEBAR -->
-<nav class="sidebar">
-  <div class="logo">
-    <div class="logo-title">TitleData</div>
-    <div class="logo-sub">Manager v2.1</div>
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="closeMobileMenu()"></div>
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-header" style="position:relative;">
+    <button class="sidebar-close-btn" onclick="closeMobileMenu()" title="Close"><i class="fa-solid fa-xmark"></i></button>
+    <div class="brand">
+      <div class="brand-icon"><i class="fa-solid fa-table-cells"></i></div>
+      <div>
+        <div class="brand-name">UTM</div>
+        <div class="brand-version">Universal Table Manager v1.0</div>
+      </div>
+    </div>
+    <div class="search-global">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input id="global-search-input" placeholder="Search everything..." oninput="globalSearchInput(this.value)">
+      <kbd style="font-size:9px;color:var(--text3);font-family:var(--mono);">⌘K</kbd>
+    </div>
   </div>
-  <div class="nav">
-    <button class="nav-item active" onclick="switchTab('dashboard')"><i class="fa-solid fa-house"></i> Home</button>
-    <button class="nav-item" onclick="switchTab('titles')"><i class="fa-solid fa-tags"></i> Titles</button>
-    <button class="nav-item" onclick="switchTab('ranks')"><i class="fa-solid fa-ranking-star"></i> Ranks</button>
-    <button class="nav-item" onclick="switchTab('preview')"><i class="fa-solid fa-eye"></i> Color Preview</button>
-    <button class="nav-item" onclick="switchTab('export')"><i class="fa-solid fa-code"></i> Export Lua</button>
-    <button class="nav-item" onclick="switchTab('importexport')"><i class="fa-solid fa-arrows-rotate"></i> Import / Export</button>
-    <button class="nav-item" onclick="switchTab('auditlog')"><i class="fa-solid fa-clock-rotate-left"></i> Audit Log</button>
-    <button class="nav-item" onclick="switchTab('versionhistory')"><i class="fa-solid fa-code-branch"></i> Version History</button>
-    <button class="nav-item" onclick="switchTab('howto')"><i class="fa-solid fa-circle-question"></i> How to Use</button>
-    <button class="nav-item" onclick="switchTab('settings')"><i class="fa-solid fa-gear"></i> Settings</button>
-  </div>
-  <div class="sidebar-footer">
-    <button class="btn btn-sm" onclick="saveToLS()" style="justify-content:center;"><i class="fa-solid fa-floppy-disk"></i> Save</button>
-    <button class="btn btn-sm" id="drive-btn" onclick="driveToggle()" style="justify-content:center;color:var(--text2);"><i class="fa-brands fa-google-drive"></i> <span id="drive-btn-label">Connect Drive</span></button>
-  </div>
-</nav>
 
-<!-- MOBILE NAV (slideable) -->
-<nav class="mobile-nav" id="mobile-nav">
-  <div class="mobile-nav-track" id="mobile-nav-track">
-    <button class="mobile-nav-btn active" onclick="switchTab('dashboard')"><i class="fa-solid fa-house"></i>Home</button>
-    <button class="mobile-nav-btn" onclick="switchTab('titles')"><i class="fa-solid fa-tags"></i>Titles</button>
-    <button class="mobile-nav-btn" onclick="switchTab('ranks')"><i class="fa-solid fa-ranking-star"></i>Ranks</button>
-    <button class="mobile-nav-btn" onclick="switchTab('preview')"><i class="fa-solid fa-eye"></i>Preview</button>
-    <button class="mobile-nav-btn" onclick="switchTab('export')"><i class="fa-solid fa-code"></i>Export</button>
-    <button class="mobile-nav-btn" onclick="switchTab('importexport')"><i class="fa-solid fa-arrows-rotate"></i>I/E</button>
-    <button class="mobile-nav-btn" onclick="switchTab('auditlog')"><i class="fa-solid fa-clock-rotate-left"></i>Log</button>
-    <button class="mobile-nav-btn" onclick="switchTab('versionhistory')"><i class="fa-solid fa-code-branch"></i>Versions</button>
-    <button class="mobile-nav-btn" onclick="switchTab('howto')"><i class="fa-solid fa-circle-question"></i>Help</button>
-    <button class="mobile-nav-btn" onclick="switchTab('settings')"><i class="fa-solid fa-gear"></i>Settings</button>
+  <div class="sidebar-body">
+    <div class="sidebar-section">Projects</div>
+    <div class="proj-tree" id="proj-tree"></div>
+  </div>
+
+  <div class="sidebar-footer">
+    <button class="btn btn-sm btn-primary" onclick="openNewProjModal(null)" style="justify-content:center;">
+      <i class="fa-solid fa-plus"></i> New project
+    </button>
+    <div style="display:flex;gap:5px;">
+      <button class="btn btn-sm btn-ghost" onclick="saveToLS()" style="flex:1;justify-content:center;" title="Save"><i class="fa-solid fa-floppy-disk"></i></button>
+      <button class="btn btn-sm btn-ghost" id="drive-btn" onclick="driveToggle()" style="flex:1;justify-content:center;" title="Google Drive"><i class="fa-brands fa-google-drive"></i></button>
+      <button class="btn btn-sm btn-ghost" onclick="showPanel('audit')" style="flex:1;justify-content:center;" title="Audit Log"><i class="fa-solid fa-clock-rotate-left"></i></button>
+      <button class="btn btn-sm btn-ghost" onclick="showPanel('versions')" style="flex:1;justify-content:center;" title="Version History"><i class="fa-solid fa-code-branch"></i></button>
+    </div>
   </div>
 </nav>
 
 <!-- MAIN -->
-<main class="main">
-
-  <!-- HOME / DASHBOARD -->
-  <div id="panel-dashboard" class="panel active">
-    <div class="page-title">Home</div>
-    <div class="page-sub">Overview of your TitleData configuration.</div>
-    <div class="stats" id="stats-grid"></div>
-    <div class="card">
-      <div class="card-title">Recent titles</div>
-      <div id="recent-titles"></div>
+<div class="main">
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <button class="btn btn-ghost btn-icon" id="mobile-menu-btn" onclick="toggleMobileMenu()" style="display:none;">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+    <div class="topbar-breadcrumb" id="topbar-breadcrumb">
+      <span class="crumb active" onclick="showHome()">Home</span>
     </div>
+    <div class="topbar-actions" id="topbar-actions"></div>
   </div>
 
-  <!-- TITLES -->
-  <div id="panel-titles" class="panel">
-    <div class="page-title">Titles</div>
-    <div class="page-sub">Add, remove, and browse all player titles.</div>
-    <div class="card">
-      <div class="card-title">Add title</div>
-      <div class="form-row">
-        <div class="field"><label>key</label><input id="t-key" placeholder="Cool_Title"></div>
+  <!-- PANEL AREA -->
+  <div class="panel-area">
+
+    <!-- HOME -->
+    <div id="panel-home" class="panel active">
+      <div class="page-header">
+        <div class="page-title"><i class="fa-solid fa-house" style="font-size:16px;color:var(--text3);"></i> Home</div>
+        <div class="page-sub">All your projects at a glance.</div>
       </div>
-      <div class="form-row">
-        <div class="field full"><label>display string</label><input id="t-display" placeholder='My Title //sentence{color<255,200,100>}'></div>
+      <div class="home-grid" id="home-proj-grid"></div>
+    </div>
+
+    <!-- SEARCH RESULTS -->
+    <div id="panel-search" class="panel">
+      <div class="page-header">
+        <div class="page-title"><i class="fa-solid fa-magnifying-glass" style="font-size:16px;color:var(--text3);"></i> Search results</div>
+        <div class="page-sub" id="search-sub"></div>
       </div>
-      <div class="form-row">
-        <div class="field full"><label>desc</label><input id="t-desc" placeholder="optional"></div>
+      <div id="search-results-list" class="search-results"></div>
+    </div>
+
+    <!-- PROJECT VIEW -->
+    <div id="panel-project" class="panel">
+      <div class="page-header">
+        <div class="page-title" id="proj-view-title"></div>
+        <div class="page-sub" id="proj-view-sub"></div>
       </div>
-      <div style="margin-bottom:10px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-          <label style="font-size:10px;color:var(--text3);font-family:var(--mono);">data &amp; price type <span style="font-size:9px;margin-left:4px;">one entry = that type · two+ = Mixed</span></label>
+      <div class="proj-tabs">
+        <button class="proj-tab active" onclick="switchProjTab('data')">Data</button>
+        <button class="proj-tab" onclick="switchProjTab('fields')">Fields</button>
+        <button class="proj-tab" onclick="switchProjTab('variables')">Variables</button>
+        <button class="proj-tab" onclick="switchProjTab('tags')">Tags</button>
+        <button class="proj-tab" onclick="switchProjTab('settings')">Settings</button>
+      </div>
+
+      <!-- DATA TAB -->
+      <div id="proj-tab-data" class="proj-tab-panel">
+        <div class="btn-row" style="margin-bottom:.85rem;">
+          <button class="btn btn-primary btn-sm" onclick="openNewEntryModal(null)"><i class="fa-solid fa-plus"></i> New entry</button>
+          <button class="btn btn-sm" onclick="openImportModal()"><i class="fa-solid fa-file-import"></i> Import</button>
+          <button class="btn btn-sm" onclick="exportProject()"><i class="fa-solid fa-file-export"></i> Export</button>
         </div>
-        <div class="pt-data-rows" id="t-pt-rows"></div>
-        <button class="add-pt-row-btn" id="t-add-pt-btn" onclick="addPTRow('t')"><i class="fa-solid fa-plus" style="font-size:10px;"></i> Add price type entry</button>
-        <div class="pt-result-line" id="t-pt-result" style="display:none;">
-          <span class="pt-result-label">PriceType →</span>
-          <span class="badge" id="t-pt-badge">—</span>
+        <div id="entry-list-root" class="entry-list"></div>
+      </div>
+
+      <!-- FIELDS TAB -->
+      <div id="proj-tab-fields" class="proj-tab-panel" style="display:none;">
+        <div class="card">
+          <div class="card-title">Field definitions</div>
+          <p style="font-size:11px;color:var(--text2);margin-bottom:.75rem;">Fields define the columns/properties each entry in this project can have.</p>
+          <div class="field-editor-list" id="field-def-list"></div>
+          <button class="btn btn-sm btn-primary" onclick="openAddFieldModal()"><i class="fa-solid fa-plus"></i> Add field</button>
         </div>
       </div>
-      <button class="btn btn-primary" onclick="addTitle()"><i class="fa-solid fa-plus"></i> Add title</button>
-    </div>
-    <div class="search-bar">
-      <input class="search-input" id="t-search" placeholder="Search titles..." oninput="renderTitles()">
-      <select class="filter-sel" id="t-filter" onchange="renderTitles()"><option value="">All types</option></select>
-    </div>
-    <div id="titles-list" class="entries"></div>
-  </div>
 
-  <!-- RANKS -->
-  <div id="panel-ranks" class="panel">
-    <div class="page-title">Ranks</div>
-    <div class="page-sub">Manage rank levels and their display strings.</div>
-    <div class="card">
-      <div class="card-title">Add rank</div>
-      <div class="form-row">
-        <div class="field narrow"><label>level (e.g. 3 or 2.1)</label><input id="r-level" placeholder="3" type="text"></div>
-        <div class="field full"><label>display string</label><input id="r-display" placeholder='Commander{color<102,0,255>}'></div>
+      <!-- VARIABLES TAB -->
+      <div id="proj-tab-variables" class="proj-tab-panel" style="display:none;">
+        <div class="card">
+          <div class="card-title">Project variables <span class="scope-badge scope-local">local</span></div>
+          <p style="font-size:11px;color:var(--text2);margin-bottom:.75rem;">Variables scoped to this project. All entries can access these unless overridden.</p>
+          <div class="var-list" id="proj-var-list"></div>
+          <button class="btn btn-sm btn-primary" onclick="openAddVarModal('project')"><i class="fa-solid fa-plus"></i> Add variable</button>
+        </div>
+        <div class="card">
+          <div class="card-title">Global variables <span class="scope-badge scope-global">global</span></div>
+          <p style="font-size:11px;color:var(--text2);margin-bottom:.75rem;">Accessible from all projects and all entries.</p>
+          <div class="var-list" id="global-var-list-proj"></div>
+          <button class="btn btn-sm" onclick="openAddVarModal('global')"><i class="fa-solid fa-plus"></i> Add global variable</button>
+        </div>
       </div>
-      <button class="btn btn-primary" onclick="addRank()"><i class="fa-solid fa-plus"></i> Add rank</button>
-    </div>
-    <div id="ranks-list" class="entries"></div>
-  </div>
 
-  <!-- PREVIEW -->
-  <div id="panel-preview" class="panel">
-    <div class="page-title">Color Preview</div>
-    <div class="page-sub">Test any display string with the color parser.</div>
-    <div class="card">
-      <div class="card-title">Input</div>
-      <div class="field" style="margin-bottom:10px;">
-        <label>display string</label>
-        <input id="cp-input" value='Hello{color<255,100,100>} World //sentence{color<100,200,255 | 255,100,255>}'>
+      <!-- TAGS TAB -->
+      <div id="proj-tab-tags" class="proj-tab-panel" style="display:none;">
+        <div class="card">
+          <div class="card-title">Project tags</div>
+          <div class="tags-wrap" id="proj-tags-list" style="margin-bottom:.85rem;"></div>
+          <div style="display:flex;gap:6px;">
+            <input id="new-tag-input" class="tag-input" placeholder="new tag..." onkeydown="if(event.key==='Enter')addProjTag()">
+            <button class="btn btn-primary btn-sm" onclick="addProjTag()"><i class="fa-solid fa-plus"></i> Add</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Global tags</div>
+          <div class="tags-wrap" id="global-tags-list-proj" style="margin-bottom:.85rem;"></div>
+          <div style="display:flex;gap:6px;">
+            <input id="new-global-tag-input" class="tag-input" placeholder="new global tag..." onkeydown="if(event.key==='Enter')addGlobalTag()">
+            <button class="btn btn-sm" onclick="addGlobalTag()"><i class="fa-solid fa-plus"></i> Add global</button>
+          </div>
+        </div>
       </div>
-      <button class="btn btn-primary" onclick="runPreview()"><i class="fa-solid fa-play"></i> Render</button>
-    </div>
-    <div class="card-title" style="margin-bottom:6px;">Preview — dark</div>
-    <div class="preview-dark" id="cp-dark"><span class="preview-text"></span></div>
-    <div class="card-title" style="margin-bottom:6px;">Preview — light</div>
-    <div class="preview-light" id="cp-light"><span class="preview-text"></span></div>
-    <div class="card-title" style="margin-bottom:6px;">Rich text output</div>
-    <div class="code-box" id="cp-raw" style="max-height:100px;"></div>
-  </div>
 
-  <!-- EXPORT LUA -->
-  <div id="panel-export" class="panel">
-    <div class="page-title">Export Lua</div>
-    <div class="page-sub">Copy the full TitleData module back into Roblox Studio.</div>
-    <div class="btn-row" style="margin-bottom:1rem;">
-      <button class="btn btn-primary" onclick="copyLua()"><i class="fa-solid fa-copy"></i> Copy all</button>
-      <button class="btn" onclick="downloadLua()"><i class="fa-solid fa-download"></i> Download .lua</button>
+      <!-- SETTINGS TAB -->
+      <div id="proj-tab-settings" class="proj-tab-panel" style="display:none;">
+        <div class="card">
+          <div class="card-title">Project settings</div>
+          <div class="field"><label>name</label><input id="proj-setting-name" oninput="updateProjSetting('name',this.value)"></div>
+          <div class="field"><label>description</label><input id="proj-setting-desc" oninput="updateProjSetting('desc',this.value)"></div>
+          <div class="field"><label>icon (emoji)</label><input id="proj-setting-icon" oninput="updateProjSetting('icon',this.value)" style="width:80px;"></div>
+          <div class="divider"></div>
+          <button class="btn btn-danger btn-sm" onclick="deleteCurrentProject()"><i class="fa-solid fa-trash"></i> Delete project</button>
+        </div>
+      </div>
     </div>
-    <div class="code-box" id="lua-out" style="max-height:500px;"></div>
-  </div>
 
-  <!-- IMPORT / EXPORT -->
-  <div id="panel-importexport" class="panel">
-    <div class="page-title">Import / Export</div>
-    <div class="page-sub">Save your data as JSON or load it back.</div>
-    <div class="card" id="drive-card">
-      <div class="card-title"><i class="fa-brands fa-google-drive" style="margin-right:5px;"></i>Google Drive Sync</div>
-      <div id="drive-status-text" style="font-size:12px;color:var(--text2);margin-bottom:10px;">Not connected. Connect to sync your data across devices.</div>
-      <div class="btn-row" id="drive-actions" style="display:none;">
-        <button class="btn btn-sm btn-primary" onclick="driveSyncNow()"><i class="fa-solid fa-rotate"></i> Sync now</button>
-        <button class="btn btn-sm btn-green" onclick="driveUpload()"><i class="fa-solid fa-cloud-arrow-up"></i> Upload local</button>
-        <button class="btn btn-sm" onclick="driveDownload()"><i class="fa-solid fa-cloud-arrow-down"></i> Download from Drive</button>
-        <button class="btn btn-sm btn-danger" onclick="driveSignOut()"><i class="fa-solid fa-right-from-bracket"></i> Sign out</button>
-      </div>
-      <button class="btn btn-sm btn-primary" id="drive-connect-btn" onclick="driveSignIn()"><i class="fa-brands fa-google"></i> Sign in with Google</button>
-    </div>
-    <div class="card">
-      <div class="card-title">Export JSON</div>
-      <p style="font-size:12px;color:var(--text2);margin-bottom:10px;">Download your current titles and ranks as a JSON backup.</p>
-      <button class="btn btn-green" onclick="exportJSON()"><i class="fa-solid fa-download"></i> Download backup.json</button>
-    </div>
-    <div class="card">
-      <div class="card-title">Import JSON</div>
-      <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropFile(event)">
-        <i class="fa-solid fa-cloud-arrow-up"></i>
-        <p>Click to browse or drag &amp; drop</p>
-        <span>Accepts .json backup files</span>
-      </div>
-      <input type="file" id="file-input" accept=".json" style="display:none" onchange="loadFile(event)">
-      <div style="display:flex;gap:8px;align-items:center;">
-        <select class="filter-sel" id="import-mode">
-          <option value="replace">Replace all data</option>
-          <option value="merge">Merge (keep existing, add new)</option>
-        </select>
-        <span style="font-size:11px;color:var(--text3);">Import mode</span>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-title">localStorage status</div>
-      <p style="font-size:12px;color:var(--text2);margin-bottom:10px;" id="ls-status">—</p>
-      <div class="btn-row">
-        <button class="btn" onclick="saveToLS()"><i class="fa-solid fa-floppy-disk"></i> Save now</button>
-        <button class="btn btn-danger" onclick="clearLS()"><i class="fa-solid fa-trash"></i> Clear saved data</button>
-      </div>
-    </div>
-  </div>
 
-  <!-- AUDIT LOG -->
-  <div id="panel-auditlog" class="panel">
-    <div class="page-title">Audit Log</div>
-    <div class="page-sub">Record of all changes. Local only. Select text to copy entries you need.</div>
-    <div class="btn-row" style="margin-bottom:.75rem;">
-      <button class="btn btn-sm" onclick="copyAuditLog()"><i class="fa-solid fa-copy"></i> Copy all</button>
-      <button class="btn btn-sm btn-danger" onclick="clearAuditLog()"><i class="fa-solid fa-trash"></i> Clear log</button>
+    <!-- AUDIT LOG -->
+    <div id="panel-audit" class="panel">
+      <div class="page-header">
+        <div class="page-title"><i class="fa-solid fa-clock-rotate-left" style="font-size:15px;color:var(--text3);"></i> Audit Log</div>
+        <div class="page-sub">Every change recorded. Select text to copy specific entries.</div>
+      </div>
+      <div class="btn-row" style="margin-bottom:.85rem;">
+        <button class="btn btn-sm" onclick="copyAuditLog()"><i class="fa-solid fa-copy"></i> Copy all</button>
+        <button class="btn btn-sm btn-danger" onclick="clearAuditLog()"><i class="fa-solid fa-trash"></i> Clear</button>
+      </div>
+      <div class="audit-log" id="audit-log-box">No entries yet.</div>
     </div>
-    <div class="audit-log" id="audit-log-box">No entries yet.</div>
-  </div>
 
-  <!-- HOW TO USE -->
-  <div id="panel-howto" class="panel">
-    <div class="page-title">How to Use</div>
-    <div class="page-sub">A quick guide to TitleData Manager.</div>
+    <!-- VERSION HISTORY -->
+    <div id="panel-versions" class="panel">
+      <div class="page-header">
+        <div class="page-title"><i class="fa-solid fa-code-branch" style="font-size:15px;color:var(--text3);"></i> Version History</div>
+        <div class="page-sub">Snapshots saved locally and to Google Drive.</div>
+      </div>
+      <div class="btn-row" style="margin-bottom:.85rem;">
+        <button class="btn btn-sm btn-green" onclick="saveSnapshot('Manual snapshot')"><i class="fa-solid fa-camera"></i> Save snapshot</button>
+        <button class="btn btn-sm btn-danger" onclick="clearSnapshots()"><i class="fa-solid fa-trash"></i> Clear all</button>
+      </div>
+      <div id="vh-list" class="entry-list"></div>
+    </div>
 
-    <div class="card">
-      <div class="how-section">
-        <h3><i class="fa-solid fa-tags" style="margin-right:6px;"></i>Adding a Title</h3>
-        <ol>
-          <li>Go to the <strong>Titles</strong> page.</li>
-          <li>Enter a <strong>key</strong> — this is the Lua table key, e.g. <code>Evil_Path</code>. Use underscores, no spaces.</li>
-          <li>Enter a <strong>display string</strong> — supports color parser syntax (see below).</li>
-          <li>Optionally add a <strong>desc</strong>.</li>
-          <li>Add <strong>data &amp; price type</strong> entries — click "Add price type entry", pick the type (e.g. <code>Badge</code>), and enter the value/ID. One entry = that type. Two or more = <code>Mixed</code>.</li>
-          <li>Click <strong>Add title</strong>.</li>
-        </ol>
+    <!-- DRIVE PANEL -->
+    <div id="panel-drive" class="panel">
+      <div class="page-header">
+        <div class="page-title"><i class="fa-brands fa-google-drive" style="font-size:15px;color:var(--text3);"></i> Google Drive Sync</div>
+        <div class="page-sub">Sync your data across devices.</div>
       </div>
-      <div class="how-section">
-        <h3><i class="fa-solid fa-ranking-star" style="margin-right:6px;"></i>Adding a Rank</h3>
-        <ol>
-          <li>Go to the <strong>Ranks</strong> page.</li>
-          <li>Enter a <strong>level</strong> number (e.g. <code>3</code> or <code>2.1</code>).</li>
-          <li>Enter a <strong>display string</strong>.</li>
-          <li>Click <strong>Add rank</strong>.</li>
-        </ol>
+      <div class="card">
+        <div class="card-title">Status</div>
+        <p id="drive-status-text" style="font-size:12px;color:var(--text2);margin-bottom:.85rem;">Not connected.</p>
+        <div id="drive-actions" style="display:none;" class="btn-row">
+          <button class="btn btn-sm btn-primary" onclick="driveSyncNow()"><i class="fa-solid fa-rotate"></i> Sync now</button>
+          <button class="btn btn-sm btn-green" onclick="driveUpload()"><i class="fa-solid fa-cloud-arrow-up"></i> Upload</button>
+          <button class="btn btn-sm" onclick="driveDownload()"><i class="fa-solid fa-cloud-arrow-down"></i> Download</button>
+          <button class="btn btn-sm btn-danger" onclick="driveSignOut()"><i class="fa-solid fa-right-from-bracket"></i> Sign out</button>
+        </div>
+        <button class="btn btn-sm btn-primary" id="drive-connect-btn" onclick="driveSignIn()"><i class="fa-brands fa-google"></i> Sign in with Google</button>
       </div>
-      <div class="how-section">
-        <h3><i class="fa-solid fa-ellipsis-vertical" style="margin-right:6px;"></i>Editing / Removing</h3>
-        <ul>
-          <li><strong>Desktop:</strong> Right-click any entry, or hover and click the <code>⋮</code> button.</li>
-          <li><strong>Mobile:</strong> Hold/long-press any entry to open options.</li>
-        </ul>
-      </div>
-      <div class="how-section">
-        <h3><i class="fa-solid fa-palette" style="margin-right:6px;"></i>Color Parser Syntax</h3>
-        <ul>
-          <li>Inline (one word): <code>Word{color&lt;255,0,0&gt;}</code></li>
-          <li>Whole sentence: <code>My Title //sentence{color&lt;255,0,0&gt;}</code></li>
-          <li>Gradient: <code>//sentence{color&lt;255,0,0 | 0,0,255&gt;}</code></li>
-          <li>Font: <code>//sentence{font&lt;GothamBold&gt;}</code></li>
-          <li>Style: <code>//sentence{style&lt;bold | italic&gt;}</code></li>
-        </ul>
-      </div>
-      <div class="how-section">
-        <h3><i class="fa-solid fa-code" style="margin-right:6px;"></i>Exporting</h3>
-        <ul>
-          <li>Go to <strong>Export Lua</strong> — copy or download the full <code>TitleData.lua</code> file ready for Roblox Studio.</li>
-          <li>Go to <strong>Import / Export</strong> to save/load a JSON backup.</li>
-        </ul>
-      </div>
-      <div class="how-section">
-        <h3><i class="fa-solid fa-clock-rotate-left" style="margin-right:6px;"></i>Audit Log</h3>
-        <p>Every change (add, edit, remove) is logged with a timestamp. The log is stored locally only. You can select and copy specific lines if you need to recover something.</p>
-      </div>
-      <div class="how-section">
-        <h3><i class="fa-solid fa-gear" style="margin-right:6px;"></i>Price Types</h3>
-        <p>Manage your price types in <strong>Settings</strong>. Each type can have a custom color for its badge. Built-in types cannot be removed.</p>
+      <div class="card" id="drive-conflict-card" style="display:none;border-color:var(--amber-border);">
+        <div class="card-title" style="color:var(--amber);">⚠ Conflict detected</div>
+        <p style="font-size:12px;color:var(--text2);margin-bottom:.85rem;">Local and Drive data differ. Which one to keep?</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:.85rem;">
+          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--rsm);padding:10px;">
+            <div style="font-size:9px;color:var(--text3);font-family:var(--mono);margin-bottom:4px;">LOCAL</div>
+            <div style="font-size:12px;" id="conflict-local-info">—</div>
+          </div>
+          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--rsm);padding:10px;">
+            <div style="font-size:9px;color:var(--text3);font-family:var(--mono);margin-bottom:4px;">DRIVE</div>
+            <div style="font-size:12px;" id="conflict-drive-info">—</div>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-sm" onclick="resolveConflict('local')"><i class="fa-solid fa-floppy-disk"></i> Keep local</button>
+          <button class="btn btn-sm btn-primary" onclick="resolveConflict('drive')"><i class="fa-brands fa-google-drive"></i> Use Drive</button>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- SETTINGS -->
-  <div id="panel-settings" class="panel">
-    <div class="page-title">Settings</div>
-    <div class="page-sub">Configure your TitleData Manager.</div>
-    <div class="card">
-      <div class="card-title">Manage price types</div>
-      <p style="font-size:12px;color:var(--text2);margin-bottom:12px;">Built-in types cannot be removed. Each type has a color for its badge tag.</p>
-      <div class="pt-list" id="pt-list"></div>
-      <div style="margin-bottom:8px;">
-        <div style="font-size:10px;color:var(--text3);font-family:var(--mono);margin-bottom:6px;">pick color for new type</div>
-        <div class="color-swatches" id="color-swatches"></div>
-      </div>
-      <div class="pt-new-row">
-        <input id="pt-new-input" placeholder="New price type name..." onkeydown="if(event.key==='Enter')addPriceType()">
-        <button class="btn btn-primary btn-sm" onclick="addPriceType()"><i class="fa-solid fa-plus"></i> Add</button>
-      </div>
-    </div>
-  </div>
+  </div><!-- /panel-area -->
+</div><!-- /main -->
+</div><!-- /app -->
 
-  <!-- VERSION HISTORY -->
-  <div id="panel-versionhistory" class="panel">
-    <div class="page-title">Version History</div>
-    <div class="page-sub">Full snapshots saved locally and to Google Drive. Click a version to preview or restore it.</div>
-    <div class="btn-row" style="margin-bottom:.85rem;">
-      <button class="btn btn-sm btn-green" onclick="saveSnapshot('manual')"><i class="fa-solid fa-camera"></i> Save snapshot now</button>
-      <button class="btn btn-sm btn-danger" onclick="clearAllSnapshots()"><i class="fa-solid fa-trash"></i> Clear all</button>
-    </div>
-    <div id="vh-list" class="entries"></div>
-  </div>
+<!-- ── MODALS ── -->
 
-</main>
-</div>
-
-<!-- Delete modal -->
-<div class="modal-bg" id="del-modal">
+<!-- New project -->
+<div class="modal-bg" id="modal-new-proj">
   <div class="modal">
-    <div class="modal-title" id="del-modal-title">Remove entry?</div>
-    <div class="modal-body" id="del-modal-body"></div>
+    <div class="modal-title"><i class="fa-solid fa-folder-plus"></i> New project</div>
+    <div class="field"><label>name</label><input id="np-name" placeholder="My Project"></div>
+    <div class="field"><label>description (optional)</label><input id="np-desc" placeholder=""></div>
+    <div class="field"><label>icon (emoji)</label><input id="np-icon" placeholder="📁" style="width:70px;"></div>
+    <input type="hidden" id="np-parent">
     <div class="modal-footer">
-      <button class="btn" onclick="closeModal('del-modal')">Cancel</button>
-      <button class="btn btn-danger" onclick="confirmDelete()">Remove</button>
+      <button class="btn" onclick="closeModal('modal-new-proj')">Cancel</button>
+      <button class="btn btn-primary" onclick="createProject()"><i class="fa-solid fa-plus"></i> Create</button>
     </div>
   </div>
 </div>
 
-<!-- Edit Title modal -->
-<div class="modal-bg" id="edit-title-modal">
-  <div class="modal" style="width:520px;">
-    <div class="modal-title">Edit title</div>
-    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:1.25rem;">
-      <div class="field"><label>key</label><input id="et-key" readonly style="opacity:.45;cursor:not-allowed;"></div>
-      <div class="field"><label>display string</label><input id="et-display" oninput="updateEditTitlePreview()"></div>
-      <div class="field"><label>desc</label><input id="et-desc"></div>
-      <div>
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-          <label style="font-size:10px;color:var(--text3);font-family:var(--mono);">data &amp; price type <span style="font-size:9px;margin-left:4px;">one entry = that type · two+ = Mixed</span></label>
-        </div>
-        <div class="pt-data-rows" id="et-pt-rows"></div>
-        <button class="add-pt-row-btn" id="et-add-pt-btn" onclick="addPTRow('et')"><i class="fa-solid fa-plus" style="font-size:10px;"></i> Add price type entry</button>
-        <div class="pt-result-line" id="et-pt-result" style="display:none;">
-          <span class="pt-result-label">PriceType →</span>
-          <span class="badge" id="et-pt-badge">—</span>
-        </div>
-      </div>
-      <div style="margin-top:4px;">
-        <div style="font-size:10px;color:var(--text3);margin-bottom:5px;">Preview</div>
-        <div class="preview-dark" style="min-height:38px;padding:8px 12px;"><span class="preview-text" id="et-preview" style="font-size:14px;"></span></div>
-      </div>
-    </div>
+<!-- New entry -->
+<div class="modal-bg" id="modal-new-entry">
+  <div class="modal">
+    <div class="modal-title"><i class="fa-solid fa-plus"></i> New entry</div>
+    <div class="field"><label>name</label><input id="ne-name" placeholder="Entry name"></div>
+    <input type="hidden" id="ne-parent-entry">
     <div class="modal-footer">
-      <button class="btn" onclick="closeModal('edit-title-modal')">Cancel</button>
-      <button class="btn btn-primary" onclick="saveEditTitle()"><i class="fa-solid fa-check"></i> Save changes</button>
+      <button class="btn" onclick="closeModal('modal-new-entry')">Cancel</button>
+      <button class="btn btn-primary" onclick="createEntry()">Create</button>
     </div>
   </div>
 </div>
 
-<!-- Edit Rank modal -->
-<div class="modal-bg" id="edit-rank-modal">
-  <div class="modal" style="width:480px;">
-    <div class="modal-title">Edit rank</div>
-    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:1.25rem;">
-      <div class="field"><label>level</label><input id="er-level" readonly style="opacity:.45;cursor:not-allowed;"></div>
-      <div class="field"><label>display string</label><input id="er-display" oninput="updateEditRankPreview()"></div>
-      <div style="margin-top:4px;">
-        <div style="font-size:10px;color:var(--text3);margin-bottom:5px;">Preview</div>
-        <div class="preview-dark" style="min-height:38px;padding:8px 12px;"><span class="preview-text" id="er-preview" style="font-size:14px;"></span></div>
-      </div>
+<!-- Add field -->
+<div class="modal-bg" id="modal-add-field">
+  <div class="modal">
+    <div class="modal-title"><i class="fa-solid fa-table-columns"></i> Add field</div>
+    <div class="field"><label>field name</label><input id="af-name" placeholder="e.g. NIK, Points, Birthday"></div>
+    <div class="field"><label>type</label>
+      <select id="af-type">
+        <option value="text">Text</option>
+        <option value="number">Number</option>
+        <option value="date">Date</option>
+        <option value="boolean">Boolean (yes/no)</option>
+        <option value="mixed">Mixed</option>
+        <option value="relation">Relation (link to entry)</option>
+      </select>
+    </div>
+    <div class="field"><label>description (optional)</label><input id="af-desc" placeholder=""></div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:.5rem;">
+      <input type="checkbox" id="af-required" style="width:auto;">
+      <label for="af-required" style="font-size:11px;color:var(--text2);">Required field</label>
     </div>
     <div class="modal-footer">
-      <button class="btn" onclick="closeModal('edit-rank-modal')">Cancel</button>
-      <button class="btn btn-primary" onclick="saveEditRank()"><i class="fa-solid fa-check"></i> Save changes</button>
+      <button class="btn" onclick="closeModal('modal-add-field')">Cancel</button>
+      <button class="btn btn-primary" onclick="addField()">Add field</button>
     </div>
   </div>
 </div>
 
-<!-- Context menu -->
-<div class="ctx-menu" id="ctx-menu">
-  <button class="ctx-item" id="ctx-copy"><i class="fa-solid fa-copy"></i> Copy display</button>
-  <button class="ctx-item" id="ctx-edit"><i class="fa-solid fa-pen"></i> Edit</button>
-  <hr class="ctx-divider">
-  <button class="ctx-item danger" id="ctx-delete"><i class="fa-solid fa-trash"></i> Remove</button>
-</div>
-
-<!-- Conflict resolution modal -->
-<div class="modal-bg" id="conflict-modal">
-  <div class="modal" style="width:500px;">
-    <div class="modal-title"><i class="fa-solid fa-triangle-exclamation" style="color:#fbbf24;margin-right:6px;"></i>Data conflict detected</div>
-    <div class="modal-body">Your local data and Google Drive data are different. Which one do you want to keep?</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1rem;">
-      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;">
-        <div style="font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:4px;">LOCAL</div>
-        <div style="font-size:12px;color:var(--text);" id="conflict-local-info">—</div>
-      </div>
-      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;">
-        <div style="font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:4px;">DRIVE</div>
-        <div style="font-size:12px;color:var(--text);" id="conflict-drive-info">—</div>
-      </div>
+<!-- Add variable -->
+<div class="modal-bg" id="modal-add-var">
+  <div class="modal">
+    <div class="modal-title"><i class="fa-solid fa-code"></i> Add variable</div>
+    <input type="hidden" id="av-scope-target">
+    <div class="field"><label>name</label><input id="av-name" placeholder="variableName"></div>
+    <div class="field"><label>value</label><input id="av-value" placeholder="100"></div>
+    <div class="field"><label>scope</label>
+      <select id="av-scope">
+        <option value="local">Local (inheritable by children)</option>
+        <option value="exclusive">Exclusive (NOT inheritable)</option>
+      </select>
     </div>
     <div class="modal-footer">
-      <button class="btn" onclick="resolveConflict('local')"><i class="fa-solid fa-floppy-disk"></i> Keep local</button>
-      <button class="btn btn-primary" onclick="resolveConflict('drive')"><i class="fa-brands fa-google-drive"></i> Use Drive</button>
+      <button class="btn" onclick="closeModal('modal-add-var')">Cancel</button>
+      <button class="btn btn-primary" onclick="addVariable()">Add</button>
     </div>
   </div>
 </div>
 
-<!-- Version preview modal -->
-<div class="modal-bg" id="vh-preview-modal">
-  <div class="modal" style="width:520px;">
-    <div class="modal-title">Snapshot preview</div>
-    <div id="vh-preview-body" style="font-size:12px;color:var(--text2);margin-bottom:1rem;"></div>
-    <div class="code-box" id="vh-preview-code" style="max-height:200px;margin-bottom:1rem;"></div>
+<!-- Edit entry -->
+<div class="modal-bg" id="modal-edit-entry">
+  <div class="modal modal-lg">
+    <div class="modal-title" id="ee-title"><i class="fa-solid fa-pen"></i> Edit entry</div>
+    <div class="field"><label>name</label><input id="ee-name"></div>
+    <div class="divider"></div>
+    <div style="font-size:10px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.08em;font-family:var(--mono);margin-bottom:.6rem;">Field values</div>
+    <div id="ee-field-vals" class="field-val-list"></div>
+    <div class="divider"></div>
+    <div style="font-size:10px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.08em;font-family:var(--mono);margin-bottom:.5rem;">
+      Entry variables <span style="font-size:9px;font-weight:400;color:var(--text3);">(scoped to this entry)</span>
+    </div>
+    <div id="ee-var-list" class="var-list" style="margin-bottom:.5rem;"></div>
+    <button class="btn btn-ghost btn-sm" onclick="openAddVarModal('entry')"><i class="fa-solid fa-plus"></i> Add variable</button>
+    <div class="divider"></div>
+    <div style="font-size:10px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.08em;font-family:var(--mono);margin-bottom:.5rem;">Tags</div>
+    <div class="tags-wrap" id="ee-tags" style="margin-bottom:.6rem;"></div>
+    <div style="display:flex;gap:6px;">
+      <input id="ee-tag-input" class="tag-input" placeholder="add tag..." onkeydown="if(event.key==='Enter')addEntryTag()">
+      <button class="btn btn-sm" onclick="addEntryTag()">Add</button>
+    </div>
     <div class="modal-footer">
-      <button class="btn" onclick="closeModal('vh-preview-modal')">Close</button>
-      <button class="btn btn-primary" id="vh-restore-btn" onclick="restoreSnapshot()"><i class="fa-solid fa-rotate-left"></i> Restore this version</button>
+      <button class="btn" onclick="closeModal('modal-edit-entry')">Close</button>
+      <button class="btn btn-primary" onclick="saveEditEntry()"><i class="fa-solid fa-check"></i> Save</button>
     </div>
   </div>
 </div>
 
-<!-- PWA install banner -->
-<div class="install-banner" id="install-banner">
-  <i class="fa-solid fa-mobile-screen" style="color:var(--accent);font-size:18px;flex-shrink:0;"></i>
-  <span style="flex:1;font-size:12px;color:var(--text2);">Install TitleData Manager as an app!</span>
+<!-- Relation picker -->
+<div class="modal-bg" id="modal-relation-pick">
+  <div class="modal">
+    <div class="modal-title"><i class="fa-solid fa-link"></i> Pick related entry</div>
+    <div class="search-global" style="margin-bottom:.85rem;">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input id="rel-search" placeholder="Search entries..." oninput="filterRelationPicker(this.value)">
+    </div>
+    <div id="rel-pick-list" style="max-height:280px;overflow-y:auto;display:flex;flex-direction:column;gap:4px;"></div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-relation-pick')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete confirm -->
+<div class="modal-bg" id="modal-delete">
+  <div class="modal" style="width:360px;">
+    <div class="modal-title" id="del-title">Delete?</div>
+    <div class="modal-body" id="del-body" style="font-size:12px;color:var(--text2);margin-bottom:1rem;"></div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-delete')">Cancel</button>
+      <button class="btn btn-danger" onclick="confirmDelete()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- Import -->
+<div class="modal-bg" id="modal-import">
+  <div class="modal">
+    <div class="modal-title"><i class="fa-solid fa-file-import"></i> Import data</div>
+    <div style="border:2px dashed var(--border2);border-radius:var(--rlg);padding:1.5rem;text-align:center;cursor:pointer;margin-bottom:.85rem;" onclick="document.getElementById('import-file').click()">
+      <i class="fa-solid fa-cloud-arrow-up" style="font-size:22px;color:var(--text3);display:block;margin-bottom:6px;"></i>
+      <p style="font-size:12px;color:var(--text2);">Click to browse</p>
+      <span style="font-size:10px;color:var(--text3);">JSON backup</span>
+    </div>
+    <input type="file" id="import-file" accept=".json" style="display:none" onchange="handleImport(event)">
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-import')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- VH Preview Modal -->
+<div class="modal-bg" id="modal-vh-preview">
+  <div class="modal">
+    <div class="modal-title" id="vh-preview-title"><i class="fa-solid fa-code-branch"></i> Snapshot</div>
+    <div id="vh-preview-meta" style="font-size:12px;color:var(--text2);margin-bottom:.85rem;"></div>
+    <div style="font-family:var(--mono);font-size:11px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--rsm);padding:10px;max-height:160px;overflow-y:auto;white-space:pre;margin-bottom:.85rem;" id="vh-preview-code"></div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-vh-preview')">Close</button>
+      <button class="btn btn-primary" id="vh-restore-btn"><i class="fa-solid fa-rotate-left"></i> Restore</button>
+    </div>
+  </div>
+</div>
+
+<!-- PWA banner -->
+<div class="pwa-banner" id="pwa-banner">
+  <i class="fa-solid fa-mobile-screen" style="color:var(--accent2);font-size:16px;flex-shrink:0;"></i>
+  <span style="flex:1;color:var(--text2);">Install UTM as an app!</span>
   <button class="btn btn-primary btn-sm" onclick="installPWA()">Install</button>
-  <button class="btn btn-sm" onclick="dismissInstall()" style="padding:5px 8px;"><i class="fa-solid fa-xmark"></i></button>
+  <button class="btn btn-sm" onclick="dismissPWA()" style="padding:4px 7px;"><i class="fa-solid fa-xmark"></i></button>
+</div>
+
+<!-- Ctx menu -->
+<div class="ctx-menu" id="ctx-menu">
+  <button class="ctx-item" id="ctx-open"><i class="fa-solid fa-arrow-right"></i> Open</button>
+  <button class="ctx-item" id="ctx-edit"><i class="fa-solid fa-pen"></i> Edit</button>
+  <button class="ctx-item" id="ctx-copy"><i class="fa-solid fa-copy"></i> Copy</button>
+  <button class="ctx-item" id="ctx-paste"><i class="fa-solid fa-clipboard"></i> Paste as child</button>
+  <button class="ctx-item" id="ctx-duplicate"><i class="fa-solid fa-clone"></i> Duplicate</button>
+  <button class="ctx-item" id="ctx-new-sub"><i class="fa-solid fa-plus"></i> Add sub-entry</button>
+  <hr class="ctx-sep">
+  <button class="ctx-item" id="ctx-new-subproj"><i class="fa-solid fa-folder-plus"></i> New sub-project</button>
+  <hr class="ctx-sep">
+  <button class="ctx-item danger" id="ctx-delete"><i class="fa-solid fa-trash"></i> Delete</button>
+</div>
+
+<!-- Clipboard banner -->
+<div class="clipboard-banner" id="clipboard-banner">
+  <i class="fa-solid fa-clipboard" style="color:var(--accent2);"></i>
+  <span style="font-size:12px;color:var(--text2);" id="clipboard-label">1 entry copied</span>
+  <button class="btn btn-xs" onclick="clearClipboard()">Clear</button>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-// ════════════════════════════════════════════════
-// COLOR PARSER
-// ════════════════════════════════════════════════
-function clamp(v,lo,hi){return Math.max(lo,Math.min(hi,v));}
-function lerpColor(c1,c2,t){return[Math.floor(c1[0]+(c2[0]-c1[0])*t+.5),Math.floor(c1[1]+(c2[1]-c1[1])*t+.5),Math.floor(c1[2]+(c2[2]-c1[2])*t+.5)];}
-function toHex(r,g,b){return'#'+[r,g,b].map(v=>clamp(v,0,255).toString(16).padStart(2,'0')).join('');}
-function wrapTags(text,props,bold,italic){let attrs=[];if(props.color)attrs.push(`color="${props.color}"`);if(props.face)attrs.push(`face="${props.face}"`);if(props.size)attrs.push(`size="${props.size}"`);let out=text;if(attrs.length)out=`<font ${attrs.join(' ')}>${out}</font>`;if(bold)out='<b>'+out+'</b>';if(italic)out='<i>'+out+'</i>';return out;}
-function parseBlock(inner){const props={};const colorM=inner.match(/color\s*<\s*([\s\S]*?)\s*>/);if(colorM){const cc=colorM[1];if(cc.includes('|')){const stops=cc.split('|').map(p=>{p=p.trim();const m=p.match(/(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/);return m?[+m[1],+m[2],+m[3]]:null;}).filter(Boolean);if(stops.length>=2)props.color={gradient:stops};}else{const m=cc.match(/(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/);if(m)props.color={solid:[+m[1],+m[2],+m[3]]};}}const fontM=inner.match(/font\s*<\s*(.*?)\s*>/);if(fontM&&fontM[1])props.font=fontM[1];const sizeM=inner.match(/size\s*<\s*(\d+)\s*>/);if(sizeM)props.size=+sizeM[1];const styleM=inner.match(/style\s*<\s*(.*?)\s*>/);if(styleM){const s=styleM[1].toLowerCase();if(s.includes('bold'))props.bold=true;if(s.includes('italic'))props.italic=true;}return props;}
-function countNonSpace(s){return[...s].filter(c=>/\S/.test(c)).length;}
-function applyGradient(text,stops,total,offset,fp,bold,italic){const segs=stops.length-1;let out='',count=offset;for(const ch of text){if(/\S/.test(ch)){const t=total<=1?0:clamp(count/(total-1),0,1);const sf=t*segs;const si=Math.min(Math.floor(sf),segs-1);const lt=sf-si;const[r,g,b]=lerpColor(stops[si],stops[si+1]||stops[si],lt);const fp2={color:toHex(r,g,b),face:fp.face,size:fp.size};out+=wrapTags(ch,fp2,bold,italic);count++;}else{out+=ch;}}return[out,count-offset];}
-function tokenise(msg){const tokens=[];let pos=0;const re=/\{([^}]*)\}/g;let m;while((m=re.exec(msg))!==null){const before=msg.slice(pos,m.index);const inner=m[1];const pm=before.match(/^([\s\S]*\s)(\S+)\s*$/);let prefix='',word='';if(pm){prefix=pm[1];word=pm[2];}else{prefix='';word=before.replace(/^\s*|\s*$/g,'');}if(prefix)tokens.push({kind:'plain',text:prefix});const props=parseBlock(inner);const hasProps=props.color||props.font||props.size||props.bold||props.italic;if(word&&hasProps)tokens.push({kind:'inline',text:word,props});else tokens.push({kind:'plain',text:word+'{'+inner+'}'});pos=m.index+m[0].length;}const tail=msg.slice(pos);if(tail)tokens.push({kind:'plain',text:tail});return tokens;}
-function extractDirectives(msg){const sentProps={},defProps={};msg=msg.replace(/\s*\/\/sentence\s*\{([^}]*)\}/g,(_,inner)=>{Object.assign(sentProps,parseBlock(inner));return'';});msg=msg.replace(/\s*\/\/default\s*\{([^}]*)\}/g,(_,inner)=>{Object.assign(defProps,parseBlock(inner));return'';});return[msg,sentProps,defProps];}
-function parseColorString(msg){if(!msg||!msg.trim())return'';const[cleaned,sentProps,defProps]=extractDirectives(msg);const gs={color:{solid:[255,255,255]},font:null,size:null,bold:false,italic:false};Object.assign(gs,defProps);const sentState=Object.assign({},gs,sentProps);const tokens=tokenise(cleaned);const sentHasGrad=sentState.color&&sentState.color.gradient;let totalNS=0;if(sentHasGrad)tokens.forEach(t=>totalNS+=countNonSpace(t.text));let result='',gradOffset=0;for(const tok of tokens){const fp={face:sentState.font,size:sentState.size};if(tok.kind==='inline'){const inlState=Object.assign({},sentState,tok.props);const fp2={face:inlState.font,size:inlState.size};const useColor=tok.props.color||null;if(useColor&&useColor.gradient){const total=countNonSpace(tok.text);const[rendered]=applyGradient(tok.text,useColor.gradient,total,0,fp2,inlState.bold,inlState.italic);result+=rendered;if(sentHasGrad)gradOffset+=countNonSpace(tok.text);}else if(useColor&&useColor.solid){const[r,g,b]=useColor.solid;fp2.color=toHex(r,g,b);result+=wrapTags(tok.text,fp2,inlState.bold,inlState.italic);if(sentHasGrad)gradOffset+=countNonSpace(tok.text);}else{if(sentHasGrad){const ns=countNonSpace(tok.text);const[rendered]=applyGradient(tok.text,sentState.color.gradient,totalNS,gradOffset,fp2,inlState.bold,inlState.italic);result+=rendered;gradOffset+=ns;}else if(sentState.color&&sentState.color.solid){const[r,g,b]=sentState.color.solid;fp2.color=toHex(r,g,b);result+=wrapTags(tok.text,fp2,inlState.bold,inlState.italic);}else{result+=wrapTags(tok.text,fp2,inlState.bold,inlState.italic);}}}else{if(sentHasGrad){const ns=countNonSpace(tok.text);const[rendered]=applyGradient(tok.text,sentState.color.gradient,totalNS,gradOffset,fp,sentState.bold,sentState.italic);result+=rendered;gradOffset+=ns;}else if(sentState.color&&sentState.color.solid){const[r,g,b]=sentState.color.solid;fp.color=toHex(r,g,b);result+=wrapTags(tok.text,fp,sentState.bold,sentState.italic);}else{result+=wrapTags(tok.text,fp,sentState.bold,sentState.italic);}}}return result;}
+// ═══════════════════════════════════════════════════════
+// DATA MODEL
+// ═══════════════════════════════════════════════════════
+// Project: { id, name, desc, icon, parentId, children:[], fields:[], variables:[], tags:[], entries:[], order:N }
+// Entry:   { id, name, parentId, projId, children:[], fields:{fieldId:value}, variables:[], tags:[], order:N }
+// Field:   { id, name, type, desc, required }
+// Variable:{ id, name, value, scope:'local'|'exclusive' }
 
-// ════════════════════════════════════════════════
-// DATA
-// ════════════════════════════════════════════════
-const BUILTIN_TYPES = ['Badge','Gamepass','Exclusive','UserID','Prestige','Ascension','Restartion','Breakthrough','Kills','Points'];
-const BUILTIN_COLORS = {
-  Badge:'#fbbf24',Gamepass:'#4ade80',Exclusive:'#f472b6',
-  UserID:'#60a5fa',Prestige:'#fb7185',Ascension:'#34d399',
-  Restartion:'#fbbf24',Breakthrough:'#a78bfa',Kills:'#f87171',Points:'#facc15',
-  Mixed:'#a896ff'
-};
-const PRESET_COLORS = [
-  '#f87171','#fb923c','#fbbf24','#facc15','#a3e635','#4ade80','#34d399',
-  '#2dd4bf','#38bdf8','#60a5fa','#818cf8','#a78bfa','#c084fc','#e879f9',
-  '#f472b6','#fb7185','#94a3b8','#e2e8f0','#f97316','#06b6d4'
-];
-
-const DEFAULT_TITLES = {
-  "Content_Creator":{Display:"Content Creator //sentence{color<255,170,255 | 255,110,235>}",PriceType:"Exclusive",Desc:":3",Data:{Exclusive:["796047707","2030595937"]}},
-  "Peaceful":{Display:"Peaceful{color<222,255,222>}",PriceType:"Gamepass",Desc:"",Data:{Gamepass:"1721657654"}},
-  "Evil_Path":{Display:"Evil Path //sentence{color<200,0,0 | 255,0,0 | 200,0,0>}",PriceType:"Badge",Desc:"",Data:{Badge:""}},
-  "The_Destroyer":{Display:"The Destroyer //sentence{color<255,80,80>}",PriceType:"Badge",Desc:"",Data:{Badge:""}},
-  "Chairlord":{Display:"Chairlord //sentence{color<255,220,120 | 255,140,0>}",PriceType:"Mixed",Desc:"",Data:{Gamepass:155500000,Badge:1000}},
-  "Bastion":{Display:"Bastion //sentence{color<50,50,50 | 100,100,100>}",PriceType:"Mixed",Desc:"",Data:{Badge:2964295482109880,Gamepass:999999}},
-};
-const DEFAULT_RANKS = {
-  "5":{Display:"Overlord{color<255,140,0 | 220,42,0 | 195,0,0>, font<Merriweather>}"},
-  "4":{Display:"Overseer{color<180,120,255 | 173,13,248>, font<Merriweather>}"},
-  "3":{Display:"Commander{color<102,0,255 | 20,0,247>}"},
-  "2.1":{Display:"Elite Guard //sentence{color<255,215,0 | 190,120,0>}"},
-  "2":{Display:"Guard{color<100,180,255>}"},
-  "1.1":{Display:"Special Guest //sentence{color<100,149,237>}"},
-  "1":{Display:"VIP{color<255,255,100>}"},
-  "0":{Display:""},
+const LS_KEY = 'utm_data_v1';
+let state = {
+  projects: [],       // flat array, parentId for nesting
+  globalVars: [],
+  globalTags: [],
 };
 
-const LS_KEY = 'titledata_manager_v2';
-const LS_AUDIT = 'titledata_audit_v1';
-let titles={}, ranks={}, priceTypes=[...BUILTIN_TYPES], customPTColors={};
-let auditLog=[];
-let selectedSwatchColor = PRESET_COLORS[0];
+// ── ID gen ──
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
 
-// ════════════════════════════════════════════════
+// ── Helpers ──
+function getProj(id){ return state.projects.find(p=>p.id===id); }
+function getAllEntries(proj){ // flatten all entries in a project
+  const res=[];
+  function walk(list){ list.forEach(e=>{ res.push(e); if(e.children) walk(e.children); }); }
+  if(proj) walk(proj.entries);
+  return res;
+}
+function findEntry(proj,id){
+  return getAllEntries(proj).find(e=>e.id===id);
+}
+function findEntryParent(proj,id){
+  function walk(list,par){ for(const e of list){ if(e.id===id) return par; const r=walk(e.children||[],e); if(r!==undefined) return r; } return undefined; }
+  return walk(proj.entries,null);
+}
+function removeEntryFromTree(proj,id){
+  function walk(list){ const i=list.findIndex(e=>e.id===id); if(i!==-1){list.splice(i,1);return true;} return list.some(e=>walk(e.children||[])); }
+  walk(proj.entries);
+}
+function deepCloneEntry(e){
+  const n=JSON.parse(JSON.stringify(e));
+  function reId(x){x.id=uid();(x.children||[]).forEach(reId);}
+  reId(n); return n;
+}
+
+// ── Root projects & sub-projects ──
+function rootProjects(){ return state.projects.filter(p=>!p.parentId); }
+function childProjects(parentId){ return state.projects.filter(p=>p.parentId===parentId); }
+function allDescendantProjIds(id){
+  const ids=[id];
+  childProjects(id).forEach(c=>ids.push(...allDescendantProjIds(c.id)));
+  return ids;
+}
+
+// ═══════════════════════════════════════════════════════
 // STORAGE
-// ════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
+function saveToLS(){
+  try{ localStorage.setItem(LS_KEY,JSON.stringify(state)); showToast('Saved','success'); }
+  catch(e){ showToast('Save failed','error'); }
+}
 function loadFromLS(){
   try{
-    const raw=localStorage.getItem(LS_KEY);
-    if(raw){
-      const p=JSON.parse(raw);
-      titles=p.titles||JSON.parse(JSON.stringify(DEFAULT_TITLES));
-      ranks=p.ranks||JSON.parse(JSON.stringify(DEFAULT_RANKS));
-      priceTypes=p.priceTypes||[...BUILTIN_TYPES];
-      customPTColors=p.customPTColors||{};
-      // ensure builtins always present
-      BUILTIN_TYPES.forEach(bt=>{ if(!priceTypes.includes(bt)) priceTypes.unshift(bt); });
-      return true;
-    }
+    const r=localStorage.getItem(LS_KEY);
+    if(r){ state=JSON.parse(r); return true; }
   }catch(e){}
-  titles=JSON.parse(JSON.stringify(DEFAULT_TITLES));
-  ranks=JSON.parse(JSON.stringify(DEFAULT_RANKS));
-  priceTypes=[...BUILTIN_TYPES];
-  customPTColors={};
   return false;
 }
-let _saveCount=0;
-function saveToLS(){
-  try{
-    localStorage.setItem(LS_KEY,JSON.stringify({titles,ranks,priceTypes,customPTColors,savedAt:new Date().toISOString()}));
-    updateLSStatus();
-    showToast('Saved','success');
-    _saveCount++;
-    if(_saveCount%10===0) saveSnapshot('Auto snapshot #'+(_saveCount/10));
-    if(driveReady) driveUpload();
-  }catch(e){showToast('Save failed: '+e.message,'error');}
+
+// ═══════════════════════════════════════════════════════
+// CURRENT STATE
+// ═══════════════════════════════════════════════════════
+let currentProjId = null;
+let currentProjTab = 'data';
+let clipboard = null; // {type:'entry'|'project', data:...}
+let deleteTarget = null;
+let editingEntryId = null;
+let addVarTarget = null; // {scope:'global'|'project'|'entry', projId, entryId}
+let relationPickCallback = null;
+let holdTimer = null;
+
+function currentProj(){ return getProj(currentProjId); }
+
+// ═══════════════════════════════════════════════════════
+// SIDEBAR / PROJECT TREE
+// ═══════════════════════════════════════════════════════
+function renderProjTree(){
+  const el=document.getElementById('proj-tree');
+  el.innerHTML='';
+  renderProjChildren(el, null);
 }
-function clearLS(){
-  if(!confirm('Clear all saved data? This cannot be undone.'))return;
-  localStorage.removeItem(LS_KEY);
-  titles=JSON.parse(JSON.stringify(DEFAULT_TITLES));
-  ranks=JSON.parse(JSON.stringify(DEFAULT_RANKS));
-  priceTypes=[...BUILTIN_TYPES];
-  customPTColors={};
-  updateLSStatus();renderAll();
-  addAudit('system','Cleared all data — defaults restored');
-  showToast('Cleared — defaults restored','success');
+function renderProjChildren(container, parentId){
+  const children=state.projects.filter(p=>p.parentId===parentId);
+  children.forEach(p=>{
+    const node=document.createElement('div');
+    node.className='proj-node';
+    const hasChildren=state.projects.some(c=>c.parentId===p.id);
+    const isActive=p.id===currentProjId;
+    node.innerHTML=`
+      <div class="proj-item${isActive?' active':''}" data-proj="${p.id}"
+        draggable="true"
+        onclick="openProject('${p.id}')"
+        oncontextmenu="openCtxProj(event,'${p.id}')"
+        ontouchstart="startHold(event,'proj','${p.id}')" ontouchend="endHold()" ontouchmove="endHold()">
+        <span class="drag-handle"><i class="fa-solid fa-grip-vertical"></i></span>
+        <span class="proj-icon">${p.icon||'📁'}</span>
+        <span class="proj-name">${escHtml(p.name)}</span>
+        ${hasChildren?`<span class="proj-chevron${p._open?' open':''}" id="chevron-${p.id}"><i class="fa-solid fa-chevron-right"></i></span>`:''}
+        <span class="proj-actions">
+          <button class="btn btn-ghost btn-icon" style="width:18px;height:18px;font-size:9px;" onclick="event.stopPropagation();openNewProjModal('${p.id}')" title="New sub-project"><i class="fa-solid fa-plus"></i></button>
+        </span>
+      </div>`;
+    const itemEl=node.querySelector('.proj-item');
+    // drag
+    itemEl.addEventListener('dragstart',e=>{ e.dataTransfer.setData('proj-id',p.id); itemEl.classList.add('dragging'); });
+    itemEl.addEventListener('dragend',()=>itemEl.classList.remove('dragging'));
+    itemEl.addEventListener('dragover',e=>{ e.preventDefault(); itemEl.classList.add('drag-over'); });
+    itemEl.addEventListener('dragleave',()=>itemEl.classList.remove('drag-over'));
+    itemEl.addEventListener('drop',e=>{ e.preventDefault(); itemEl.classList.remove('drag-over'); const from=e.dataTransfer.getData('proj-id'); if(from&&from!==p.id) moveProjAfter(from,p.id); });
+    if(hasChildren){
+      const chevEl=node.querySelector('.proj-chevron');
+      chevEl.addEventListener('click',e=>{ e.stopPropagation(); p._open=!p._open; renderProjTree(); });
+      if(p._open){
+        const childContainer=document.createElement('div');
+        childContainer.className='proj-children';
+        renderProjChildren(childContainer,p.id);
+        node.appendChild(childContainer);
+      }
+    }
+    container.appendChild(node);
+  });
 }
-function updateLSStatus(){
-  const el=document.getElementById('ls-status');
-  try{
-    const raw=localStorage.getItem(LS_KEY);
-    if(raw){const p=JSON.parse(raw);const d=p.savedAt?new Date(p.savedAt).toLocaleString():'unknown';el.textContent=`Last saved: ${d} · ${Object.keys(p.titles||{}).length} titles, ${Object.keys(p.ranks||{}).length} ranks`;}
-    else el.textContent='No saved data.';
-  }catch(e){el.textContent='Error reading localStorage.';}
+function moveProjAfter(fromId,afterId){
+  const from=getProj(fromId);
+  if(!from)return;
+  const after=getProj(afterId);
+  const newParent=after?after.parentId:null;
+  from.parentId=newParent;
+  saveToLS();renderProjTree();renderHomeGrid();
 }
 
-// ════════════════════════════════════════════════
-// AUDIT LOG
-// ════════════════════════════════════════════════
-function loadAudit(){
-  try{const raw=localStorage.getItem(LS_AUDIT);if(raw)auditLog=JSON.parse(raw);}catch(e){auditLog=[];}
-}
-function saveAudit(){
-  try{localStorage.setItem(LS_AUDIT,JSON.stringify(auditLog.slice(-500)));}catch(e){}
-}
-function addAudit(type,msg){
-  const ts=new Date().toLocaleString();
-  auditLog.push({type,msg,ts});
-  saveAudit();
-  renderAuditLog();
-}
-function renderAuditLog(){
-  const box=document.getElementById('audit-log-box');
-  if(!box)return;
-  if(auditLog.length===0){box.textContent='No entries yet.';return;}
-  box.innerHTML=[...auditLog].reverse().map(e=>{
-    const cls=e.type==='add'?'log-add':e.type==='remove'?'log-remove':e.type==='edit'?'log-edit':'log-system';
-    return`<span class="${cls}">[${e.ts}] ${e.msg}</span>`;
-  }).join('\n');
-}
-function copyAuditLog(){
-  const text=auditLog.map(e=>`[${e.ts}] ${e.msg}`).join('\n');
-  navigator.clipboard.writeText(text).then(()=>showToast('Copied','success'));
-}
-function clearAuditLog(){
-  if(!confirm('Clear audit log?'))return;
-  auditLog=[];saveAudit();renderAuditLog();showToast('Log cleared','success');
-}
-
-// ════════════════════════════════════════════════
-// PRICE TYPE COLORS
-// ════════════════════════════════════════════════
-function getPTColor(pt){
-  if(BUILTIN_COLORS[pt])return BUILTIN_COLORS[pt];
-  if(customPTColors[pt])return customPTColors[pt];
-  return'#9090a8';
-}
-function badgeCls(type){
-  // built-in types use CSS classes, custom types use inline style via renderBadge
-  return`badge badge-${type||'none'}`;
-}
-function renderBadge(type){
-  if(!type||type==='none')return`<span class="badge badge-none">—</span>`;
-  if(BUILTIN_COLORS[type]||type==='Mixed')return`<span class="${badgeCls(type)}">${type}</span>`;
-  // custom PT
-  const col=getPTColor(type);
-  const bg=col+'22'; const border=col+'55';
-  return`<span class="badge" style="background:${bg};color:${col};border:1px solid ${border};">${type}</span>`;
-}
-
-function renderColorSwatches(){
-  const el=document.getElementById('color-swatches');
-  if(!el)return;
-  el.innerHTML=PRESET_COLORS.map(c=>`
-    <div class="color-swatch${c===selectedSwatchColor?' selected':''}"
-      style="background:${c};" onclick="selectSwatch('${c}')"></div>
-  `).join('');
-}
-function selectSwatch(c){
-  selectedSwatchColor=c;
-  renderColorSwatches();
-}
-
-function renderPriceTypeSettings(){
-  const list=document.getElementById('pt-list');
-  if(!list)return;
-  list.innerHTML=priceTypes.map((pt,i)=>{
-    const col=getPTColor(pt);
-    const isBuiltin=BUILTIN_TYPES.includes(pt);
-    return`<div class="pt-item">
-      <div class="pt-color-dot" style="background:${col};"></div>
-      <div class="pt-item-name">${pt}</div>
-      ${isBuiltin?'<span style="font-size:9px;color:var(--text3);font-family:var(--mono);">built-in</span>'
-        :`<button class="btn btn-xs btn-danger" onclick="removePriceType(${i})"><i class="fa-solid fa-trash"></i></button>`}
+// ═══════════════════════════════════════════════════════
+// HOME
+// ═══════════════════════════════════════════════════════
+function renderHomeGrid(){
+  const el=document.getElementById('home-proj-grid');
+  const roots=rootProjects();
+  if(!roots.length){
+    el.innerHTML='<div class="empty" style="grid-column:1/-1"><i class="fa-solid fa-folder-open"></i>No projects yet. Create one!</div>';
+    return;
+  }
+  el.innerHTML=roots.map(p=>{
+    const entCount=getAllEntries(p).length;
+    const subCount=childProjects(p.id).length;
+    const tagsHtml=(p.tags||[]).slice(0,3).map(t=>`<span class="tag tag-default">${escHtml(t)}</span>`).join('');
+    return`<div class="home-proj-card" onclick="openProject('${p.id}')" oncontextmenu="openCtxProj(event,'${p.id}')">
+      <div class="hpc-icon">${p.icon||'📁'}</div>
+      <div class="hpc-name">${escHtml(p.name)}</div>
+      <div class="hpc-meta">${entCount} entries · ${subCount} sub-projects</div>
+      ${tagsHtml?`<div class="hpc-tags">${tagsHtml}</div>`:''}
     </div>`;
   }).join('');
-  renderColorSwatches();
 }
 
-function populatePriceTypeFilters(){
-  const allTypes=[...priceTypes,'Mixed'];
-  const fs=document.getElementById('t-filter');
-  if(fs){
-    const curF=fs.value;
-    fs.innerHTML='<option value="">All types</option>'+allTypes.map(t=>`<option value="${t}">${t}</option>`).join('');
-    if([...fs.options].some(o=>o.value===curF))fs.value=curF;
+// ═══════════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════════
+function showHome(){
+  currentProjId=null;
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-home').classList.add('active');
+  document.getElementById('topbar-breadcrumb').innerHTML=`<span class="crumb active">Home</span>`;
+  document.getElementById('topbar-actions').innerHTML='';
+  document.querySelectorAll('.proj-item').forEach(i=>i.classList.remove('active'));
+  renderHomeGrid();
+}
+function showSearch(){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-search').classList.add('active');
+  document.getElementById('topbar-breadcrumb').innerHTML=`<span class="crumb" onclick="showHome()">Home</span><span class="sep">/</span><span class="crumb active">Search</span>`;
+}
+function openProject(id){
+  currentProjId=id;
+  const p=getProj(id);if(!p)return;
+  p._open=true;
+  document.querySelectorAll('.panel').forEach(el=>el.classList.remove('active'));
+  document.getElementById('panel-project').classList.add('active');
+  // breadcrumb
+  const crumbs=buildBreadcrumb(id);
+  document.getElementById('topbar-breadcrumb').innerHTML=crumbs;
+  document.getElementById('topbar-actions').innerHTML=`
+    <button class="btn btn-sm btn-primary" onclick="openNewEntryModal(null)"><i class="fa-solid fa-plus"></i> New entry</button>`;
+  document.getElementById('proj-view-title').innerHTML=`${p.icon||'📁'} ${escHtml(p.name)}`;
+  document.getElementById('proj-view-sub').textContent=p.desc||'';
+  renderProjTree();
+  switchProjTab(currentProjTab);
+}
+function buildBreadcrumb(id){
+  const chain=[];
+  let cur=getProj(id);
+  while(cur){ chain.unshift(cur); cur=cur.parentId?getProj(cur.parentId):null; }
+  let html=`<span class="crumb" onclick="showHome()">Home</span>`;
+  chain.forEach((p,i)=>{
+    html+=`<span class="sep">/</span>`;
+    if(i===chain.length-1) html+=`<span class="crumb active">${escHtml(p.name)}</span>`;
+    else html+=`<span class="crumb" onclick="openProject('${p.id}')">${escHtml(p.name)}</span>`;
+  });
+  return html;
+}
+
+// ═══════════════════════════════════════════════════════
+// PROJECT TABS
+// ═══════════════════════════════════════════════════════
+function switchProjTab(tab){
+  currentProjTab=tab;
+  document.querySelectorAll('.proj-tab').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.proj-tab-panel').forEach(p=>p.style.display='none');
+  document.querySelector(`.proj-tab[onclick="switchProjTab('${tab}')"]`).classList.add('active');
+  document.getElementById(`proj-tab-${tab}`).style.display='block';
+  const p=currentProj();if(!p)return;
+  if(tab==='data') renderEntryList(p.entries||[],document.getElementById('entry-list-root'),0);
+  if(tab==='fields') renderFieldDefs(p);
+  if(tab==='variables'){ renderProjVars(p); renderGlobalVars('proj'); }
+  if(tab==='tags'){ renderProjTags(p); renderGlobalTags('proj'); }
+  if(tab==='settings'){ document.getElementById('proj-setting-name').value=p.name||''; document.getElementById('proj-setting-desc').value=p.desc||''; document.getElementById('proj-setting-icon').value=p.icon||''; }
+}
+
+// ═══════════════════════════════════════════════════════
+// ENTRIES
+// ═══════════════════════════════════════════════════════
+function renderEntryList(entries, container, depth){
+  container.innerHTML='';
+  if(!entries.length){
+    container.innerHTML='<div class="empty"><i class="fa-solid fa-table-rows"></i>No entries yet.</div>';
+    return;
+  }
+  entries.forEach(e=>{
+    const row=document.createElement('div');
+    row.className='entry-row';
+    row.dataset.entryId=e.id;
+    const hasChildren=(e.children||[]).length>0;
+    const tagsBit=(e.tags||[]).map(t=>`<span class="tag tag-default" style="font-size:9px;padding:1px 5px;">${escHtml(t)}</span>`).join('');
+    const fieldsBit=Object.entries(e.fields||{}).slice(0,3).map(([k,v])=>{
+      const p=currentProj();
+      const fd=p?(p.fields||[]).find(f=>f.id===k):null;
+      return fd?`<span style="font-size:10px;color:var(--text3);font-family:var(--mono);">${escHtml(fd.name)}: <span style="color:var(--text2);">${escHtml(String(v||''))}</span></span>`:'';
+    }).filter(Boolean).join(' · ');
+    row.innerHTML=`
+      <div class="entry-header"
+        draggable="true"
+        oncontextmenu="openCtxEntry(event,'${e.id}')"
+        ontouchstart="startHold(event,'entry','${e.id}')" ontouchend="endHold()" ontouchmove="endHold()">
+        <span class="entry-drag"><i class="fa-solid fa-grip-vertical"></i></span>
+        <span class="entry-chevron${hasChildren?' ':''}${e._open?' open':''}" onclick="toggleEntryOpen('${e.id}',this)">
+          ${hasChildren?'<i class="fa-solid fa-chevron-right"></i>':'<span style="display:inline-block;width:9px;"></span>'}
+        </span>
+        <div class="entry-main">
+          <div class="entry-name">
+            <span class="entry-name-text" onclick="openEditEntryModal('${e.id}')">${escHtml(e.name||'Unnamed')}</span>
+            ${(e.variables||[]).some(v=>v.scope==='exclusive')?'<span class="scope-badge scope-exclusive" style="font-size:8px;">exclusive vars</span>':''}
+            ${tagsBit}
+          </div>
+          ${fieldsBit?`<div class="entry-sub">${fieldsBit}</div>`:''}
+        </div>
+        <div class="entry-actions">
+          <button class="btn btn-ghost btn-icon" onclick="openEditEntryModal('${e.id}')" title="Edit"><i class="fa-solid fa-pen"></i></button>
+          <button class="btn btn-ghost btn-icon" onclick="copyEntry('${e.id}')" title="Copy"><i class="fa-solid fa-copy"></i></button>
+          <button class="btn btn-ghost btn-icon" onclick="openNewEntryModal('${e.id}')" title="Add child"><i class="fa-solid fa-plus"></i></button>
+          <button class="btn btn-ghost btn-icon" onclick="openCtxEntry(event,'${e.id}')"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+        </div>
+      </div>
+      <div class="entry-children${e._open?' open':''}" id="children-${e.id}"></div>`;
+    // drag
+    const header=row.querySelector('.entry-header');
+    header.addEventListener('dragstart',ev=>{ ev.dataTransfer.setData('entry-id',e.id); row.classList.add('dragging'); });
+    header.addEventListener('dragend',()=>row.classList.remove('dragging'));
+    row.addEventListener('dragover',ev=>{ ev.preventDefault(); const half=row.getBoundingClientRect().height/2; if(ev.offsetY<half) row.classList.add('drag-over-top'); else row.classList.add('drag-over-bot'); });
+    row.addEventListener('dragleave',()=>{ row.classList.remove('drag-over-top','drag-over-bot'); });
+    row.addEventListener('drop',ev=>{ ev.preventDefault(); const fromId=ev.dataTransfer.getData('entry-id'); row.classList.remove('drag-over-top','drag-over-bot'); if(fromId&&fromId!==e.id) moveEntry(fromId,e.id); });
+    container.appendChild(row);
+    if(hasChildren && e._open){
+      const childContainer=row.querySelector(`#children-${e.id}`);
+      renderEntryList(e.children,childContainer,depth+1);
+    }
+  });
+}
+function toggleEntryOpen(id,chevEl){
+  const p=currentProj();if(!p)return;
+  const e=findEntry(p,id);if(!e)return;
+  e._open=!e._open;
+  chevEl.classList.toggle('open',e._open);
+  const childDiv=document.getElementById('children-'+id);
+  if(childDiv){ childDiv.classList.toggle('open',e._open); if(e._open) renderEntryList(e.children||[],childDiv,1); }
+}
+function moveEntry(fromId,toId){
+  const p=currentProj();if(!p)return;
+  const from=findEntry(p,fromId);if(!from)return;
+  removeEntryFromTree(p,fromId);
+  const to=findEntry(p,toId);
+  if(to){ if(!to.children) to.children=[]; to.children.push(from); from.parentId=toId; }
+  saveToLS(); switchProjTab('data');
+}
+
+// ═══════════════════════════════════════════════════════
+// CREATE / EDIT
+// ═══════════════════════════════════════════════════════
+function openNewProjModal(parentId){
+  document.getElementById('np-name').value='';
+  document.getElementById('np-desc').value='';
+  document.getElementById('np-icon').value='';
+  document.getElementById('np-parent').value=parentId||'';
+  openModal('modal-new-proj');
+  setTimeout(()=>document.getElementById('np-name').focus(),100);
+}
+function createProject(){
+  const name=document.getElementById('np-name').value.trim();
+  if(!name){showToast('Name required','error');return;}
+  const parentId=document.getElementById('np-parent').value||null;
+  const proj={
+    id:uid(),name,
+    desc:document.getElementById('np-desc').value.trim(),
+    icon:document.getElementById('np-icon').value.trim()||'📁',
+    parentId,entries:[],fields:[],variables:[],tags:[],_open:false
+  };
+  state.projects.push(proj);
+  saveToLS();closeModal('modal-new-proj');
+  renderProjTree();renderHomeGrid();
+  showToast('Project created','success');
+  openProject(proj.id);
+}
+function openNewEntryModal(parentEntryId){
+  document.getElementById('ne-name').value='';
+  document.getElementById('ne-parent-entry').value=parentEntryId||'';
+  openModal('modal-new-entry');
+  setTimeout(()=>document.getElementById('ne-name').focus(),100);
+}
+function createEntry(){
+  const p=currentProj();if(!p)return;
+  const name=document.getElementById('ne-name').value.trim();
+  if(!name){showToast('Name required','error');return;}
+  const parentEntryId=document.getElementById('ne-parent-entry').value||null;
+  const entry={id:uid(),name,parentId:parentEntryId,projId:p.id,children:[],fields:{},variables:[],tags:[],_open:false};
+  if(parentEntryId){
+    const par=findEntry(p,parentEntryId);
+    if(par){if(!par.children)par.children=[];par.children.push(entry);par._open=true;}
+  }else{ p.entries.push(entry); }
+  saveToLS();closeModal('modal-new-entry');
+  switchProjTab('data');
+  showToast('Entry created','success');
+}
+function openEditEntryModal(entryId){
+  const p=currentProj();if(!p)return;
+  const e=findEntry(p,entryId);if(!e)return;
+  editingEntryId=entryId;
+  document.getElementById('ee-title').innerHTML=`<i class="fa-solid fa-pen"></i> Edit: ${escHtml(e.name)}`;
+  document.getElementById('ee-name').value=e.name||'';
+  // fields
+  const fvEl=document.getElementById('ee-field-vals');
+  const fields=p.fields||[];
+  if(!fields.length){fvEl.innerHTML='<div style="font-size:11px;color:var(--text3);">No fields defined. Add fields in the Fields tab.</div>';}
+  else{
+    fvEl.innerHTML=fields.map(f=>{
+      const val=e.fields?.[f.id]??'';
+      return`<div class="field-val-row">
+        <div class="fvr-label">${escHtml(f.name)}<br><span class="ftype ftype-${f.type}">${f.type}</span></div>
+        <div class="fvr-value">${renderFieldInput(f,val,`ee-fv-${f.id}`)}</div>
+      </div>`;
+    }).join('');
+  }
+  // variables
+  renderEntryVarList(e);
+  // tags
+  renderEntryTagsEdit(e);
+  openModal('modal-edit-entry');
+}
+function renderFieldInput(field,val,inputId){
+  switch(field.type){
+    case 'boolean': return`<div class="bool-toggle"><label class="bool-switch"><input type="checkbox" id="${inputId}"${val?'checked':''}><span class="bool-switch-slider"></span></label><span style="font-size:11px;color:var(--text2);">${val?'Yes':'No'}</span></div>`;
+    case 'number': return`<input type="number" id="${inputId}" value="${escAttr(String(val))}">`;
+    case 'date': return`<input type="date" id="${inputId}" value="${escAttr(String(val))}">`;
+    case 'relation':{
+      const p=currentProj();
+      const linked=val?findEntry(p,val):null;
+      return`<div class="relation-pick" id="${inputId}-wrap" onclick="openRelationPicker('${field.id}','${inputId}')">
+        <i class="fa-solid fa-link" style="font-size:10px;color:var(--text3);"></i>
+        <span id="${inputId}-label">${linked?escHtml(linked.name):'Click to link entry…'}</span>
+        <input type="hidden" id="${inputId}" value="${escAttr(String(val))}">
+        ${val?`<span class="rp-clear" onclick="event.stopPropagation();clearRelation('${inputId}')"><i class="fa-solid fa-xmark"></i></span>`:''}
+      </div>`;
+    }
+    case 'text': default: return`<input type="text" id="${inputId}" value="${escAttr(String(val))}">`;
+    case 'mixed': return`<textarea id="${inputId}">${escHtml(String(val))}</textarea>`;
   }
 }
-
-function addPriceType(){
-  const inp=document.getElementById('pt-new-input');
-  const name=inp.value.trim();
-  if(!name)return;
-  if(priceTypes.includes(name)||name==='Mixed'){showToast('Already exists','error');return;}
-  priceTypes.push(name);
-  customPTColors[name]=selectedSwatchColor;
-  inp.value='';
-  populatePriceTypeFilters();
-  renderPriceTypeSettings();
-  saveToLS();
-  addAudit('add',`Added price type "${name}" (${selectedSwatchColor})`);
-  showToast('Price type added','success');
+function saveEditEntry(){
+  const p=currentProj();if(!p)return;
+  const e=findEntry(p,editingEntryId);if(!e)return;
+  e.name=document.getElementById('ee-name').value.trim()||e.name;
+  (p.fields||[]).forEach(f=>{
+    const inp=document.getElementById(`ee-fv-${f.id}`);
+    if(!inp)return;
+    if(f.type==='boolean') e.fields[f.id]=inp.checked;
+    else e.fields[f.id]=inp.value;
+  });
+  saveToLS();closeModal('modal-edit-entry');switchProjTab('data');
+  showToast('Entry saved','success');
+}
+function clearRelation(inputId){
+  const inp=document.getElementById(inputId);
+  const lbl=document.getElementById(inputId+'-label');
+  if(inp) inp.value='';
+  if(lbl) lbl.textContent='Click to link entry…';
+}
+function openRelationPicker(fieldId,inputId){
+  const p=currentProj();if(!p)return;
+  const all=getAllEntries(p).filter(e=>e.id!==editingEntryId);
+  relationPickCallback=(pickedId)=>{
+    const inp=document.getElementById(inputId);
+    const lbl=document.getElementById(inputId+'-label');
+    if(inp) inp.value=pickedId;
+    const picked=findEntry(p,pickedId);
+    if(lbl&&picked) lbl.textContent=picked.name;
+    closeModal('modal-relation-pick');
+  };
+  filterRelationPicker('');
+  openModal('modal-relation-pick');
+}
+function filterRelationPicker(q){
+  const p=currentProj();if(!p)return;
+  const all=getAllEntries(p).filter(e=>e.id!==editingEntryId);
+  const filtered=q?all.filter(e=>e.name.toLowerCase().includes(q.toLowerCase())):all;
+  const el=document.getElementById('rel-pick-list');
+  el.innerHTML=filtered.map(e=>`<div class="search-hit" onclick="if(relationPickCallback)relationPickCallback('${e.id}')">
+    <div class="search-hit-title">${escHtml(e.name)}</div>
+    <div class="search-hit-preview">${escHtml(e.id)}</div>
+  </div>`).join('');
 }
 
-function removePriceType(i){
-  const name=priceTypes[i];
-  if(BUILTIN_TYPES.includes(name)){showToast('Cannot remove built-in type','error');return;}
-  const inUse=Object.values(titles).some(t=>t.PriceType===name||(t.Data&&typeof t.Data==='object'&&name in t.Data));
-  if(inUse&&!confirm(`"${name}" is used by some titles. Remove anyway?`))return;
-  priceTypes.splice(i,1);
-  delete customPTColors[name];
-  populatePriceTypeFilters();
-  renderPriceTypeSettings();
-  saveToLS();
-  addAudit('remove',`Removed price type "${name}"`);
+// ═══════════════════════════════════════════════════════
+// COPY / PASTE / DUPLICATE
+// ═══════════════════════════════════════════════════════
+function copyEntry(id){
+  const p=currentProj();if(!p)return;
+  const e=findEntry(p,id);if(!e)return;
+  clipboard={type:'entry',data:deepCloneEntry(e)};
+  showClipboardBanner(`"${e.name}" copied`);
+  showToast('Entry copied','success');
+}
+function pasteAsChild(parentId){
+  if(!clipboard||clipboard.type!=='entry'){showToast('Nothing to paste','error');return;}
+  const p=currentProj();if(!p)return;
+  const clone=deepCloneEntry(clipboard.data);
+  clone.parentId=parentId;
+  if(parentId){
+    const par=findEntry(p,parentId);
+    if(par){if(!par.children)par.children=[];par.children.push(clone);}
+  }else{p.entries.push(clone);}
+  saveToLS();switchProjTab('data');showToast('Pasted','success');
+}
+function duplicateEntry(id){
+  const p=currentProj();if(!p)return;
+  const e=findEntry(p,id);if(!e)return;
+  const clone=deepCloneEntry(e);
+  clone.name=clone.name+' (copy)';
+  const par=findEntryParent(p,id);
+  if(par){if(!par.children)par.children=[];par.children.push(clone);}
+  else{p.entries.push(clone);}
+  saveToLS();switchProjTab('data');showToast('Duplicated','success');
+}
+function showClipboardBanner(label){
+  const b=document.getElementById('clipboard-banner');
+  document.getElementById('clipboard-label').textContent=label;
+  b.classList.add('show');
+}
+function clearClipboard(){ clipboard=null; document.getElementById('clipboard-banner').classList.remove('show'); }
+
+// ═══════════════════════════════════════════════════════
+// FIELDS
+// ═══════════════════════════════════════════════════════
+const FIELD_TYPE_LABELS={text:'Text',number:'Number',date:'Date',boolean:'Boolean',mixed:'Mixed',relation:'Relation'};
+function renderFieldDefs(p){
+  const el=document.getElementById('field-def-list');
+  const fields=p.fields||[];
+  if(!fields.length){el.innerHTML='<div style="font-size:11px;color:var(--text3);">No fields yet.</div>';return;}
+  el.innerHTML=fields.map((f,i)=>`
+    <div class="field-def-row" draggable="true" data-field-id="${f.id}">
+      <span class="fd-drag"><i class="fa-solid fa-grip-vertical"></i></span>
+      <span class="ftype ftype-${f.type}">${f.type}</span>
+      <span class="field-def-name">${escHtml(f.name)}${f.required?'<span style="color:var(--red);margin-left:3px;">*</span>':''}</span>
+      ${f.desc?`<span style="font-size:10px;color:var(--text3);">${escHtml(f.desc)}</span>`:''}
+      <div class="field-def-actions">
+        <button class="btn btn-ghost btn-xs" onclick="deleteField('${f.id}')"><i class="fa-solid fa-trash" style="color:var(--red);"></i></button>
+      </div>
+    </div>`).join('');
+  // drag to reorder fields
+  el.querySelectorAll('.field-def-row').forEach(row=>{
+    row.addEventListener('dragstart',e=>{ e.dataTransfer.setData('field-id',row.dataset.fieldId); row.style.opacity='.4'; });
+    row.addEventListener('dragend',()=>row.style.opacity='');
+    row.addEventListener('dragover',e=>{ e.preventDefault(); row.style.borderTop='2px solid var(--accent)'; });
+    row.addEventListener('dragleave',()=>row.style.borderTop='');
+    row.addEventListener('drop',e=>{ e.preventDefault(); row.style.borderTop=''; const fid=e.dataTransfer.getData('field-id'); reorderField(fid,row.dataset.fieldId); });
+  });
+}
+function openAddFieldModal(){
+  document.getElementById('af-name').value='';
+  document.getElementById('af-desc').value='';
+  document.getElementById('af-type').value='text';
+  document.getElementById('af-required').checked=false;
+  openModal('modal-add-field');
+  setTimeout(()=>document.getElementById('af-name').focus(),100);
+}
+function addField(){
+  const p=currentProj();if(!p)return;
+  const name=document.getElementById('af-name').value.trim();
+  if(!name){showToast('Name required','error');return;}
+  const field={id:uid(),name,type:document.getElementById('af-type').value,desc:document.getElementById('af-desc').value.trim(),required:document.getElementById('af-required').checked};
+  if(!p.fields)p.fields=[];
+  p.fields.push(field);
+  saveToLS();closeModal('modal-add-field');renderFieldDefs(p);
+  showToast('Field added','success');
+}
+function deleteField(id){
+  const p=currentProj();if(!p)return;
+  p.fields=(p.fields||[]).filter(f=>f.id!==id);
+  getAllEntries(p).forEach(e=>{ delete e.fields?.[id]; });
+  saveToLS();renderFieldDefs(p);showToast('Field removed','success');
+}
+function reorderField(fromId,toId){
+  const p=currentProj();if(!p)return;
+  const fields=p.fields||[];
+  const fi=fields.findIndex(f=>f.id===fromId);
+  const ti=fields.findIndex(f=>f.id===toId);
+  if(fi===-1||ti===-1)return;
+  const [item]=fields.splice(fi,1);
+  fields.splice(ti,0,item);
+  saveToLS();renderFieldDefs(p);
+}
+
+// ═══════════════════════════════════════════════════════
+// VARIABLES
+// ═══════════════════════════════════════════════════════
+function renderProjVars(p){
+  const el=document.getElementById('proj-var-list');
+  const vars=p.variables||[];
+  if(!vars.length){el.innerHTML='<div style="font-size:11px;color:var(--text3);">No project variables.</div>';return;}
+  el.innerHTML=vars.map((v,i)=>`<div class="var-row">
+    <span class="scope-badge scope-${v.scope==='exclusive'?'exclusive':'local'}">${v.scope}</span>
+    <span class="vr-name">${escHtml(v.name)}</span>
+    <span class="row-eq" style="color:var(--text3);font-family:var(--mono);font-size:11px;">=</span>
+    <span class="vr-val">${escHtml(String(v.value))}</span>
+    <button class="btn btn-ghost btn-xs" onclick="deleteVar('project',${i})"><i class="fa-solid fa-trash" style="color:var(--red);font-size:10px;"></i></button>
+  </div>`).join('');
+}
+function renderGlobalVars(ctx){
+  const elId=ctx==='proj'?'global-var-list-proj':'global-var-list';
+  const el=document.getElementById(elId);if(!el)return;
+  const vars=state.globalVars||[];
+  if(!vars.length){el.innerHTML='<div style="font-size:11px;color:var(--text3);">No global variables.</div>';return;}
+  el.innerHTML=vars.map((v,i)=>`<div class="var-row">
+    <span class="scope-badge scope-global">global</span>
+    <span class="vr-name">${escHtml(v.name)}</span>
+    <span style="color:var(--text3);font-family:var(--mono);font-size:11px;">=</span>
+    <span class="vr-val">${escHtml(String(v.value))}</span>
+    <button class="btn btn-ghost btn-xs" onclick="deleteVar('global',${i})"><i class="fa-solid fa-trash" style="color:var(--red);font-size:10px;"></i></button>
+  </div>`).join('');
+}
+function renderEntryVarList(e){
+  const el=document.getElementById('ee-var-list');if(!el)return;
+  const vars=e.variables||[];
+  if(!vars.length){el.innerHTML='<div style="font-size:11px;color:var(--text3);">No entry variables.</div>';return;}
+  el.innerHTML=vars.map((v,i)=>`<div class="var-row">
+    <span class="scope-badge scope-${v.scope==='exclusive'?'exclusive':'local'}">${v.scope}</span>
+    <span class="vr-name">${escHtml(v.name)}</span>
+    <span style="color:var(--text3);font-family:var(--mono);font-size:11px;">=</span>
+    <span class="vr-val">${escHtml(String(v.value))}</span>
+    <button class="btn btn-ghost btn-xs" onclick="deleteVar('entry',${i})"><i class="fa-solid fa-trash" style="color:var(--red);font-size:10px;"></i></button>
+  </div>`).join('');
+}
+function openAddVarModal(target){
+  addVarTarget=target;
+  document.getElementById('av-name').value='';
+  document.getElementById('av-value').value='';
+  document.getElementById('av-scope').value='local';
+  if(target==='global') document.getElementById('av-scope').value='local';
+  openModal('modal-add-var');
+  setTimeout(()=>document.getElementById('av-name').focus(),100);
+}
+function addVariable(){
+  const name=document.getElementById('av-name').value.trim();
+  const value=document.getElementById('av-value').value.trim();
+  const scope=document.getElementById('av-scope').value;
+  if(!name){showToast('Name required','error');return;}
+  const v={id:uid(),name,value,scope};
+  if(addVarTarget==='global'){
+    if(!state.globalVars)state.globalVars=[];
+    state.globalVars.push(v);
+    saveToLS();closeModal('modal-add-var');renderGlobalVars('proj');
+  } else if(addVarTarget==='project'){
+    const p=currentProj();if(!p)return;
+    if(!p.variables)p.variables=[];
+    p.variables.push(v);
+    saveToLS();closeModal('modal-add-var');renderProjVars(p);
+  } else if(addVarTarget==='entry'){
+    const p=currentProj();if(!p)return;
+    const e=findEntry(p,editingEntryId);if(!e)return;
+    if(!e.variables)e.variables=[];
+    e.variables.push(v);
+    saveToLS();renderEntryVarList(e);closeModal('modal-add-var');
+  }
+  showToast('Variable added','success');
+}
+function deleteVar(target,idx){
+  if(target==='global'){ state.globalVars.splice(idx,1); saveToLS(); renderGlobalVars('proj'); }
+  else if(target==='project'){ const p=currentProj(); p.variables.splice(idx,1); saveToLS(); renderProjVars(p); }
+  else if(target==='entry'){ const p=currentProj(); const e=findEntry(p,editingEntryId); e.variables.splice(idx,1); saveToLS(); renderEntryVarList(e); }
   showToast('Removed','success');
 }
 
-// ════════════════════════════════════════════════
-// PT ROW EDITOR
-// ════════════════════════════════════════════════
-function getUsedPTs(prefix){
-  return[...document.querySelectorAll(`#${prefix}-pt-rows .pt-data-row`)].map(r=>r.querySelector('select').value).filter(Boolean);
+// ═══════════════════════════════════════════════════════
+// TAGS
+// ═══════════════════════════════════════════════════════
+const TAG_COLORS=['#6e57ff','#3dd68c','#ff5c6b','#f5a623','#4ea8de','#e879b6','#2dd4bf','#a78bfa','#facc15','#fb7185'];
+function tagColor(tag){ let h=0; for(let c of tag) h=(h*31+c.charCodeAt(0))&0xffffffff; return TAG_COLORS[Math.abs(h)%TAG_COLORS.length]; }
+function tagHtml(t,onRemove){
+  const col=tagColor(t);
+  return`<span class="tag" style="background:${col}22;color:${col};border:1px solid ${col}44;">${escHtml(t)}${onRemove?`<button class="tag-remove" onclick="${onRemove}"><i class="fa-solid fa-xmark"></i></button>`:''}</span>`;
 }
-function refreshPTSelects(prefix){
-  const rows=[...document.querySelectorAll(`#${prefix}-pt-rows .pt-data-row`)];
-  const used=getUsedPTs(prefix);
-  rows.forEach(row=>{
-    const sel=row.querySelector('select');const cur=sel.value;
-    const others=used.filter(u=>u!==cur);
-    sel.innerHTML=priceTypes.filter(pt=>!others.includes(pt)).map(pt=>`<option value="${pt}"${pt===cur?' selected':''}>${pt}</option>`).join('');
-  });
-  updatePTResult(prefix);
+function renderProjTags(p){
+  const el=document.getElementById('proj-tags-list');if(!el)return;
+  const tags=p.tags||[];
+  el.innerHTML=tags.length?tags.map((t,i)=>tagHtml(t,`removeProjTag(${i})`)).join(''):'<span style="font-size:11px;color:var(--text3);">No tags yet.</span>';
 }
-function updatePTResult(prefix){
-  const used=getUsedPTs(prefix);
-  const resultLine=document.getElementById(`${prefix}-pt-result`);
-  const badge=document.getElementById(`${prefix}-pt-badge`);
-  const addBtn=document.getElementById(`${prefix}-add-pt-btn`);
-  if(used.length===0){resultLine.style.display='none';}
-  else{
-    resultLine.style.display='flex';
-    const pt=used.length===1?used[0]:'Mixed';
-    badge.outerHTML=renderBadge(pt).replace('class="badge','id="'+prefix+'-pt-badge" class="badge');
-  }
-  if(addBtn)addBtn.disabled=used.length>=priceTypes.length;
+function renderGlobalTags(ctx){
+  const elId=ctx==='proj'?'global-tags-list-proj':'global-tags-list';
+  const el=document.getElementById(elId);if(!el)return;
+  const tags=state.globalTags||[];
+  el.innerHTML=tags.length?tags.map((t,i)=>tagHtml(t,`removeGlobalTag(${i})`)).join(''):'<span style="font-size:11px;color:var(--text3);">No global tags.</span>';
 }
-function addPTRow(prefix,ptValue='',dataValue=''){
-  const container=document.getElementById(`${prefix}-pt-rows`);
-  const used=getUsedPTs(prefix);
-  const available=priceTypes.filter(pt=>!used.includes(pt));
-  if(available.length===0)return;
-  const row=document.createElement('div');
-  row.className='pt-data-row';
-  const chosenPT=ptValue&&priceTypes.includes(ptValue)?ptValue:available[0];
-  row.innerHTML=`
-    <select onchange="refreshPTSelects('${prefix}')">
-      ${priceTypes.filter(pt=>!used.includes(pt)||pt===ptValue).map(pt=>`<option value="${pt}"${pt===chosenPT?' selected':''}>${pt}</option>`).join('')}
-    </select>
-    <span class="row-colon">:</span>
-    <input type="text" placeholder="value or ID…" value="${escVal(dataValue)}" oninput="updatePTResult('${prefix}')">
-    <button class="btn btn-icon btn-danger btn-xs" onclick="removePTRow(this,'${prefix}')" title="Remove">
-      <i class="fa-solid fa-xmark" style="font-size:11px;"></i>
-    </button>`;
-  container.appendChild(row);
-  refreshPTSelects(prefix);
+function renderEntryTagsEdit(e){
+  const el=document.getElementById('ee-tags');if(!el)return;
+  const tags=e.tags||[];
+  el.innerHTML=tags.length?tags.map((t,i)=>tagHtml(t,`removeEntryTag(${i})`)).join(''):'<span style="font-size:11px;color:var(--text3);">No tags.</span>';
 }
-function removePTRow(btn,prefix){btn.closest('.pt-data-row').remove();refreshPTSelects(prefix);}
-function getPTData(prefix){
-  const rows=[...document.querySelectorAll(`#${prefix}-pt-rows .pt-data-row`)];
-  if(rows.length===0)return{data:'',priceType:''};
-  const obj={};
-  rows.forEach(row=>{
-    const pt=row.querySelector('select').value;
-    const val=row.querySelector('input').value.trim();
-    if(pt)obj[pt]=(!isNaN(val)&&val!=='')?Number(val):val;
-  });
-  const keys=Object.keys(obj);
-  return{data:keys.length>0?obj:'',priceType:keys.length===0?'':keys.length===1?keys[0]:'Mixed'};
+function addProjTag(){
+  const p=currentProj();if(!p)return;
+  const inp=document.getElementById('new-tag-input');
+  const t=inp.value.trim();if(!t)return;
+  if(!p.tags)p.tags=[];
+  if(!p.tags.includes(t))p.tags.push(t);
+  inp.value='';saveToLS();renderProjTags(p);
 }
-function populatePTRows(prefix,data){
-  const container=document.getElementById(`${prefix}-pt-rows`);
-  container.innerHTML='';
-  if(!data||data===''||typeof data!=='object'){updatePTResult(prefix);return;}
-  for(const[pt,val]of Object.entries(data)){
-    if(priceTypes.includes(pt))addPTRow(prefix,pt,Array.isArray(val)?val.join(', '):String(val));
-  }
-  refreshPTSelects(prefix);
+function addGlobalTag(){
+  const inp=document.getElementById('new-global-tag-input');
+  const t=inp.value.trim();if(!t)return;
+  if(!state.globalTags)state.globalTags=[];
+  if(!state.globalTags.includes(t))state.globalTags.push(t);
+  inp.value='';saveToLS();renderGlobalTags('proj');
 }
-function clearPTRows(prefix){document.getElementById(`${prefix}-pt-rows`).innerHTML='';updatePTResult(prefix);}
+function addEntryTag(){
+  const p=currentProj();if(!p)return;
+  const e=findEntry(p,editingEntryId);if(!e)return;
+  const inp=document.getElementById('ee-tag-input');
+  const t=inp.value.trim();if(!t)return;
+  if(!e.tags)e.tags=[];
+  if(!e.tags.includes(t))e.tags.push(t);
+  inp.value='';saveToLS();renderEntryTagsEdit(e);
+}
+function removeProjTag(i){ const p=currentProj();if(!p)return; p.tags.splice(i,1);saveToLS();renderProjTags(p); }
+function removeGlobalTag(i){ state.globalTags.splice(i,1);saveToLS();renderGlobalTags('proj'); }
+function removeEntryTag(i){ const p=currentProj();if(!p)return; const e=findEntry(p,editingEntryId);if(!e)return; e.tags.splice(i,1);saveToLS();renderEntryTagsEdit(e); }
 
-// ════════════════════════════════════════════════
-// RENDER
-// ════════════════════════════════════════════════
-function renderDashboard(){
-  document.getElementById('stats-grid').innerHTML=`
-    <div class="stat-card"><div class="stat-val">${Object.keys(titles).length}</div><div class="stat-label">Titles</div></div>
-    <div class="stat-card"><div class="stat-val">${Object.keys(ranks).length}</div><div class="stat-label">Ranks</div></div>`;
-  const recentKeys=Object.keys(titles).slice(0,6);
-  const el=document.getElementById('recent-titles');
-  if(!recentKeys.length){el.innerHTML='<div class="empty-state"><i class="fa-solid fa-tags"></i>No titles yet</div>';return;}
-  el.innerHTML=recentKeys.map(key=>{
-    const t=titles[key];const parsed=parseColorString(t.Display||'');
-    return`<div class="entry" style="margin-bottom:5px;"><div class="entry-info">
-      <div class="entry-key">${key}</div>
-      <div class="entry-display">${parsed||'<em style="color:#555568;font-size:11px;">no display</em>'}</div>
-      <div class="entry-meta">${renderBadge(t.PriceType)}</div>
-    </div></div>`;
-  }).join('');
+// ═══════════════════════════════════════════════════════
+// PROJECT SETTINGS
+// ═══════════════════════════════════════════════════════
+function updateProjSetting(key,val){
+  const p=currentProj();if(!p)return;
+  p[key]=val;
+  if(key==='name'){ document.getElementById('proj-view-title').innerHTML=`${p.icon||'📁'} ${escHtml(val)}`; renderProjTree(); renderHomeGrid(); }
+  if(key==='icon'){ document.getElementById('proj-view-title').innerHTML=`${val||'📁'} ${escHtml(p.name)}`; renderProjTree(); renderHomeGrid(); }
+  saveToLS();
 }
-
-function renderTitles(){
-  const search=document.getElementById('t-search').value.toLowerCase();
-  const filter=document.getElementById('t-filter').value;
-  const list=document.getElementById('titles-list');
-  const filtered=Object.keys(titles).sort().filter(key=>{
-    const t=titles[key];
-    if(filter&&t.PriceType!==filter)return false;
-    if(search&&!key.toLowerCase().includes(search)&&!(t.Display||'').toLowerCase().includes(search))return false;
-    return true;
-  });
-  if(!filtered.length){list.innerHTML='<div class="empty-state"><i class="fa-solid fa-tags"></i>No titles found</div>';return;}
-  list.innerHTML=filtered.map(key=>{
-    const t=titles[key];const parsed=parseColorString(t.Display||'');
-    const dataKeys=(t.Data&&typeof t.Data==='object')?Object.keys(t.Data):[];
-    const dataBits=dataKeys.map(k=>`<span style="font-size:9px;color:var(--text3);font-family:var(--mono);">${k}</span>`).join(' ');
-    return`<div class="entry" data-key="${escAttr(key)}" data-kind="title"
-      oncontextmenu="openCtxMenu(event,'title','${escAttr(key)}')"
-      ontouchstart="startHold(event,'title','${escAttr(key)}')" ontouchend="endHold()" ontouchmove="endHold()">
-      <div class="entry-info">
-        <div class="entry-key">${key}</div>
-        <div class="entry-display">${parsed||'<em style="color:#555568;font-size:11px;">no display</em>'}</div>
-        <div class="entry-meta">${renderBadge(t.PriceType)}${dataBits}${t.Desc?`<span class="desc-text">${t.Desc}</span>`:''}</div>
-      </div>
-      <button class="entry-more-btn" title="Options" onclick="openCtxMenu(event,'title','${escAttr(key)}')">
-        <i class="fa-solid fa-ellipsis-vertical"></i>
-      </button>
-    </div>`;
-  }).join('');
-}
-
-function renderRanks(){
-  const list=document.getElementById('ranks-list');
-  const keys=Object.keys(ranks).sort((a,b)=>+b-+a);
-  if(!keys.length){list.innerHTML='<div class="empty-state"><i class="fa-solid fa-ranking-star"></i>No ranks defined</div>';return;}
-  list.innerHTML=keys.map(key=>{
-    const r=ranks[key];const parsed=parseColorString(r.Display||'');
-    return`<div class="entry" data-key="${escAttr(key)}" data-kind="rank"
-      oncontextmenu="openCtxMenu(event,'rank','${escAttr(key)}')"
-      ontouchstart="startHold(event,'rank','${escAttr(key)}')" ontouchend="endHold()" ontouchmove="endHold()">
-      <div class="entry-info">
-        <div class="entry-key">level ${key}</div>
-        <div class="entry-display">${parsed||'<em style="color:#555568;font-size:11px;">empty rank</em>'}</div>
-      </div>
-      <button class="entry-more-btn" title="Options" onclick="openCtxMenu(event,'rank','${escAttr(key)}')">
-        <i class="fa-solid fa-ellipsis-vertical"></i>
-      </button>
-    </div>`;
-  }).join('');
-}
-
-function renderAll(){
-  populatePriceTypeFilters();
-  renderDashboard();renderTitles();renderRanks();renderPriceTypeSettings();renderAuditLog();
-}
-
-function escAttr(s){return String(s).replace(/'/g,"\\'").replace(/"/g,'&quot;');}
-function escVal(s){return String(s).replace(/"/g,'&quot;');}
-
-// ════════════════════════════════════════════════
-// CONTEXT MENU
-// ════════════════════════════════════════════════
-let ctxKind=null,ctxKey=null,holdTimer=null;
-function openCtxMenu(event,kind,key){
-  event.preventDefault();event.stopPropagation();
-  ctxKind=kind;ctxKey=key;
-  const menu=document.getElementById('ctx-menu');
-  menu.classList.add('open');
-  let x=event.clientX,y=event.clientY;
-  if(event.touches&&event.touches.length>0){x=event.touches[0].clientX;y=event.touches[0].clientY;}
-  menu.style.left='0';menu.style.top='0';
-  requestAnimationFrame(()=>{
-    const mw=menu.offsetWidth,mh=menu.offsetHeight;
-    menu.style.left=Math.min(x,window.innerWidth-mw-8)+'px';
-    menu.style.top=Math.min(y,window.innerHeight-mh-8)+'px';
-  });
-  document.getElementById('ctx-copy').onclick=()=>{closeCtx();copyAction(kind,key);};
-  document.getElementById('ctx-edit').onclick=()=>{closeCtx();editAction(kind,key);};
-  document.getElementById('ctx-delete').onclick=()=>{closeCtx();promptDelete(kind,key);};
-  document.querySelectorAll('.entry-more-btn.open').forEach(b=>b.classList.remove('open'));
-  const entry=document.querySelector(`.entry[data-key="${CSS.escape(key)}"][data-kind="${kind}"]`);
-  if(entry)entry.querySelector('.entry-more-btn').classList.add('open');
-}
-function closeCtx(){
-  document.getElementById('ctx-menu').classList.remove('open');
-  document.querySelectorAll('.entry-more-btn.open').forEach(b=>b.classList.remove('open'));
-}
-function startHold(event,kind,key){endHold();holdTimer=setTimeout(()=>{holdTimer=null;openCtxMenu(event,kind,key);},500);}
-function endHold(){if(holdTimer!==null){clearTimeout(holdTimer);holdTimer=null;}}
-document.addEventListener('click',e=>{if(!document.getElementById('ctx-menu').contains(e.target))closeCtx();});
-document.addEventListener('scroll',closeCtx,true);
-function copyAction(kind,key){
-  const disp=kind==='title'?(titles[key]&&titles[key].Display):(ranks[key]&&ranks[key].Display);
-  navigator.clipboard.writeText(disp||'').then(()=>showToast('Copied','success'));
-}
-function editAction(kind,key){if(kind==='title')openEditTitle(key);else openEditRank(key);}
-
-// ════════════════════════════════════════════════
-// ACTIONS
-// ════════════════════════════════════════════════
-function addTitle(){
-  const key=document.getElementById('t-key').value.trim();
-  const display=document.getElementById('t-display').value.trim();
-  const desc=document.getElementById('t-desc').value.trim();
-  if(!key){showToast('Key is required','error');return;}
-  if(titles[key]){showToast('Key already exists','error');return;}
-  const{data,priceType}=getPTData('t');
-  titles[key]={Display:display,PriceType:priceType||'',Desc:desc,Data:data};
-  document.getElementById('t-key').value='';
-  document.getElementById('t-display').value='';
-  document.getElementById('t-desc').value='';
-  clearPTRows('t');
-  saveToLS();renderTitles();renderDashboard();
-  addAudit('add',`Added title "${key}" (${priceType||'no type'}) — Display: ${display}`);
-  showToast('Title added','success');
-}
-function addRank(){
-  const level=document.getElementById('r-level').value.trim();
-  const display=document.getElementById('r-display').value.trim();
-  if(!level||isNaN(+level)){showToast('Valid level number required','error');return;}
-  if(ranks[level]){showToast('Rank level already exists','error');return;}
-  ranks[level]={Display:display};
-  document.getElementById('r-level').value='';
-  document.getElementById('r-display').value='';
-  saveToLS();renderRanks();renderDashboard();
-  addAudit('add',`Added rank level ${level} — Display: ${display}`);
-  showToast('Rank added','success');
-}
-
-let deleteTarget=null;
-function promptDelete(kind,key){
-  deleteTarget={kind,key};
-  document.getElementById('del-modal-title').textContent=`Remove ${kind} "${key}"?`;
-  document.getElementById('del-modal-body').textContent=`This will permanently remove "${key}".`;
-  document.getElementById('del-modal').classList.add('open');
+function deleteCurrentProject(){
+  const p=currentProj();if(!p)return;
+  deleteTarget={type:'project',id:p.id};
+  document.getElementById('del-title').textContent=`Delete "${p.name}"?`;
+  document.getElementById('del-body').textContent=`This will delete the project and ALL its entries and sub-projects. This cannot be undone.`;
+  openModal('modal-delete');
 }
 function confirmDelete(){
   if(!deleteTarget)return;
-  const{kind,key}=deleteTarget;
-  const snapshot=kind==='title'?JSON.stringify(titles[key]):JSON.stringify(ranks[key]);
-  if(kind==='title'){delete titles[key];renderTitles();}
-  else{delete ranks[key];renderRanks();}
-  saveToLS();renderDashboard();
-  addAudit('remove',`Removed ${kind} "${key}" — was: ${snapshot}`);
-  showToast('Removed','success');
-  closeModal('del-modal');
+  if(deleteTarget.type==='project'){
+    const ids=allDescendantProjIds(deleteTarget.id);
+    state.projects=state.projects.filter(p=>!ids.includes(p.id));
+    saveToLS();closeModal('modal-delete');showHome();renderProjTree();renderHomeGrid();
+    showToast('Project deleted','success');
+  } else if(deleteTarget.type==='entry'){
+    const p=currentProj();if(!p)return;
+    removeEntryFromTree(p,deleteTarget.id);
+    saveToLS();closeModal('modal-delete');switchProjTab('data');
+    showToast('Entry deleted','success');
+  }
+  deleteTarget=null;
 }
-function closeModal(id){
-  document.getElementById(id).classList.remove('open');
-  if(id==='del-modal')deleteTarget=null;
+
+// ═══════════════════════════════════════════════════════
+// GLOBAL SEARCH
+// ═══════════════════════════════════════════════════════
+let searchDebounce=null;
+function globalSearchInput(q){
+  clearTimeout(searchDebounce);
+  if(!q.trim()){if(currentProjId)openProject(currentProjId);else showHome();return;}
+  searchDebounce=setTimeout(()=>runSearch(q),200);
 }
+function runSearch(q){
+  const ql=q.toLowerCase();
+  const hits=[];
+  state.projects.forEach(p=>{
+    if(p.name.toLowerCase().includes(ql)||( p.desc&&p.desc.toLowerCase().includes(ql)))
+      hits.push({type:'project',projId:p.id,path:getProjPath(p.id),title:p.name,preview:p.desc||''});
+    getAllEntries(p).forEach(e=>{
+      const matchName=e.name.toLowerCase().includes(ql);
+      const matchFields=Object.entries(e.fields||{}).some(([,v])=>String(v).toLowerCase().includes(ql));
+      const matchTags=(e.tags||[]).some(t=>t.toLowerCase().includes(ql));
+      if(matchName||matchFields||matchTags){
+        const preview=matchFields?Object.entries(e.fields||{}).filter(([,v])=>String(v).toLowerCase().includes(ql)).map(([k,v])=>{const fd=(p.fields||[]).find(f=>f.id===k);return fd?`${fd.name}: ${v}`:''}).filter(Boolean).join(' · '):'';
+        hits.push({type:'entry',projId:p.id,entryId:e.id,path:getProjPath(p.id)+' / '+e.name,title:e.name,preview});
+      }
+    });
+  });
+  showSearch();
+  document.getElementById('search-sub').textContent=`${hits.length} result${hits.length!==1?'s':''} for "${q}"`;
+  const el=document.getElementById('search-results-list');
+  if(!hits.length){el.innerHTML='<div class="empty"><i class="fa-solid fa-magnifying-glass"></i>No results found.</div>';return;}
+  el.innerHTML=hits.map(h=>`<div class="search-hit" onclick="${h.type==='project'?`openProject('${h.projId}')`:`openProject('${h.projId}');setTimeout(()=>openEditEntryModal('${h.entryId}'),400)`}">
+    <div class="search-hit-path">${h.type==='project'?'📁 Project':'📄 Entry'} · ${escHtml(h.path)}</div>
+    <div class="search-hit-title">${highlight(h.title,q)}</div>
+    ${h.preview?`<div class="search-hit-preview">${highlight(h.preview,q)}</div>`:''}
+  </div>`).join('');
+}
+function getProjPath(id){
+  const chain=[];let cur=getProj(id);
+  while(cur){chain.unshift(cur.name);cur=cur.parentId?getProj(cur.parentId):null;}
+  return chain.join(' / ');
+}
+function highlight(text,q){
+  const re=new RegExp('('+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi');
+  return escHtml(text).replace(re,'<mark>$1</mark>');
+}
+
+// ═══════════════════════════════════════════════════════
+// IMPORT / EXPORT
+// ═══════════════════════════════════════════════════════
+function exportProject(){
+  const p=currentProj();if(!p)return;
+  const blob=new Blob([JSON.stringify(p,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`${p.name}-export.json`;a.click();
+  showToast('Exported','success');
+}
+function openImportModal(){ openModal('modal-import'); }
+function handleImport(e){
+  const file=e.target.files[0];if(!file)return;
+  const r=new FileReader();r.onload=ev=>{
+    try{
+      const data=JSON.parse(ev.target.result);
+      if(data.entries&&data.fields){
+        // it's a project export
+        data.id=uid();data.parentId=null;
+        state.projects.push(data);
+        saveToLS();renderProjTree();renderHomeGrid();
+        closeModal('modal-import');showToast('Imported project','success');
+        openProject(data.id);
+      }else{showToast('Invalid file format','error');}
+    }catch(err){showToast('Invalid JSON','error');}
+  };r.readAsText(file);
+  e.target.value='';
+}
+
+// ═══════════════════════════════════════════════════════
+// CONTEXT MENU
+// ═══════════════════════════════════════════════════════
+let ctxTarget=null;
+let holdTimer2=null;
+function openCtxEntry(event,id){
+  event.preventDefault();event.stopPropagation();
+  ctxTarget={type:'entry',id};
+  const hasPaste=clipboard&&clipboard.type==='entry';
+  document.getElementById('ctx-open').style.display='none';
+  document.getElementById('ctx-edit').style.display='flex';
+  document.getElementById('ctx-copy').style.display='flex';
+  document.getElementById('ctx-paste').style.display=hasPaste?'flex':'none';
+  document.getElementById('ctx-duplicate').style.display='flex';
+  document.getElementById('ctx-new-sub').style.display='flex';
+  document.getElementById('ctx-new-subproj').style.display='none';
+  document.getElementById('ctx-delete').style.display='flex';
+  positionCtx(event);
+  document.getElementById('ctx-edit').onclick=()=>{closeCtx();openEditEntryModal(id);};
+  document.getElementById('ctx-copy').onclick=()=>{closeCtx();copyEntry(id);};
+  document.getElementById('ctx-paste').onclick=()=>{closeCtx();pasteAsChild(id);};
+  document.getElementById('ctx-duplicate').onclick=()=>{closeCtx();duplicateEntry(id);};
+  document.getElementById('ctx-new-sub').onclick=()=>{closeCtx();openNewEntryModal(id);};
+  document.getElementById('ctx-delete').onclick=()=>{closeCtx();deleteTarget={type:'entry',id};document.getElementById('del-title').textContent='Delete entry?';document.getElementById('del-body').textContent='This will also delete all child entries.';openModal('modal-delete');};
+}
+function openCtxProj(event,id){
+  event.preventDefault();event.stopPropagation();
+  ctxTarget={type:'project',id};
+  document.getElementById('ctx-open').style.display='flex';
+  document.getElementById('ctx-edit').style.display='none';
+  document.getElementById('ctx-copy').style.display='none';
+  document.getElementById('ctx-paste').style.display='none';
+  document.getElementById('ctx-duplicate').style.display='none';
+  document.getElementById('ctx-new-sub').style.display='none';
+  document.getElementById('ctx-new-subproj').style.display='flex';
+  document.getElementById('ctx-delete').style.display='flex';
+  positionCtx(event);
+  document.getElementById('ctx-open').onclick=()=>{closeCtx();openProject(id);};
+  document.getElementById('ctx-new-subproj').onclick=()=>{closeCtx();openNewProjModal(id);};
+  document.getElementById('ctx-delete').onclick=()=>{closeCtx();deleteTarget={type:'project',id};const p=getProj(id);document.getElementById('del-title').textContent=`Delete "${p?.name}"?`;document.getElementById('del-body').textContent='This will delete the project and ALL its entries and sub-projects.';openModal('modal-delete');};
+}
+function positionCtx(event){
+  const menu=document.getElementById('ctx-menu');
+  menu.classList.add('open');
+  let x=event.clientX,y=event.clientY;
+  menu.style.left='0';menu.style.top='0';
+  requestAnimationFrame(()=>{
+    menu.style.left=Math.min(x,window.innerWidth-menu.offsetWidth-8)+'px';
+    menu.style.top=Math.min(y,window.innerHeight-menu.offsetHeight-8)+'px';
+  });
+}
+function closeCtx(){ document.getElementById('ctx-menu').classList.remove('open'); }
+function startHold(event,type,id){
+  endHold();
+  holdTimer=setTimeout(()=>{
+    holdTimer=null;
+    if(type==='entry') openCtxEntry(event,id);
+    else openCtxProj(event,id);
+  },500);
+}
+function endHold(){ if(holdTimer!==null){clearTimeout(holdTimer);holdTimer=null;} }
+document.addEventListener('click',e=>{ if(!document.getElementById('ctx-menu').contains(e.target)) closeCtx(); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'){closeCtx();document.querySelectorAll('.modal-bg.open').forEach(m=>m.classList.remove('open'));} if((e.metaKey||e.ctrlKey)&&e.key==='k'){e.preventDefault();document.getElementById('global-search-input').focus();} });
+
+// ═══════════════════════════════════════════════════════
+// MODAL HELPERS
+// ═══════════════════════════════════════════════════════
+function openModal(id){ document.getElementById(id).classList.add('open'); }
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
 document.querySelectorAll('.modal-bg').forEach(bg=>{
-  bg.addEventListener('click',e=>{if(e.target===bg)bg.classList.remove('open');});
+  bg.addEventListener('click',e=>{ if(e.target===bg) bg.classList.remove('open'); });
 });
 
-let editingKey=null;
-function openEditTitle(key){
-  const t=titles[key];if(!t)return;
-  editingKey=key;
-  document.getElementById('et-key').value=key;
-  document.getElementById('et-display').value=t.Display||'';
-  document.getElementById('et-desc').value=t.Desc||'';
-  clearPTRows('et');
-  if(t.Data&&typeof t.Data==='object')populatePTRows('et',t.Data);
-  updateEditTitlePreview();
-  document.getElementById('edit-title-modal').classList.add('open');
-}
-function updateEditTitlePreview(){document.getElementById('et-preview').innerHTML=parseColorString(document.getElementById('et-display').value)||'';}
-function saveEditTitle(){
-  const key=editingKey;if(!key||!titles[key])return;
-  const oldSnap=JSON.stringify(titles[key]);
-  const{data,priceType}=getPTData('et');
-  titles[key]={Display:document.getElementById('et-display').value.trim(),PriceType:priceType||'',Desc:document.getElementById('et-desc').value.trim(),Data:data};
-  saveToLS();renderTitles();renderDashboard();
-  addAudit('edit',`Edited title "${key}" — before: ${oldSnap}`);
-  closeModal('edit-title-modal');showToast('Title updated','success');
-}
-function openEditRank(key){
-  const r=ranks[key];if(!r)return;
-  editingKey=key;
-  document.getElementById('er-level').value=key;
-  document.getElementById('er-display').value=r.Display||'';
-  updateEditRankPreview();
-  document.getElementById('edit-rank-modal').classList.add('open');
-}
-function updateEditRankPreview(){document.getElementById('er-preview').innerHTML=parseColorString(document.getElementById('er-display').value)||'';}
-function saveEditRank(){
-  const key=editingKey;if(!key||!ranks[key])return;
-  const oldSnap=JSON.stringify(ranks[key]);
-  ranks[key]={Display:document.getElementById('er-display').value.trim()};
-  saveToLS();renderRanks();renderDashboard();
-  addAudit('edit',`Edited rank level ${key} — before: ${oldSnap}`);
-  closeModal('edit-rank-modal');showToast('Rank updated','success');
-}
-
-// ════════════════════════════════════════════════
-// PREVIEW
-// ════════════════════════════════════════════════
-function runPreview(){
-  const rt=parseColorString(document.getElementById('cp-input').value);
-  document.getElementById('cp-dark').querySelector('.preview-text').innerHTML=rt||'';
-  document.getElementById('cp-light').querySelector('.preview-text').innerHTML=rt||'';
-  document.getElementById('cp-raw').textContent=rt;
-}
-
-// ════════════════════════════════════════════════
-// LUA EXPORT
-// ════════════════════════════════════════════════
-function buildLua(){
-  const lines=['local TitleData = {}','','TitleData.Title = {','\t["none"] = "",'];
-  for(const[key,t]of Object.entries(titles)){
-    lines.push(`\t["${key}"] = {`);
-    lines.push(`\t\tDisplay = ${JSON.stringify(t.Display||'')},`);
-    lines.push(`\t\tPriceType = ${JSON.stringify(t.PriceType||'')},`);
-    lines.push(`\t\tDesc = ${JSON.stringify(t.Desc||'')},`);
-    const data=t.Data;
-    if(!data||data===''){lines.push('\t\tData = ""');}
-    else if(typeof data==='object'&&!Array.isArray(data)){
-      lines.push('\t\tData = {');
-      for(const[dk,dv]of Object.entries(data)){
-        if(Array.isArray(dv))lines.push(`\t\t\t${dk} = {${dv.map(v=>JSON.stringify(String(v))).join(', ')}},`);
-        else lines.push(`\t\t\t${dk} = ${typeof dv==='number'?dv:JSON.stringify(dv)},`);
-      }
-      lines.push('\t\t}');
-    }else{lines.push(`\t\tData = ${JSON.stringify(String(data))}`);}
-    lines.push('\t},');
-  }
-  lines.push('}','','TitleData.Rank = {');
-  for(const key of Object.keys(ranks).sort((a,b)=>+b-+a)){
-    lines.push(`\t[${key}] = { Display = ${JSON.stringify(ranks[key].Display||'')} },`);
-  }
-  lines.push('}','','return TitleData');
-  return lines.join('\n');
-}
-function copyLua(){navigator.clipboard.writeText(buildLua()).then(()=>showToast('Copied','success'));}
-function downloadLua(){
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob([buildLua()],{type:'text/plain'}));
-  a.download='TitleData.lua';a.click();
-}
-
-// ════════════════════════════════════════════════
-// JSON IMPORT / EXPORT
-// ════════════════════════════════════════════════
-function exportJSON(){
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob([JSON.stringify({titles,ranks,priceTypes,customPTColors,exportedAt:new Date().toISOString()},null,2)],{type:'application/json'}));
-  a.download='titledata-backup.json';a.click();
-  showToast('Backup downloaded','success');
-}
-function loadFile(e){const file=e.target.files[0];if(!file)return;const r=new FileReader();r.onload=ev=>processImport(ev.target.result);r.readAsText(file);e.target.value='';}
-function dragOver(e){e.preventDefault();document.getElementById('drop-zone').classList.add('drag-over');}
-function dragLeave(e){document.getElementById('drop-zone').classList.remove('drag-over');}
-function dropFile(e){e.preventDefault();dragLeave();const file=e.dataTransfer.files[0];if(!file)return;const r=new FileReader();r.onload=ev=>processImport(ev.target.result);r.readAsText(file);}
-function processImport(text){
-  try{
-    const data=JSON.parse(text);
-    const mode=document.getElementById('import-mode').value;
-    if(mode==='replace'){titles=data.titles||{};ranks=data.ranks||{};priceTypes=data.priceTypes||[...BUILTIN_TYPES];customPTColors=data.customPTColors||{};}
-    else{Object.assign(titles,data.titles||{});Object.assign(ranks,data.ranks||{});if(data.priceTypes)data.priceTypes.forEach(pt=>{if(!priceTypes.includes(pt))priceTypes.push(pt);});if(data.customPTColors)Object.assign(customPTColors,data.customPTColors);}
-    BUILTIN_TYPES.forEach(bt=>{if(!priceTypes.includes(bt))priceTypes.unshift(bt);});
-    saveToLS();renderAll();
-    addAudit('system',`Imported JSON (${mode}) — ${Object.keys(data.titles||{}).length} titles, ${Object.keys(data.ranks||{}).length} ranks`);
-    showToast(`Imported — ${Object.keys(data.titles||{}).length} titles`,'success');
-  }catch(e){showToast('Invalid JSON: '+e.message,'error');}
-}
-
-// ════════════════════════════════════════════════
-// TABS
-// ════════════════════════════════════════════════
-function switchTab(id){
-  document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
-  document.querySelectorAll('.mobile-nav-btn').forEach(b=>b.classList.remove('active'));
-  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
-  document.getElementById('panel-'+id).classList.add('active');
-  document.querySelectorAll(`.nav-item[onclick="switchTab('${id}')"]`).forEach(b=>b.classList.add('active'));
-  document.querySelectorAll(`.mobile-nav-btn[onclick="switchTab('${id}')"]`).forEach(b=>{
-    b.classList.add('active');
-    // scroll active btn into view on mobile nav
-    b.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
-  });
-  if(id==='export')document.getElementById('lua-out').textContent=buildLua();
-  if(id==='preview')runPreview();
-  if(id==='settings')renderPriceTypeSettings();
-  if(id==='auditlog')renderAuditLog();
-  if(id==='versionhistory')renderVH();
-  if(id==='importexport'){updateLSStatus();updateDriveUI();}
-  closeCtx();
-}
-
-// ════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 // TOAST
-// ════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 let toastTimer=null;
 function showToast(msg,type=''){
   const t=document.getElementById('toast');
@@ -1260,362 +1700,328 @@ function showToast(msg,type=''){
   clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),2200);
 }
 
-// ════════════════════════════════════════════════
-// PWA
-// ════════════════════════════════════════════════
-let deferredPrompt=null;
-window.addEventListener('beforeinstallprompt',e=>{
-  e.preventDefault();deferredPrompt=e;
-  if(!localStorage.getItem('pwa_dismissed')){
-    document.getElementById('install-banner').classList.add('show');
-  }
-});
-function installPWA(){
-  if(!deferredPrompt)return;
-  deferredPrompt.prompt();
-  deferredPrompt.userChoice.then(()=>{deferredPrompt=null;dismissInstall();});
+// ═══════════════════════════════════════════════════════
+// MOBILE
+// ═══════════════════════════════════════════════════════
+function toggleMobileMenu(){
+  const sb=document.getElementById('sidebar');
+  const ov=document.getElementById('sidebar-overlay');
+  sb.classList.toggle('mobile-open');
+  ov.classList.toggle('show',sb.classList.contains('mobile-open'));
 }
-function dismissInstall(){
-  document.getElementById('install-banner').classList.remove('show');
-  localStorage.setItem('pwa_dismissed','1');
+function closeMobileMenu(){
+  document.getElementById('sidebar').classList.remove('mobile-open');
+  document.getElementById('sidebar-overlay').classList.remove('show');
 }
-if('serviceWorker' in navigator){
-  window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('./sw.js').catch(()=>{});
-  });
+function checkMobile(){
+  const isMobile=window.innerWidth<=700;
+  document.getElementById('mobile-menu-btn').style.display=isMobile?'flex':'none';
+}
+window.addEventListener('resize',checkMobile);
+
+// ═══════════════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════════════
+function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function escAttr(s){ return String(s).replace(/"/g,'&quot;'); }
+
+// ═══════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════
+// PANEL NAVIGATION (extra panels)
+// ═══════════════════════════════════════════════════════
+function showPanel(name){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+  document.getElementById('topbar-breadcrumb').innerHTML=
+    `<span class="crumb" onclick="showHome()">Home</span><span class="sep">/</span><span class="crumb active">${name==='audit'?'Audit Log':name==='versions'?'Version History':'Drive Sync'}</span>`;
+  document.getElementById('topbar-actions').innerHTML='';
+  if(name==='audit') renderAuditLog();
+  if(name==='versions') renderVH();
+  if(name==='drive') updateDriveUI();
 }
 
-
-// ════════════════════════════════════════════════
-// VERSION HISTORY (local + drive)
-// ════════════════════════════════════════════════
-const LS_VH = 'titledata_vh_v1';
-const VH_MAX_LOCAL = 30;
-let snapshots = []; // [{id, label, ts, source, data:{titles,ranks,priceTypes,customPTColors}}]
-let previewSnapshotId = null;
-
-function loadSnapshots(){
-  try{ const r=localStorage.getItem(LS_VH); if(r) snapshots=JSON.parse(r); }
-  catch(e){ snapshots=[]; }
+// ═══════════════════════════════════════════════════════
+// AUDIT LOG
+// ═══════════════════════════════════════════════════════
+const LS_AUDIT='utm_audit_v1';
+let auditLog=[];
+function loadAudit(){ try{ const r=localStorage.getItem(LS_AUDIT); if(r) auditLog=JSON.parse(r); }catch(e){ auditLog=[]; } }
+function saveAudit(){ try{ localStorage.setItem(LS_AUDIT,JSON.stringify(auditLog.slice(-500))); }catch(e){} }
+function addAudit(type,msg){
+  auditLog.push({type,msg,ts:new Date().toLocaleString()});
+  saveAudit();
 }
-function saveSnapshots(){
-  try{ localStorage.setItem(LS_VH, JSON.stringify(snapshots.slice(-VH_MAX_LOCAL))); }
-  catch(e){}
+function renderAuditLog(){
+  const box=document.getElementById('audit-log-box');if(!box)return;
+  if(!auditLog.length){box.textContent='No entries yet.';return;}
+  box.innerHTML=[...auditLog].reverse().map(e=>{
+    const cls=e.type==='add'?'log-add':e.type==='remove'?'log-remove':e.type==='edit'?'log-edit':'log-system';
+    return`<span class="${cls}">[${e.ts}] ${e.msg}</span>`;
+  }).join('
+');
 }
-function saveSnapshot(label='auto', source='local'){
-  const snap = {
-    id: Date.now().toString(),
-    label: label==='manual'?'Manual snapshot':label,
-    ts: new Date().toLocaleString(),
-    source,
-    data: JSON.parse(JSON.stringify({titles,ranks,priceTypes,customPTColors}))
-  };
-  snapshots.push(snap);
-  saveSnapshots();
-  renderVH();
-  if(driveReady && source !== 'drive') driveUploadSnapshots();
-  if(label==='manual') showToast('Snapshot saved','success');
+function copyAuditLog(){ navigator.clipboard.writeText(auditLog.map(e=>`[${e.ts}] ${e.msg}`).join('
+')).then(()=>showToast('Copied','success')); }
+function clearAuditLog(){ if(!confirm('Clear audit log?'))return; auditLog=[];saveAudit();renderAuditLog();showToast('Cleared','success'); }
+
+// ═══════════════════════════════════════════════════════
+// VERSION HISTORY
+// ═══════════════════════════════════════════════════════
+const LS_VH='utm_vh_v1';
+let snapshots=[];
+let previewSnapId=null;
+function loadSnapshots(){ try{ const r=localStorage.getItem(LS_VH); if(r) snapshots=JSON.parse(r); }catch(e){ snapshots=[]; } }
+function saveSnapshots(){ try{ localStorage.setItem(LS_VH,JSON.stringify(snapshots.slice(-50))); }catch(e){} }
+function saveSnapshot(label='auto'){
+  const snap={id:Date.now().toString(),label,ts:new Date().toLocaleString(),source:'local',data:JSON.parse(JSON.stringify(state))};
+  snapshots.push(snap);saveSnapshots();
+  if(driveReady) driveUploadSnapshots();
+  if(label!=='auto') showToast('Snapshot saved','success');
 }
 function renderVH(){
-  const list = document.getElementById('vh-list');
-  if(!list) return;
-  if(!snapshots.length){ list.innerHTML='<div class="empty-state"><i class="fa-solid fa-code-branch"></i>No snapshots yet.</div>'; return; }
-  list.innerHTML = [...snapshots].reverse().map(s=>`
-    <div class="entry">
-      <div class="entry-info">
-        <div class="entry-key">${s.ts} · <span style="color:${s.source==='drive'?'#60a5fa':'#4ade80'}">${s.source==='drive'?'Drive':'Local'}</span></div>
-        <div class="entry-display" style="font-size:12px;">${s.label}</div>
-        <div class="entry-meta" style="font-size:10px;color:var(--text3);">${Object.keys(s.data.titles||{}).length} titles · ${Object.keys(s.data.ranks||{}).length} ranks</div>
+  const list=document.getElementById('vh-list');if(!list)return;
+  if(!snapshots.length){list.innerHTML='<div class="empty"><i class="fa-solid fa-code-branch"></i>No snapshots yet.</div>';return;}
+  list.innerHTML=[...snapshots].reverse().map(s=>`
+    <div class="entry-row" style="padding:10px 12px;display:flex;align-items:center;gap:10px;">
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:11px;font-weight:500;color:var(--text);margin-bottom:2px;">${escHtml(s.label)}</div>
+        <div style="font-size:10px;color:var(--text3);font-family:var(--mono);">${s.ts} · <span style="color:${s.source==='drive'?'var(--blue)':'var(--green)'};">${s.source}</span></div>
+        <div style="font-size:10px;color:var(--text3);">${Object.keys(s.data.projects||{}).length} projects</div>
       </div>
       <div class="btn-row">
-        <button class="btn btn-xs" onclick="openVHPreview('${s.id}')"><i class="fa-solid fa-eye"></i></button>
-        <button class="btn btn-xs btn-danger" onclick="deleteSnapshot('${s.id}')"><i class="fa-solid fa-trash"></i></button>
+        <button class="btn btn-xs" onclick="previewSnap('${s.id}')"><i class="fa-solid fa-eye"></i></button>
+        <button class="btn btn-xs btn-danger" onclick="deleteSnap('${s.id}')"><i class="fa-solid fa-trash"></i></button>
       </div>
     </div>`).join('');
 }
-function openVHPreview(id){
-  const s = snapshots.find(x=>x.id===id);
-  if(!s) return;
-  previewSnapshotId = id;
-  document.getElementById('vh-preview-body').innerHTML =
-    `<strong>${s.label}</strong><br><span style="color:var(--text3);">${s.ts} · ${s.source==='drive'?'Google Drive':'Local'}</span><br><br>` +
-    `${Object.keys(s.data.titles||{}).length} titles, ${Object.keys(s.data.ranks||{}).length} ranks, ${(s.data.priceTypes||[]).length} price types`;
-  document.getElementById('vh-preview-code').textContent = JSON.stringify(s.data, null, 2);
-  document.getElementById('vh-preview-modal').classList.add('open');
+function previewSnap(id){
+  const s=snapshots.find(x=>x.id===id);if(!s)return;
+  previewSnapId=id;
+  document.getElementById('vh-preview-title').innerHTML=`<i class="fa-solid fa-code-branch"></i> ${escHtml(s.label)}`;
+  document.getElementById('vh-preview-meta').textContent=`${s.ts} · ${s.source} · ${(s.data.projects||[]).length} projects`;
+  document.getElementById('vh-preview-code').textContent=JSON.stringify(s.data,null,2).slice(0,1500)+'...';
+  document.getElementById('vh-restore-btn').onclick=()=>restoreSnap(id);
+  openModal('modal-vh-preview');
 }
-function restoreSnapshot(){
-  const s = snapshots.find(x=>x.id===previewSnapshotId);
-  if(!s) return;
-  if(!confirm(`Restore snapshot "${s.label}" from ${s.ts}? Current data will be saved as a snapshot first.`)) return;
+function restoreSnap(id){
+  const s=snapshots.find(x=>x.id===id);if(!s)return;
+  if(!confirm(`Restore snapshot "${s.label}" from ${s.ts}? Current state will be saved first.`))return;
   saveSnapshot('Before restore: '+s.label);
-  titles = JSON.parse(JSON.stringify(s.data.titles||{}));
-  ranks  = JSON.parse(JSON.stringify(s.data.ranks||{}));
-  priceTypes = s.data.priceTypes||[...BUILTIN_TYPES];
-  customPTColors = s.data.customPTColors||{};
-  saveToLS(); renderAll();
-  addAudit('system','Restored snapshot: '+s.label+' ('+s.ts+')');
-  closeModal('vh-preview-modal');
-  showToast('Restored!','success');
+  state=JSON.parse(JSON.stringify(s.data));
+  saveToLS();renderProjTree();renderHomeGrid();
+  addAudit('system','Restored snapshot: '+s.label);
+  closeModal('modal-vh-preview');showToast('Restored!','success');showHome();
 }
-function deleteSnapshot(id){
-  snapshots = snapshots.filter(x=>x.id!==id);
-  saveSnapshots(); renderVH();
-}
-function clearAllSnapshots(){
-  if(!confirm('Delete all snapshots?')) return;
-  snapshots=[];saveSnapshots();renderVH();
-  showToast('All snapshots cleared','success');
-}
+function deleteSnap(id){ snapshots=snapshots.filter(x=>x.id!==id);saveSnapshots();renderVH(); }
+function clearSnapshots(){ if(!confirm('Delete all snapshots?'))return; snapshots=[];saveSnapshots();renderVH();showToast('Cleared','success'); }
 
-// ════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 // GOOGLE DRIVE SYNC
-// ════════════════════════════════════════════════
-const DRIVE_CLIENT_ID = '6725026955-u73kupf0f0p8m9s866u37e87lfe9hrff.apps.googleusercontent.com';
-const DRIVE_SCOPES = 'https://www.googleapis.com/auth/drive.appdata';
-const DRIVE_FILE_NAME = 'titledata-manager.json';
-const DRIVE_VH_FILE_NAME = 'titledata-snapshots.json';
-
-let driveReady = false;
-let driveToken = null;
-let driveFileId = null;
-let driveVHFileId = null;
-let pendingConflictDrive = null;
+// ═══════════════════════════════════════════════════════
+const DRIVE_CLIENT_ID='6725026955-u73kupf0f0p8m9s866u37e87lfe9hrff.apps.googleusercontent.com';
+const DRIVE_SCOPES='https://www.googleapis.com/auth/drive.appdata';
+const DRIVE_FILE='utm-data.json';
+const DRIVE_VH_FILE='utm-snapshots.json';
+let driveReady=false,driveToken=null,driveFileId=null,driveVHFileId=null,pendingConflict=null;
 
 function driveInit(){
-  // GIS loaded via <script> in <head>
-  if(typeof google !== 'undefined' && google.accounts){
-    driveInitClient();
-  } else {
-    // Wait for GIS to load
-    window.addEventListener('load', () => {
-      if(typeof google !== 'undefined' && google.accounts) driveInitClient();
-    });
-  }
-}
-function driveInitClient(){
-  if(!window.google||!google.accounts) return;
-  const stored = localStorage.getItem('drive_token');
+  const stored=localStorage.getItem('utm_drive_token');
   if(stored){
     try{
-      const t = JSON.parse(stored);
-      if(t.expires > Date.now()){
-        driveToken = t.access_token;
-        driveReady = true;
-        updateDriveUI();
-        driveSyncNow();
-        return;
-      }
+      const t=JSON.parse(stored);
+      if(t.expires>Date.now()){ driveToken=t.access_token;driveReady=true;updateDriveUI();driveSyncNow();return; }
     }catch(e){}
   }
   updateDriveUI();
 }
-function driveToggle(){
-  if(driveReady) { switchTab('importexport'); } 
-  else { driveSignIn(); }
-}
+function driveToggle(){ showPanel('drive'); }
 function driveSignIn(){
-  if(typeof google === 'undefined' || !google.accounts){
-    showToast('Google API not loaded yet, try again','error');
-    return;
-  }
-  const client = google.accounts.oauth2.initTokenClient({
-    client_id: DRIVE_CLIENT_ID,
-    scope: DRIVE_SCOPES,
-    callback: (resp) => {
-      if(resp.error){ showToast('Drive sign-in failed: '+resp.error,'error'); return; }
-      driveToken = resp.access_token;
-      driveReady = true;
-      localStorage.setItem('drive_token', JSON.stringify({
-        access_token: resp.access_token,
-        expires: Date.now() + (resp.expires_in||3600)*1000
-      }));
-      updateDriveUI();
-      addAudit('system','Signed in to Google Drive');
-      showToast('Connected to Google Drive!','success');
+  if(typeof google==='undefined'||!google.accounts){showToast('Google API not ready','error');return;}
+  google.accounts.oauth2.initTokenClient({
+    client_id:DRIVE_CLIENT_ID,scope:DRIVE_SCOPES,
+    callback:(resp)=>{
+      if(resp.error){showToast('Sign-in failed: '+resp.error,'error');return;}
+      driveToken=resp.access_token;driveReady=true;
+      localStorage.setItem('utm_drive_token',JSON.stringify({access_token:resp.access_token,expires:Date.now()+(resp.expires_in||3600)*1000}));
+      updateDriveUI();addAudit('system','Signed in to Google Drive');showToast('Connected to Drive!','success');
       driveSyncNow();
     }
-  });
-  client.requestAccessToken();
+  }).requestAccessToken();
 }
 function driveSignOut(){
-  if(!confirm('Disconnect Google Drive?')) return;
-  driveToken = null; driveReady = false;
-  driveFileId = null; driveVHFileId = null;
-  localStorage.removeItem('drive_token');
-  updateDriveUI();
-  addAudit('system','Signed out from Google Drive');
-  showToast('Disconnected from Drive','success');
+  if(!confirm('Disconnect Google Drive?'))return;
+  driveToken=null;driveReady=false;driveFileId=null;driveVHFileId=null;
+  localStorage.removeItem('utm_drive_token');updateDriveUI();
+  addAudit('system','Signed out from Google Drive');showToast('Disconnected','success');
 }
 function updateDriveUI(){
-  const lbl = document.getElementById('drive-btn-label');
-  const btn = document.getElementById('drive-btn');
-  const statusTxt = document.getElementById('drive-status-text');
-  const actions = document.getElementById('drive-actions');
-  const connectBtn = document.getElementById('drive-connect-btn');
-  if(lbl) lbl.textContent = driveReady ? 'Drive ✓' : 'Connect Drive';
-  if(btn){ btn.style.borderColor = driveReady ? 'var(--green)' : ''; btn.style.color = driveReady ? 'var(--green)' : ''; }
-  if(statusTxt) statusTxt.textContent = driveReady ? 'Connected. Data syncs automatically when you save.' : 'Not connected. Connect to sync your data across devices.';
-  if(actions) actions.style.display = driveReady ? 'flex' : 'none';
-  if(connectBtn) connectBtn.style.display = driveReady ? 'none' : 'inline-flex';
+  const btn=document.getElementById('drive-btn');
+  const statusTxt=document.getElementById('drive-status-text');
+  const actions=document.getElementById('drive-actions');
+  const connectBtn=document.getElementById('drive-connect-btn');
+  if(btn){btn.style.color=driveReady?'var(--green)':'';btn.title=driveReady?'Drive connected':'Connect Drive';}
+  if(statusTxt)statusTxt.textContent=driveReady?'Connected. Data syncs automatically on save.':'Not connected. Sign in to sync across devices.';
+  if(actions)actions.style.display=driveReady?'flex':'none';
+  if(connectBtn)connectBtn.style.display=driveReady?'none':'inline-flex';
+  const conflictCard=document.getElementById('drive-conflict-card');
+  if(conflictCard)conflictCard.style.display=pendingConflict?'block':'none';
 }
-
-async function driveRequest(method, url, body){
-  const headers = { 'Authorization': 'Bearer '+driveToken };
-  if(body && typeof body === 'object' && !(body instanceof FormData)){
-    headers['Content-Type'] = 'application/json';
-    body = JSON.stringify(body);
-  }
-  const resp = await fetch(url, {method, headers, body});
-  if(resp.status === 401){ driveSignOut(); throw new Error('Token expired'); }
+async function driveReq(method,url,body){
+  const headers={'Authorization':'Bearer '+driveToken};
+  if(body&&!(body instanceof FormData)){headers['Content-Type']='application/json';body=JSON.stringify(body);}
+  const resp=await fetch(url,{method,headers,body});
+  if(resp.status===401){driveSignOut();throw new Error('Token expired');}
   return resp;
 }
-
 async function driveFindFile(name){
-  const q = encodeURIComponent(`name='${name}' and spaces='appDataFolder' and trashed=false`);
-  const r = await driveRequest('GET',`https://www.googleapis.com/drive/v3/files?q=${q}&spaces=appDataFolder&fields=files(id,name,modifiedTime)`);
-  const data = await r.json();
-  return data.files&&data.files.length ? data.files[0] : null;
+  const q=encodeURIComponent(`name='${name}' and spaces='appDataFolder' and trashed=false`);
+  const r=await driveReq('GET',`https://www.googleapis.com/drive/v3/files?q=${q}&spaces=appDataFolder&fields=files(id,modifiedTime)`);
+  const d=await r.json();return d.files&&d.files.length?d.files[0]:null;
 }
-async function driveReadFile(fileId){
-  const r = await driveRequest('GET',`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`);
+async function driveReadFile(id){ const r=await driveReq('GET',`https://www.googleapis.com/drive/v3/files/${id}?alt=media`);return r.json(); }
+async function driveWriteFile(id,name,data){
+  const meta=JSON.stringify({name,parents:id?undefined:['appDataFolder']});
+  const body=new FormData();
+  body.append('metadata',new Blob([meta],{type:'application/json'}));
+  body.append('media',new Blob([JSON.stringify(data)],{type:'application/json'}));
+  const url=id?`https://www.googleapis.com/upload/drive/v3/files/${id}?uploadType=multipart`:`https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart`;
+  const r=await fetch(url,{method:id?'PATCH':'POST',headers:{'Authorization':'Bearer '+driveToken},body});
   return r.json();
 }
-async function driveWriteFile(fileId, name, data){
-  const meta = JSON.stringify({name, parents: fileId ? undefined : ['appDataFolder']});
-  const body = new FormData();
-  body.append('metadata', new Blob([meta],{type:'application/json'}));
-  body.append('media', new Blob([JSON.stringify(data)],{type:'application/json'}));
-  const url = fileId
-    ? `https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=multipart`
-    : `https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart`;
-  const method = fileId ? 'PATCH' : 'POST';
-  const r = await fetch(url,{method,headers:{'Authorization':'Bearer '+driveToken},body});
-  return r.json();
-}
-
 async function driveUpload(){
-  if(!driveReady) return;
+  if(!driveReady)return;
   try{
-    const data = {titles,ranks,priceTypes,customPTColors,savedAt:new Date().toISOString()};
-    const f = driveFileId || (await driveFindFile(DRIVE_FILE_NAME))?.id || null;
-    const result = await driveWriteFile(f, DRIVE_FILE_NAME, data);
-    driveFileId = result.id || f;
-    addAudit('system','Uploaded data to Google Drive');
-    showToast('Uploaded to Drive','success');
-  }catch(e){ showToast('Drive upload failed: '+e.message,'error'); }
+    const data={...state,savedAt:new Date().toISOString()};
+    const f=driveFileId||(await driveFindFile(DRIVE_FILE))?.id||null;
+    const result=await driveWriteFile(f,DRIVE_FILE,data);
+    driveFileId=result.id||f;
+    addAudit('system','Uploaded to Google Drive');showToast('Uploaded to Drive','success');
+  }catch(e){showToast('Upload failed: '+e.message,'error');}
 }
 async function driveDownload(){
-  if(!driveReady) return;
+  if(!driveReady)return;
   try{
-    const file = await driveFindFile(DRIVE_FILE_NAME);
-    if(!file){ showToast('No data found on Drive','error'); return; }
-    driveFileId = file.id;
-    const data = await driveReadFile(file.id);
-    titles = data.titles||{};
-    ranks  = data.ranks||{};
-    priceTypes = data.priceTypes||[...BUILTIN_TYPES];
-    customPTColors = data.customPTColors||{};
-    BUILTIN_TYPES.forEach(bt=>{ if(!priceTypes.includes(bt)) priceTypes.unshift(bt); });
-    saveToLS(); renderAll();
-    addAudit('system','Downloaded data from Google Drive');
-    showToast('Downloaded from Drive','success');
-  }catch(e){ showToast('Drive download failed: '+e.message,'error'); }
+    const file=await driveFindFile(DRIVE_FILE);
+    if(!file){showToast('No data on Drive','error');return;}
+    driveFileId=file.id;const data=await driveReadFile(file.id);
+    state={projects:data.projects||[],globalVars:data.globalVars||[],globalTags:data.globalTags||[]};
+    saveToLS();renderProjTree();renderHomeGrid();
+    addAudit('system','Downloaded from Google Drive');showToast('Downloaded from Drive','success');showHome();
+  }catch(e){showToast('Download failed: '+e.message,'error');}
 }
 async function driveSyncNow(){
-  if(!driveReady) return;
+  if(!driveReady)return;
   try{
-    const file = await driveFindFile(DRIVE_FILE_NAME);
-    if(!file){
-      // Nothing on drive yet, upload
-      await driveUpload(); return;
-    }
-    driveFileId = file.id;
-    const driveData = await driveReadFile(file.id);
-    const localSavedAt = (() => { try{ const r=localStorage.getItem(LS_KEY); return r?JSON.parse(r).savedAt:null; }catch(e){return null;} })();
-    const driveSavedAt = driveData.savedAt;
-    if(!localSavedAt || !driveSavedAt){
-      // No timestamps, just upload local
-      await driveUpload(); return;
-    }
-    const localDate = new Date(localSavedAt);
-    const driveDate = new Date(driveSavedAt);
-    const diffMs = Math.abs(localDate - driveDate);
-    if(diffMs < 5000){ /* same, no conflict */ return; }
-    if(localDate > driveDate){
-      // Local is newer, upload
-      await driveUpload();
-    } else {
-      // Drive is newer, show conflict
-      showConflict(driveData, localSavedAt, driveSavedAt);
-    }
-  }catch(e){ console.warn('Drive sync error:',e); }
+    const file=await driveFindFile(DRIVE_FILE);
+    if(!file){await driveUpload();return;}
+    driveFileId=file.id;const driveData=await driveReadFile(file.id);
+    const localTs=JSON.parse(localStorage.getItem('utm_data_v1')||'{}'  ).savedAt;
+    const driveTs=driveData.savedAt;
+    if(!localTs||!driveTs){await driveUpload();return;}
+    const diff=Math.abs(new Date(localTs)-new Date(driveTs));
+    if(diff<5000)return;
+    if(new Date(localTs)>new Date(driveTs)){await driveUpload();}
+    else{ pendingConflict=driveData; showConflict(driveData,localTs,driveTs); }
+  }catch(e){console.warn('Sync error:',e);}
 }
-function showConflict(driveData, localTs, driveTs){
-  pendingConflictDrive = driveData;
-  document.getElementById('conflict-local-info').innerHTML =
-    `${Object.keys(titles).length} titles, ${Object.keys(ranks).length} ranks<br><span style="font-size:10px;color:var(--text3);">Saved: ${localTs||'unknown'}</span>`;
-  document.getElementById('conflict-drive-info').innerHTML =
-    `${Object.keys(driveData.titles||{}).length} titles, ${Object.keys(driveData.ranks||{}).length} ranks<br><span style="font-size:10px;color:var(--text3);">Saved: ${driveTs||'unknown'}</span>`;
-  document.getElementById('conflict-modal').classList.add('open');
+function showConflict(driveData,localTs,driveTs){
+  const lInfo=document.getElementById('conflict-local-info');
+  const dInfo=document.getElementById('conflict-drive-info');
+  if(lInfo)lInfo.innerHTML=`${state.projects.length} projects<br><span style="font-size:10px;color:var(--text3);">${localTs||'unknown'}</span>`;
+  if(dInfo)dInfo.innerHTML=`${(driveData.projects||[]).length} projects<br><span style="font-size:10px;color:var(--text3);">${driveTs||'unknown'}</span>`;
+  const card=document.getElementById('drive-conflict-card');
+  if(card)card.style.display='block';
+  showPanel('drive');showToast('Conflict detected — check Drive panel','error');
 }
 function resolveConflict(choice){
-  closeModal('conflict-modal');
-  if(choice==='drive' && pendingConflictDrive){
+  if(choice==='drive'&&pendingConflict){
     saveSnapshot('Before Drive merge');
-    const d = pendingConflictDrive;
-    titles = d.titles||{};
-    ranks  = d.ranks||{};
-    priceTypes = d.priceTypes||[...BUILTIN_TYPES];
-    customPTColors = d.customPTColors||{};
-    BUILTIN_TYPES.forEach(bt=>{ if(!priceTypes.includes(bt)) priceTypes.unshift(bt); });
-    saveToLS(); renderAll();
-    addAudit('system','Conflict resolved: used Drive data');
-    showToast('Using Drive data','success');
-  } else {
-    driveUpload();
-    addAudit('system','Conflict resolved: kept local data, uploaded to Drive');
-    showToast('Kept local data, uploaded to Drive','success');
+    state={projects:pendingConflict.projects||[],globalVars:pendingConflict.globalVars||[],globalTags:pendingConflict.globalTags||[]};
+    saveToLS();renderProjTree();renderHomeGrid();
+    addAudit('system','Conflict resolved: used Drive data');showToast('Using Drive data','success');showHome();
+  }else{
+    driveUpload();addAudit('system','Conflict resolved: kept local, uploaded to Drive');showToast('Kept local, uploaded','success');
   }
-  pendingConflictDrive = null;
+  pendingConflict=null;const card=document.getElementById('drive-conflict-card');if(card)card.style.display='none';
 }
 async function driveUploadSnapshots(){
-  if(!driveReady) return;
-  try{
-    const f = driveVHFileId || (await driveFindFile(DRIVE_VH_FILE_NAME))?.id || null;
-    const result = await driveWriteFile(f, DRIVE_VH_FILE_NAME, snapshots);
-    driveVHFileId = result.id || f;
-  }catch(e){ console.warn('VH upload error:',e); }
-}
-async function driveDownloadSnapshots(){
-  if(!driveReady) return;
-  try{
-    const file = await driveFindFile(DRIVE_VH_FILE_NAME);
-    if(!file) return;
-    driveVHFileId = file.id;
-    const data = await driveReadFile(file.id);
-    if(Array.isArray(data)){
-      // Merge: add drive snapshots not already in local
-      const localIds = new Set(snapshots.map(s=>s.id));
-      data.forEach(s=>{ if(!localIds.has(s.id)){ s.source='drive'; snapshots.push(s); } });
-      snapshots.sort((a,b)=>+a.id - +b.id);
-      saveSnapshots(); renderVH();
-    }
-  }catch(e){ console.warn('VH download error:',e); }
+  if(!driveReady)return;
+  try{ const f=driveVHFileId||(await driveFindFile(DRIVE_VH_FILE))?.id||null; const r=await driveWriteFile(f,DRIVE_VH_FILE,snapshots); driveVHFileId=r.id||f; }catch(e){}
 }
 
-// ════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
+// EXPORT (JSON + CSV + Excel-friendly)
+// ═══════════════════════════════════════════════════════
+function exportAllJSON(){
+  const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='utm-export.json';a.click();
+  showToast('Exported JSON','success');
+}
+function exportProjCSV(){
+  const p=currentProj();if(!p){showToast('Open a project first','error');return;}
+  const fields=p.fields||[];
+  const headers=['ID','Name','Parent','Tags',...fields.map(f=>f.name)];
+  const rows=[headers.join(',')];
+  getAllEntries(p).forEach(e=>{
+    const row=[e.id,`"${(e.name||'').replace(/"/g,'""')}"`,e.parentId||'',(e.tags||[]).join(';'),...fields.map(f=>{const v=e.fields?.[f.id]??'';return typeof v==='string'?`"${v.replace(/"/g,'""')}"`  :v;})];
+    rows.push(row.join(','));
+  });
+  const blob=new Blob([rows.join('
+')],{type:'text/csv'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`${p.name}-export.csv`;a.click();
+  showToast('Exported CSV','success');
+}
+function exportProjExcel(){
+  // Tab-separated, opens properly in Excel
+  const p=currentProj();if(!p){showToast('Open a project first','error');return;}
+  const fields=p.fields||[];
+  const headers=['ID','Name','Parent','Tags',...fields.map(f=>f.name)];
+  const rows=[headers.join('	')];
+  getAllEntries(p).forEach(e=>{
+    const row=[e.id,e.name||'',e.parentId||'',(e.tags||[]).join(';'),...fields.map(f=>e.fields?.[f.id]??'')];
+    rows.push(row.join('	'));
+  });
+  const blob=new Blob(['﻿'+rows.join('
+')],{type:'text/tab-separated-values'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`${p.name}-export.xls`;a.click();
+  showToast('Exported Excel','success');
+}
+
+// ═══════════════════════════════════════════════════════
+// PWA
+// ═══════════════════════════════════════════════════════
+let deferredPrompt=null;
+window.addEventListener('beforeinstallprompt',e=>{
+  e.preventDefault();deferredPrompt=e;
+  if(!localStorage.getItem('utm_pwa_dismissed'))document.getElementById('pwa-banner').classList.add('show');
+});
+function installPWA(){if(!deferredPrompt)return;deferredPrompt.prompt();deferredPrompt.userChoice.then(()=>{deferredPrompt=null;dismissPWA();});}
+function dismissPWA(){document.getElementById('pwa-banner').classList.remove('show');localStorage.setItem('utm_pwa_dismissed','1');}
+if('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+
+// ═══════════════════════════════════════════════════════
 // INIT
-// ════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
+let _saveCount=0;
+const _origSaveToLS=saveToLS;
+function saveToLS(){
+  try{
+    localStorage.setItem('utm_data_v1',JSON.stringify({...state,savedAt:new Date().toISOString()}));
+    showToast('Saved','success');
+    _saveCount++;if(_saveCount%10===0)saveSnapshot('Auto snapshot #'+(_saveCount/10));
+    if(driveReady)driveUpload();
+  }catch(e){showToast('Save failed','error');}
+}
 (function init(){
-  loadAudit();
-  loadSnapshots();
-  const hadSaved=loadFromLS();
-  renderAll();runPreview();
+  loadAudit();loadSnapshots();loadFromLS();
+  renderProjTree();renderHomeGrid();checkMobile();
   updateDriveUI();
-  if(!hadSaved){saveToLS();addAudit('system','First launch — loaded default data');}
-  else addAudit('system','Session started — restored from localStorage');
-  showToast(hadSaved?'Restored from localStorage':'Loaded default data','success');
-  driveInit();
+  window.addEventListener('load',()=>{ if(typeof google!=='undefined'&&google.accounts) driveInit(); else setTimeout(driveInit,1500); });
+  // Patch createProject, createEntry, confirmDelete to add audit entries
+  const _cp=createProject;
+  addAudit('system','UTM session started');
+  showToast('UTM ready','success');
 })();
 </script>
 </body>

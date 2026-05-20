@@ -1,0 +1,2028 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UTM — Universal Table Manager</title>
+<meta name="theme-color" content="#08080d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="UTM">
+<link rel="manifest" href="manifest.json">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#08080d;--bg2:#0f0f17;--bg3:#161622;--bg4:#1e1e2e;--bg5:#252538;
+  --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.11);--border3:rgba(255,255,255,0.18);
+  --text:#eeeef5;--text2:#8888a8;--text3:#44445a;
+  --accent:#6e57ff;--accent2:#9d8fff;--accent-bg:rgba(110,87,255,0.1);--accent-border:rgba(110,87,255,0.35);
+  --green:#3dd68c;--green-bg:rgba(61,214,140,0.09);--green-border:rgba(61,214,140,0.3);
+  --red:#ff5c6b;--red-bg:rgba(255,92,107,0.09);--red-border:rgba(255,92,107,0.3);
+  --amber:#f5a623;--amber-bg:rgba(245,166,35,0.09);--amber-border:rgba(245,166,35,0.3);
+  --blue:#4ea8de;--blue-bg:rgba(78,168,222,0.09);--blue-border:rgba(78,168,222,0.3);
+  --pink:#e879b6;--pink-bg:rgba(232,121,182,0.09);--pink-border:rgba(232,121,182,0.3);
+  --teal:#2dd4bf;--teal-bg:rgba(45,212,191,0.09);
+  --r:8px;--rsm:5px;--rlg:12px;--rxl:18px;
+  --font:'DM Sans',sans-serif;--mono:'JetBrains Mono',monospace;--serif:'Instrument Serif',serif;
+  --sidebar:260px;
+}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--bg5);border-radius:2px;}
+
+/* ── LAYOUT ── */
+.app{display:flex;min-height:100vh;}
+.sidebar{
+  width:var(--sidebar);flex-shrink:0;
+  background:var(--bg2);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;
+  position:fixed;top:0;left:0;height:100vh;z-index:50;
+  overflow:hidden;
+}
+.main{margin-left:var(--sidebar);flex:1;min-height:100vh;display:flex;flex-direction:column;}
+
+/* ── SIDEBAR ── */
+.sidebar-header{padding:1.25rem 1rem 1rem;border-bottom:1px solid var(--border);flex-shrink:0;}
+.brand{display:flex;align-items:center;gap:9px;margin-bottom:1rem;}
+.brand-icon{width:30px;height:30px;background:var(--accent);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff;flex-shrink:0;}
+.brand-name{font-family:var(--serif);font-size:17px;color:var(--text);letter-spacing:.01em;}
+.brand-version{font-size:9px;font-family:var(--mono);color:var(--text3);margin-top:1px;}
+.search-global{
+  display:flex;align-items:center;gap:8px;
+  background:var(--bg3);border:1px solid var(--border2);border-radius:var(--rsm);
+  padding:7px 10px;cursor:text;transition:border-color .15s;
+}
+.search-global:focus-within{border-color:var(--accent);}
+.search-global i{font-size:12px;color:var(--text3);}
+.search-global input{background:none;border:none;outline:none;color:var(--text);font-family:var(--font);font-size:12px;flex:1;}
+.search-global input::placeholder{color:var(--text3);}
+
+.sidebar-body{flex:1;overflow-y:auto;padding:.5rem 0;}
+.sidebar-section{padding:.5rem 1rem .25rem;font-size:9px;font-weight:600;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;font-family:var(--mono);}
+
+/* project tree */
+.proj-tree{padding:0 .5rem;}
+.proj-node{position:relative;}
+.proj-item{
+  display:flex;align-items:center;gap:6px;
+  padding:5px 8px;border-radius:var(--rsm);
+  font-size:12px;font-weight:500;color:var(--text2);
+  cursor:pointer;transition:all .12s;
+  user-select:none;position:relative;
+}
+.proj-item:hover{background:var(--bg3);color:var(--text);}
+.proj-item.active{background:var(--accent-bg);color:var(--accent2);border:1px solid var(--accent-border);}
+.proj-item .drag-handle{
+  opacity:0;color:var(--text3);font-size:10px;cursor:grab;
+  transition:opacity .15s;flex-shrink:0;
+}
+.proj-item:hover .drag-handle{opacity:1;}
+.proj-item.dragging{opacity:.4;}
+.proj-item.drag-over{border-top:2px solid var(--accent);}
+.proj-item .proj-icon{font-size:11px;width:14px;text-align:center;flex-shrink:0;}
+.proj-item .proj-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.proj-item .proj-chevron{font-size:9px;color:var(--text3);transition:transform .15s;flex-shrink:0;}
+.proj-item .proj-chevron.open{transform:rotate(90deg);}
+.proj-item .proj-actions{display:none;gap:2px;flex-shrink:0;}
+.proj-item:hover .proj-actions{display:flex;}
+.proj-children{padding-left:16px;border-left:1px solid var(--border);margin-left:11px;margin-top:1px;}
+
+.sidebar-footer{padding:.75rem 1rem;border-top:1px solid var(--border);flex-shrink:0;display:flex;flex-direction:column;gap:5px;}
+
+/* ── TOPBAR ── */
+.topbar{
+  height:52px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:10px;
+  padding:0 1.5rem;flex-shrink:0;background:var(--bg);
+  position:sticky;top:0;z-index:40;
+}
+.topbar-breadcrumb{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2);flex:1;min-width:0;overflow:hidden;}
+.topbar-breadcrumb .crumb{color:var(--text2);cursor:pointer;white-space:nowrap;}
+.topbar-breadcrumb .crumb:hover{color:var(--text);}
+.topbar-breadcrumb .crumb.active{color:var(--text);font-weight:500;}
+.topbar-breadcrumb .sep{color:var(--text3);font-size:10px;}
+.topbar-actions{display:flex;gap:6px;align-items:center;flex-shrink:0;}
+
+/* ── PANELS ── */
+.panel-area{flex:1;padding:1.5rem;overflow-y:auto;}
+.panel{display:none;}
+.panel.active{display:block;}
+
+/* HOME */
+.home-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-bottom:1.5rem;}
+.home-proj-card{
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--rlg);
+  padding:1rem;cursor:pointer;transition:all .15s;position:relative;overflow:hidden;
+}
+.home-proj-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,transparent 60%,rgba(110,87,255,.05));pointer-events:none;}
+.home-proj-card:hover{border-color:var(--border2);transform:translateY(-1px);}
+.home-proj-card .hpc-icon{font-size:20px;margin-bottom:.6rem;}
+.home-proj-card .hpc-name{font-size:13px;font-weight:600;color:var(--text);margin-bottom:3px;}
+.home-proj-card .hpc-meta{font-size:10px;color:var(--text3);font-family:var(--mono);}
+.home-proj-card .hpc-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:.5rem;}
+
+/* ── PAGE TITLE ── */
+.page-header{margin-bottom:1.25rem;}
+.page-title{font-size:18px;font-weight:600;color:var(--text);margin-bottom:2px;display:flex;align-items:center;gap:8px;}
+.page-sub{font-size:11px;color:var(--text3);}
+
+/* ── TABS (inside project) ── */
+.proj-tabs{display:flex;gap:2px;margin-bottom:1.25rem;border-bottom:1px solid var(--border);padding-bottom:0;}
+.proj-tab{
+  padding:7px 14px;font-size:12px;font-weight:500;color:var(--text2);
+  border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;
+  transition:all .15s;font-family:var(--font);margin-bottom:-1px;
+}
+.proj-tab:hover{color:var(--text);}
+.proj-tab.active{color:var(--accent2);border-bottom-color:var(--accent);}
+
+/* ── CARDS ── */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rlg);padding:1rem 1.25rem;margin-bottom:.85rem;}
+.card-title{font-size:10px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.7rem;font-family:var(--mono);}
+
+/* ── FORM ── */
+.field{display:flex;flex-direction:column;gap:4px;margin-bottom:.65rem;}
+.field label{font-size:10px;color:var(--text3);font-family:var(--mono);letter-spacing:.03em;}
+.field input,.field select,.field textarea{
+  background:var(--bg3);border:1px solid var(--border2);border-radius:var(--rsm);
+  color:var(--text);font-family:var(--font);font-size:12px;padding:7px 10px;
+  outline:none;transition:border-color .15s;width:100%;
+}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent);}
+.field select option{background:var(--bg3);}
+.field textarea{resize:vertical;min-height:60px;font-family:var(--mono);font-size:11px;}
+.form-row{display:flex;gap:8px;flex-wrap:wrap;}
+.form-row .field{flex:1;min-width:120px;}
+
+/* ── BUTTONS ── */
+.btn{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:6px 12px;border-radius:var(--rsm);
+  font-family:var(--font);font-size:12px;font-weight:500;
+  cursor:pointer;border:1px solid var(--border2);
+  background:var(--bg3);color:var(--text);transition:all .15s;
+}
+.btn:hover{background:var(--bg4);}
+.btn-primary{background:var(--accent-bg);border-color:var(--accent);color:var(--accent2);}
+.btn-primary:hover{background:rgba(110,87,255,.18);}
+.btn-danger{background:var(--red-bg);border-color:var(--red-border);color:var(--red);}
+.btn-danger:hover{background:rgba(255,92,107,.18);}
+.btn-green{background:var(--green-bg);border-color:var(--green-border);color:var(--green);}
+.btn-sm{padding:4px 9px;font-size:11px;}
+.btn-xs{padding:2px 7px;font-size:10px;}
+.btn-icon{padding:0;width:24px;height:24px;justify-content:center;font-size:11px;}
+.btn-ghost{background:none;border-color:transparent;color:var(--text3);}
+.btn-ghost:hover{background:var(--bg3);color:var(--text);border-color:var(--border);}
+.btn-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
+
+.tag-input{
+  background:var(--bg3);border:1px solid var(--border2);border-radius:var(--rsm);
+  color:var(--text);font-family:var(--font);font-size:12px;padding:6px 10px;
+  outline:none;transition:border-color .15s;flex:1;
+}
+.tag-input:focus{border-color:var(--accent);}
+.tag-input::placeholder{color:var(--text3);}
+/* ── TAGS ── */
+.tag{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:2px 8px;border-radius:20px;font-size:10px;font-weight:500;
+  font-family:var(--mono);letter-spacing:.03em;
+}
+.tag-default{background:var(--bg4);color:var(--text2);border:1px solid var(--border2);}
+.tag-remove{background:none;border:none;cursor:pointer;color:inherit;opacity:.6;font-size:9px;padding:0;line-height:1;}
+.tag-remove:hover{opacity:1;}
+.tags-wrap{display:flex;flex-wrap:wrap;gap:4px;min-height:22px;}
+
+/* ── VARIABLE SCOPE BADGE ── */
+.scope-badge{
+  display:inline-flex;align-items:center;gap:3px;
+  font-size:9px;font-family:var(--mono);font-weight:600;
+  padding:1px 6px;border-radius:3px;letter-spacing:.04em;
+}
+.scope-global{background:rgba(110,87,255,.12);color:var(--accent2);border:1px solid var(--accent-border);}
+.scope-local{background:var(--bg4);color:var(--text3);border:1px solid var(--border);}
+.scope-exclusive{background:rgba(245,166,35,.1);color:var(--amber);border:1px solid var(--amber-border);}
+
+/* ── FIELD TYPE BADGE ── */
+.ftype{
+  display:inline-flex;align-items:center;gap:3px;
+  font-size:9px;font-family:var(--mono);padding:1px 6px;border-radius:3px;
+}
+.ftype-text{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-border);}
+.ftype-number{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border);}
+.ftype-date{background:var(--teal-bg);color:var(--teal);border:1px solid rgba(45,212,191,.3);}
+.ftype-boolean{background:var(--pink-bg);color:var(--pink);border:1px solid var(--pink-border);}
+.ftype-mixed{background:var(--accent-bg);color:var(--accent2);border:1px solid var(--accent-border);}
+.ftype-relation{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border);}
+
+/* ── ENTRY LIST ── */
+.entry-list{display:flex;flex-direction:column;gap:4px;}
+.entry-row{
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);
+  transition:border-color .12s;position:relative;
+}
+.entry-row:hover{border-color:var(--border2);}
+.entry-row.drag-over-top{border-top:2px solid var(--accent);}
+.entry-row.drag-over-bot{border-bottom:2px solid var(--accent);}
+.entry-row.dragging{opacity:.35;}
+
+.entry-header{
+  display:flex;align-items:center;gap:8px;
+  padding:9px 10px;cursor:pointer;
+}
+.entry-drag{
+  color:var(--text3);font-size:11px;cursor:grab;opacity:0;
+  transition:opacity .12s;flex-shrink:0;line-height:1;
+}
+.entry-row:hover .entry-drag{opacity:1;}
+.entry-chevron{font-size:9px;color:var(--text3);transition:transform .15s;flex-shrink:0;}
+.entry-chevron.open{transform:rotate(90deg);}
+.entry-main{flex:1;min-width:0;}
+.entry-name{font-size:12px;font-weight:500;color:var(--text);display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.entry-name-text{cursor:pointer;}
+.entry-name-text:hover{color:var(--accent2);}
+.entry-sub{font-size:10px;color:var(--text3);font-family:var(--mono);margin-top:2px;display:flex;gap:6px;flex-wrap:wrap;}
+.entry-actions{display:none;gap:3px;flex-shrink:0;}
+.entry-row:hover .entry-actions{display:flex;}
+.entry-children{padding:0 10px 8px 32px;display:none;}
+.entry-children.open{display:block;}
+.entry-depth-line{position:absolute;left:19px;top:0;bottom:0;width:1px;background:var(--border);pointer-events:none;}
+
+/* ── FIELD EDITOR ── */
+.field-editor-list{display:flex;flex-direction:column;gap:4px;margin-bottom:8px;}
+.field-def-row{
+  display:flex;align-items:center;gap:6px;
+  background:var(--bg3);border:1px solid var(--border);border-radius:var(--rsm);
+  padding:7px 10px;cursor:default;
+}
+.field-def-row .fd-drag{color:var(--text3);font-size:10px;cursor:grab;opacity:0;transition:opacity .12s;}
+.field-def-row:hover .fd-drag{opacity:1;}
+.field-def-name{flex:1;font-size:11px;font-weight:500;color:var(--text);}
+.field-def-actions{display:none;gap:3px;}
+.field-def-row:hover .field-def-actions{display:flex;}
+
+/* ── VARIABLE EDITOR ── */
+.var-list{display:flex;flex-direction:column;gap:4px;margin-bottom:8px;}
+.var-row{
+  display:flex;align-items:center;gap:6px;
+  background:var(--bg3);border:1px solid var(--border);border-radius:var(--rsm);
+  padding:6px 10px;
+}
+.var-row .vr-name{flex:1;font-size:11px;font-family:var(--mono);color:var(--text);}
+.var-row .vr-val{font-size:11px;font-family:var(--mono);color:var(--text2);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+
+/* ── ENTRY DETAIL (field values) ── */
+.field-val-list{display:flex;flex-direction:column;gap:6px;margin-bottom:1rem;}
+.field-val-row{
+  display:grid;grid-template-columns:140px 1fr;gap:8px;align-items:start;
+  padding:6px 0;border-bottom:1px solid var(--border);
+}
+.field-val-row:last-child{border-bottom:none;}
+.fvr-label{font-size:11px;color:var(--text3);font-family:var(--mono);padding-top:7px;}
+.fvr-value input,.fvr-value select,.fvr-value textarea{
+  width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--rsm);
+  color:var(--text);font-family:var(--font);font-size:12px;padding:6px 9px;outline:none;
+  transition:border-color .15s;
+}
+.fvr-value input:focus,.fvr-value select:focus,.fvr-value textarea:focus{border-color:var(--accent);}
+.fvr-value textarea{resize:vertical;min-height:50px;font-family:var(--mono);font-size:11px;}
+.bool-toggle{display:flex;align-items:center;gap:8px;padding-top:7px;}
+.bool-switch{position:relative;width:36px;height:20px;flex-shrink:0;}
+.bool-switch input{opacity:0;width:0;height:0;}
+.bool-switch-slider{
+  position:absolute;inset:0;background:var(--bg4);border:1px solid var(--border2);
+  border-radius:20px;cursor:pointer;transition:.2s;
+}
+.bool-switch-slider::before{
+  content:'';position:absolute;width:14px;height:14px;
+  left:2px;top:2px;background:var(--text3);border-radius:50%;transition:.2s;
+}
+.bool-switch input:checked + .bool-switch-slider{background:var(--accent-bg);border-color:var(--accent);}
+.bool-switch input:checked + .bool-switch-slider::before{transform:translateX(16px);background:var(--accent2);}
+
+/* ── RELATION PICKER ── */
+.relation-pick{
+  display:flex;align-items:center;gap:6px;
+  background:var(--bg3);border:1px solid var(--border);border-radius:var(--rsm);
+  padding:6px 9px;font-size:11px;color:var(--text2);cursor:pointer;
+  transition:border-color .15s;
+}
+.relation-pick:hover{border-color:var(--accent);}
+.relation-pick .rp-clear{margin-left:auto;color:var(--text3);font-size:10px;cursor:pointer;}
+.relation-pick .rp-clear:hover{color:var(--red);}
+
+/* ── SEARCH RESULTS ── */
+.search-results{display:flex;flex-direction:column;gap:6px;}
+.search-hit{
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);
+  padding:10px 12px;cursor:pointer;transition:border-color .12s;
+}
+.search-hit:hover{border-color:var(--border2);}
+.search-hit-path{font-size:9px;font-family:var(--mono);color:var(--text3);margin-bottom:4px;}
+.search-hit-title{font-size:12px;font-weight:500;color:var(--text);}
+.search-hit-preview{font-size:11px;color:var(--text2);margin-top:3px;}
+.search-hit mark{background:rgba(110,87,255,.25);color:var(--accent2);border-radius:2px;padding:0 2px;}
+
+/* ── MODAL ── */
+.modal-bg{
+  position:fixed;inset:0;background:rgba(0,0,0,.65);
+  display:none;align-items:center;justify-content:center;
+  z-index:200;backdrop-filter:blur(4px);padding:1rem;
+}
+.modal-bg.open{display:flex;}
+.modal{
+  background:var(--bg2);border:1px solid var(--border2);
+  border-radius:var(--rxl);padding:1.25rem;
+  width:480px;max-width:100%;max-height:88vh;overflow-y:auto;
+}
+.modal-lg{width:620px;}
+.modal-title{font-size:14px;font-weight:600;margin-bottom:.85rem;display:flex;align-items:center;gap:8px;}
+.modal-footer{display:flex;justify-content:flex-end;gap:6px;margin-top:1rem;}
+
+/* ── CTX MENU ── */
+.ctx-menu{
+  position:fixed;background:var(--bg3);border:1px solid var(--border2);
+  border-radius:var(--r);min-width:160px;z-index:500;
+  box-shadow:0 8px 32px rgba(0,0,0,.6);display:none;overflow:hidden;
+}
+.ctx-menu.open{display:block;}
+.ctx-item{
+  display:flex;align-items:center;gap:8px;padding:8px 12px;
+  font-size:12px;font-weight:500;color:var(--text2);
+  cursor:pointer;border:none;background:none;width:100%;text-align:left;
+  transition:background .1s;
+}
+.ctx-item i{font-size:11px;width:13px;text-align:center;}
+.ctx-item:hover{background:var(--bg4);color:var(--text);}
+.ctx-item.danger{color:var(--red);}
+.ctx-item.danger:hover{background:var(--red-bg);}
+.ctx-sep{border:none;border-top:1px solid var(--border);margin:3px 0;}
+
+/* ── TOAST ── */
+.toast{
+  position:fixed;bottom:1.25rem;right:1.25rem;
+  background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);
+  padding:8px 14px;font-size:12px;font-weight:500;z-index:600;
+  opacity:0;transform:translateY(6px);transition:opacity .2s,transform .2s;
+  pointer-events:none;max-width:260px;
+}
+.toast.show{opacity:1;transform:translateY(0);}
+.toast.success{border-color:var(--green-border);color:var(--green);}
+.toast.error{border-color:var(--red-border);color:var(--red);}
+
+.empty{text-align:center;padding:2rem 1rem;color:var(--text3);font-size:12px;}
+.audit-log{
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);
+  font-family:var(--mono);font-size:11px;line-height:1.9;color:var(--text2);
+  overflow-y:auto;max-height:420px;padding:10px 12px;
+  white-space:pre-wrap;word-break:break-word;user-select:text;
+}
+.log-add{color:#3dd68c;}.log-remove{color:#ff5c6b;}.log-edit{color:#9d8fff;}.log-system{color:#44445a;}
+/* PWA install banner */
+.pwa-banner{
+  display:none;position:fixed;bottom:1.25rem;left:50%;transform:translateX(-50%);
+  background:var(--bg3);border:1px solid var(--accent-border);border-radius:var(--r);
+  padding:10px 14px;z-index:300;align-items:center;gap:10px;font-size:12px;
+  box-shadow:0 4px 20px rgba(0,0,0,.5);max-width:320px;width:90%;
+}
+.pwa-banner.show{display:flex;}
+.empty i{font-size:24px;display:block;margin-bottom:8px;opacity:.3;}
+.divider{border:none;border-top:1px solid var(--border);margin:.85rem 0;}
+
+/* ── CLIPBOARD BANNER ── */
+.clipboard-banner{
+  display:none;position:fixed;bottom:1.25rem;left:50%;transform:translateX(-50%);
+  background:var(--bg3);border:1px solid var(--accent-border);border-radius:var(--r);
+  padding:8px 14px;font-size:12px;z-index:300;
+  align-items:center;gap:10px;box-shadow:0 4px 20px rgba(0,0,0,.5);
+}
+.clipboard-banner.show{display:flex;}
+
+.sidebar-overlay{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:49;backdrop-filter:blur(2px);
+}
+.sidebar-overlay.show{display:block;}
+.sidebar-close-btn{
+  display:none;position:absolute;top:1rem;right:.75rem;
+  background:var(--bg3);border:1px solid var(--border2);border-radius:var(--rsm);
+  color:var(--text2);cursor:pointer;padding:5px 7px;font-size:13px;
+  transition:all .15s;z-index:2;
+}
+.sidebar-close-btn:hover{background:var(--bg4);color:var(--text);}
+@media(max-width:700px){
+  .sidebar-close-btn{display:flex;align-items:center;justify-content:center;}
+  :root{--sidebar:0px;}
+  .sidebar{transform:translateX(-260px);width:260px;transition:transform .25s;}
+  .sidebar.mobile-open{transform:translateX(0);}
+  .main{margin-left:0;}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- SIDEBAR -->
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="closeMobileMenu()"></div>
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-header" style="position:relative;">
+    <button class="sidebar-close-btn" onclick="closeMobileMenu()" title="Close"><i class="fa-solid fa-xmark"></i></button>
+    <div class="brand">
+      <div class="brand-icon"><i class="fa-solid fa-table-cells"></i></div>
+      <div>
+        <div class="brand-name">UTM</div>
+        <div class="brand-version">Universal Table Manager v1.0</div>
+      </div>
+    </div>
+    <div class="search-global">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input id="global-search-input" placeholder="Search everything..." oninput="globalSearchInput(this.value)">
+      <kbd style="font-size:9px;color:var(--text3);font-family:var(--mono);">⌘K</kbd>
+    </div>
+  </div>
+
+  <div class="sidebar-body">
+    <div class="sidebar-section">Projects</div>
+    <div class="proj-tree" id="proj-tree"></div>
+  </div>
+
+  <div class="sidebar-footer">
+    <button class="btn btn-sm btn-primary" onclick="openNewProjModal(null)" style="justify-content:center;">
+      <i class="fa-solid fa-plus"></i> New project
+    </button>
+    <div style="display:flex;gap:5px;">
+      <button class="btn btn-sm btn-ghost" onclick="saveToLS()" style="flex:1;justify-content:center;" title="Save"><i class="fa-solid fa-floppy-disk"></i></button>
+      <button class="btn btn-sm btn-ghost" id="drive-btn" onclick="driveToggle()" style="flex:1;justify-content:center;" title="Google Drive"><i class="fa-brands fa-google-drive"></i></button>
+      <button class="btn btn-sm btn-ghost" onclick="showPanel('audit')" style="flex:1;justify-content:center;" title="Audit Log"><i class="fa-solid fa-clock-rotate-left"></i></button>
+      <button class="btn btn-sm btn-ghost" onclick="showPanel('versions')" style="flex:1;justify-content:center;" title="Version History"><i class="fa-solid fa-code-branch"></i></button>
+    </div>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<div class="main">
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <button class="btn btn-ghost btn-icon" id="mobile-menu-btn" onclick="toggleMobileMenu()" style="display:none;">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+    <div class="topbar-breadcrumb" id="topbar-breadcrumb">
+      <span class="crumb active" onclick="showHome()">Home</span>
+    </div>
+    <div class="topbar-actions" id="topbar-actions"></div>
+  </div>
+
+  <!-- PANEL AREA -->
+  <div class="panel-area">
+
+    <!-- HOME -->
+    <div id="panel-home" class="panel active">
+      <div class="page-header">
+        <div class="page-title"><i class="fa-solid fa-house" style="font-size:16px;color:var(--text3);"></i> Home</div>
+        <div class="page-sub">All your projects at a glance.</div>
+      </div>
+      <div class="home-grid" id="home-proj-grid"></div>
+    </div>
+
+    <!-- SEARCH RESULTS -->
+    <div id="panel-search" class="panel">
+      <div class="page-header">
+        <div class="page-title"><i class="fa-solid fa-magnifying-glass" style="font-size:16px;color:var(--text3);"></i> Search results</div>
+        <div class="page-sub" id="search-sub"></div>
+      </div>
+      <div id="search-results-list" class="search-results"></div>
+    </div>
+
+    <!-- PROJECT VIEW -->
+    <div id="panel-project" class="panel">
+      <div class="page-header">
+        <div class="page-title" id="proj-view-title"></div>
+        <div class="page-sub" id="proj-view-sub"></div>
+      </div>
+      <div class="proj-tabs">
+        <button class="proj-tab active" onclick="switchProjTab('data')">Data</button>
+        <button class="proj-tab" onclick="switchProjTab('fields')">Fields</button>
+        <button class="proj-tab" onclick="switchProjTab('variables')">Variables</button>
+        <button class="proj-tab" onclick="switchProjTab('tags')">Tags</button>
+        <button class="proj-tab" onclick="switchProjTab('settings')">Settings</button>
+      </div>
+
+      <!-- DATA TAB -->
+      <div id="proj-tab-data" class="proj-tab-panel">
+        <div class="btn-row" style="margin-bottom:.85rem;">
+          <button class="btn btn-primary btn-sm" onclick="openNewEntryModal(null)"><i class="fa-solid fa-plus"></i> New entry</button>
+          <button class="btn btn-sm" onclick="openImportModal()"><i class="fa-solid fa-file-import"></i> Import</button>
+          <button class="btn btn-sm" onclick="exportProject()"><i class="fa-solid fa-file-export"></i> Export</button>
+        </div>
+        <div id="entry-list-root" class="entry-list"></div>
+      </div>
+
+      <!-- FIELDS TAB -->
+      <div id="proj-tab-fields" class="proj-tab-panel" style="display:none;">
+        <div class="card">
+          <div class="card-title">Field definitions</div>
+          <p style="font-size:11px;color:var(--text2);margin-bottom:.75rem;">Fields define the columns/properties each entry in this project can have.</p>
+          <div class="field-editor-list" id="field-def-list"></div>
+          <button class="btn btn-sm btn-primary" onclick="openAddFieldModal()"><i class="fa-solid fa-plus"></i> Add field</button>
+        </div>
+      </div>
+
+      <!-- VARIABLES TAB -->
+      <div id="proj-tab-variables" class="proj-tab-panel" style="display:none;">
+        <div class="card">
+          <div class="card-title">Project variables <span class="scope-badge scope-local">local</span></div>
+          <p style="font-size:11px;color:var(--text2);margin-bottom:.75rem;">Variables scoped to this project. All entries can access these unless overridden.</p>
+          <div class="var-list" id="proj-var-list"></div>
+          <button class="btn btn-sm btn-primary" onclick="openAddVarModal('project')"><i class="fa-solid fa-plus"></i> Add variable</button>
+        </div>
+        <div class="card">
+          <div class="card-title">Global variables <span class="scope-badge scope-global">global</span></div>
+          <p style="font-size:11px;color:var(--text2);margin-bottom:.75rem;">Accessible from all projects and all entries.</p>
+          <div class="var-list" id="global-var-list-proj"></div>
+          <button class="btn btn-sm" onclick="openAddVarModal('global')"><i class="fa-solid fa-plus"></i> Add global variable</button>
+        </div>
+      </div>
+
+      <!-- TAGS TAB -->
+      <div id="proj-tab-tags" class="proj-tab-panel" style="display:none;">
+        <div class="card">
+          <div class="card-title">Project tags</div>
+          <div class="tags-wrap" id="proj-tags-list" style="margin-bottom:.85rem;"></div>
+          <div style="display:flex;gap:6px;">
+            <input id="new-tag-input" class="tag-input" placeholder="new tag..." onkeydown="if(event.key==='Enter')addProjTag()">
+            <button class="btn btn-primary btn-sm" onclick="addProjTag()"><i class="fa-solid fa-plus"></i> Add</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Global tags</div>
+          <div class="tags-wrap" id="global-tags-list-proj" style="margin-bottom:.85rem;"></div>
+          <div style="display:flex;gap:6px;">
+            <input id="new-global-tag-input" class="tag-input" placeholder="new global tag..." onkeydown="if(event.key==='Enter')addGlobalTag()">
+            <button class="btn btn-sm" onclick="addGlobalTag()"><i class="fa-solid fa-plus"></i> Add global</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SETTINGS TAB -->
+      <div id="proj-tab-settings" class="proj-tab-panel" style="display:none;">
+        <div class="card">
+          <div class="card-title">Project settings</div>
+          <div class="field"><label>name</label><input id="proj-setting-name" oninput="updateProjSetting('name',this.value)"></div>
+          <div class="field"><label>description</label><input id="proj-setting-desc" oninput="updateProjSetting('desc',this.value)"></div>
+          <div class="field"><label>icon (emoji)</label><input id="proj-setting-icon" oninput="updateProjSetting('icon',this.value)" style="width:80px;"></div>
+          <div class="divider"></div>
+          <button class="btn btn-danger btn-sm" onclick="deleteCurrentProject()"><i class="fa-solid fa-trash"></i> Delete project</button>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- AUDIT LOG -->
+    <div id="panel-audit" class="panel">
+      <div class="page-header">
+        <div class="page-title"><i class="fa-solid fa-clock-rotate-left" style="font-size:15px;color:var(--text3);"></i> Audit Log</div>
+        <div class="page-sub">Every change recorded. Select text to copy specific entries.</div>
+      </div>
+      <div class="btn-row" style="margin-bottom:.85rem;">
+        <button class="btn btn-sm" onclick="copyAuditLog()"><i class="fa-solid fa-copy"></i> Copy all</button>
+        <button class="btn btn-sm btn-danger" onclick="clearAuditLog()"><i class="fa-solid fa-trash"></i> Clear</button>
+      </div>
+      <div class="audit-log" id="audit-log-box">No entries yet.</div>
+    </div>
+
+    <!-- VERSION HISTORY -->
+    <div id="panel-versions" class="panel">
+      <div class="page-header">
+        <div class="page-title"><i class="fa-solid fa-code-branch" style="font-size:15px;color:var(--text3);"></i> Version History</div>
+        <div class="page-sub">Snapshots saved locally and to Google Drive.</div>
+      </div>
+      <div class="btn-row" style="margin-bottom:.85rem;">
+        <button class="btn btn-sm btn-green" onclick="saveSnapshot('Manual snapshot')"><i class="fa-solid fa-camera"></i> Save snapshot</button>
+        <button class="btn btn-sm btn-danger" onclick="clearSnapshots()"><i class="fa-solid fa-trash"></i> Clear all</button>
+      </div>
+      <div id="vh-list" class="entry-list"></div>
+    </div>
+
+    <!-- DRIVE PANEL -->
+    <div id="panel-drive" class="panel">
+      <div class="page-header">
+        <div class="page-title"><i class="fa-brands fa-google-drive" style="font-size:15px;color:var(--text3);"></i> Google Drive Sync</div>
+        <div class="page-sub">Sync your data across devices.</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Status</div>
+        <p id="drive-status-text" style="font-size:12px;color:var(--text2);margin-bottom:.85rem;">Not connected.</p>
+        <div id="drive-actions" style="display:none;" class="btn-row">
+          <button class="btn btn-sm btn-primary" onclick="driveSyncNow()"><i class="fa-solid fa-rotate"></i> Sync now</button>
+          <button class="btn btn-sm btn-green" onclick="driveUpload()"><i class="fa-solid fa-cloud-arrow-up"></i> Upload</button>
+          <button class="btn btn-sm" onclick="driveDownload()"><i class="fa-solid fa-cloud-arrow-down"></i> Download</button>
+          <button class="btn btn-sm btn-danger" onclick="driveSignOut()"><i class="fa-solid fa-right-from-bracket"></i> Sign out</button>
+        </div>
+        <button class="btn btn-sm btn-primary" id="drive-connect-btn" onclick="driveSignIn()"><i class="fa-brands fa-google"></i> Sign in with Google</button>
+      </div>
+      <div class="card" id="drive-conflict-card" style="display:none;border-color:var(--amber-border);">
+        <div class="card-title" style="color:var(--amber);">⚠ Conflict detected</div>
+        <p style="font-size:12px;color:var(--text2);margin-bottom:.85rem;">Local and Drive data differ. Which one to keep?</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:.85rem;">
+          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--rsm);padding:10px;">
+            <div style="font-size:9px;color:var(--text3);font-family:var(--mono);margin-bottom:4px;">LOCAL</div>
+            <div style="font-size:12px;" id="conflict-local-info">—</div>
+          </div>
+          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--rsm);padding:10px;">
+            <div style="font-size:9px;color:var(--text3);font-family:var(--mono);margin-bottom:4px;">DRIVE</div>
+            <div style="font-size:12px;" id="conflict-drive-info">—</div>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-sm" onclick="resolveConflict('local')"><i class="fa-solid fa-floppy-disk"></i> Keep local</button>
+          <button class="btn btn-sm btn-primary" onclick="resolveConflict('drive')"><i class="fa-brands fa-google-drive"></i> Use Drive</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /panel-area -->
+</div><!-- /main -->
+</div><!-- /app -->
+
+<!-- ── MODALS ── -->
+
+<!-- New project -->
+<div class="modal-bg" id="modal-new-proj">
+  <div class="modal">
+    <div class="modal-title"><i class="fa-solid fa-folder-plus"></i> New project</div>
+    <div class="field"><label>name</label><input id="np-name" placeholder="My Project"></div>
+    <div class="field"><label>description (optional)</label><input id="np-desc" placeholder=""></div>
+    <div class="field"><label>icon (emoji)</label><input id="np-icon" placeholder="📁" style="width:70px;"></div>
+    <input type="hidden" id="np-parent">
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-new-proj')">Cancel</button>
+      <button class="btn btn-primary" onclick="createProject()"><i class="fa-solid fa-plus"></i> Create</button>
+    </div>
+  </div>
+</div>
+
+<!-- New entry -->
+<div class="modal-bg" id="modal-new-entry">
+  <div class="modal">
+    <div class="modal-title"><i class="fa-solid fa-plus"></i> New entry</div>
+    <div class="field"><label>name</label><input id="ne-name" placeholder="Entry name"></div>
+    <input type="hidden" id="ne-parent-entry">
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-new-entry')">Cancel</button>
+      <button class="btn btn-primary" onclick="createEntry()">Create</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add field -->
+<div class="modal-bg" id="modal-add-field">
+  <div class="modal">
+    <div class="modal-title"><i class="fa-solid fa-table-columns"></i> Add field</div>
+    <div class="field"><label>field name</label><input id="af-name" placeholder="e.g. NIK, Points, Birthday"></div>
+    <div class="field"><label>type</label>
+      <select id="af-type">
+        <option value="text">Text</option>
+        <option value="number">Number</option>
+        <option value="date">Date</option>
+        <option value="boolean">Boolean (yes/no)</option>
+        <option value="mixed">Mixed</option>
+        <option value="relation">Relation (link to entry)</option>
+      </select>
+    </div>
+    <div class="field"><label>description (optional)</label><input id="af-desc" placeholder=""></div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:.5rem;">
+      <input type="checkbox" id="af-required" style="width:auto;">
+      <label for="af-required" style="font-size:11px;color:var(--text2);">Required field</label>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-add-field')">Cancel</button>
+      <button class="btn btn-primary" onclick="addField()">Add field</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add variable -->
+<div class="modal-bg" id="modal-add-var">
+  <div class="modal">
+    <div class="modal-title"><i class="fa-solid fa-code"></i> Add variable</div>
+    <input type="hidden" id="av-scope-target">
+    <div class="field"><label>name</label><input id="av-name" placeholder="variableName"></div>
+    <div class="field"><label>value</label><input id="av-value" placeholder="100"></div>
+    <div class="field"><label>scope</label>
+      <select id="av-scope">
+        <option value="local">Local (inheritable by children)</option>
+        <option value="exclusive">Exclusive (NOT inheritable)</option>
+      </select>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-add-var')">Cancel</button>
+      <button class="btn btn-primary" onclick="addVariable()">Add</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit entry -->
+<div class="modal-bg" id="modal-edit-entry">
+  <div class="modal modal-lg">
+    <div class="modal-title" id="ee-title"><i class="fa-solid fa-pen"></i> Edit entry</div>
+    <div class="field"><label>name</label><input id="ee-name"></div>
+    <div class="divider"></div>
+    <div style="font-size:10px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.08em;font-family:var(--mono);margin-bottom:.6rem;">Field values</div>
+    <div id="ee-field-vals" class="field-val-list"></div>
+    <div class="divider"></div>
+    <div style="font-size:10px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.08em;font-family:var(--mono);margin-bottom:.5rem;">
+      Entry variables <span style="font-size:9px;font-weight:400;color:var(--text3);">(scoped to this entry)</span>
+    </div>
+    <div id="ee-var-list" class="var-list" style="margin-bottom:.5rem;"></div>
+    <button class="btn btn-ghost btn-sm" onclick="openAddVarModal('entry')"><i class="fa-solid fa-plus"></i> Add variable</button>
+    <div class="divider"></div>
+    <div style="font-size:10px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.08em;font-family:var(--mono);margin-bottom:.5rem;">Tags</div>
+    <div class="tags-wrap" id="ee-tags" style="margin-bottom:.6rem;"></div>
+    <div style="display:flex;gap:6px;">
+      <input id="ee-tag-input" class="tag-input" placeholder="add tag..." onkeydown="if(event.key==='Enter')addEntryTag()">
+      <button class="btn btn-sm" onclick="addEntryTag()">Add</button>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-edit-entry')">Close</button>
+      <button class="btn btn-primary" onclick="saveEditEntry()"><i class="fa-solid fa-check"></i> Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Relation picker -->
+<div class="modal-bg" id="modal-relation-pick">
+  <div class="modal">
+    <div class="modal-title"><i class="fa-solid fa-link"></i> Pick related entry</div>
+    <div class="search-global" style="margin-bottom:.85rem;">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input id="rel-search" placeholder="Search entries..." oninput="filterRelationPicker(this.value)">
+    </div>
+    <div id="rel-pick-list" style="max-height:280px;overflow-y:auto;display:flex;flex-direction:column;gap:4px;"></div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-relation-pick')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete confirm -->
+<div class="modal-bg" id="modal-delete">
+  <div class="modal" style="width:360px;">
+    <div class="modal-title" id="del-title">Delete?</div>
+    <div class="modal-body" id="del-body" style="font-size:12px;color:var(--text2);margin-bottom:1rem;"></div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-delete')">Cancel</button>
+      <button class="btn btn-danger" onclick="confirmDelete()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- Import -->
+<div class="modal-bg" id="modal-import">
+  <div class="modal">
+    <div class="modal-title"><i class="fa-solid fa-file-import"></i> Import data</div>
+    <div style="border:2px dashed var(--border2);border-radius:var(--rlg);padding:1.5rem;text-align:center;cursor:pointer;margin-bottom:.85rem;" onclick="document.getElementById('import-file').click()">
+      <i class="fa-solid fa-cloud-arrow-up" style="font-size:22px;color:var(--text3);display:block;margin-bottom:6px;"></i>
+      <p style="font-size:12px;color:var(--text2);">Click to browse</p>
+      <span style="font-size:10px;color:var(--text3);">JSON backup</span>
+    </div>
+    <input type="file" id="import-file" accept=".json" style="display:none" onchange="handleImport(event)">
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-import')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- VH Preview Modal -->
+<div class="modal-bg" id="modal-vh-preview">
+  <div class="modal">
+    <div class="modal-title" id="vh-preview-title"><i class="fa-solid fa-code-branch"></i> Snapshot</div>
+    <div id="vh-preview-meta" style="font-size:12px;color:var(--text2);margin-bottom:.85rem;"></div>
+    <div style="font-family:var(--mono);font-size:11px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--rsm);padding:10px;max-height:160px;overflow-y:auto;white-space:pre;margin-bottom:.85rem;" id="vh-preview-code"></div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-vh-preview')">Close</button>
+      <button class="btn btn-primary" id="vh-restore-btn"><i class="fa-solid fa-rotate-left"></i> Restore</button>
+    </div>
+  </div>
+</div>
+
+<!-- PWA banner -->
+<div class="pwa-banner" id="pwa-banner">
+  <i class="fa-solid fa-mobile-screen" style="color:var(--accent2);font-size:16px;flex-shrink:0;"></i>
+  <span style="flex:1;color:var(--text2);">Install UTM as an app!</span>
+  <button class="btn btn-primary btn-sm" onclick="installPWA()">Install</button>
+  <button class="btn btn-sm" onclick="dismissPWA()" style="padding:4px 7px;"><i class="fa-solid fa-xmark"></i></button>
+</div>
+
+<!-- Ctx menu -->
+<div class="ctx-menu" id="ctx-menu">
+  <button class="ctx-item" id="ctx-open"><i class="fa-solid fa-arrow-right"></i> Open</button>
+  <button class="ctx-item" id="ctx-edit"><i class="fa-solid fa-pen"></i> Edit</button>
+  <button class="ctx-item" id="ctx-copy"><i class="fa-solid fa-copy"></i> Copy</button>
+  <button class="ctx-item" id="ctx-paste"><i class="fa-solid fa-clipboard"></i> Paste as child</button>
+  <button class="ctx-item" id="ctx-duplicate"><i class="fa-solid fa-clone"></i> Duplicate</button>
+  <button class="ctx-item" id="ctx-new-sub"><i class="fa-solid fa-plus"></i> Add sub-entry</button>
+  <hr class="ctx-sep">
+  <button class="ctx-item" id="ctx-new-subproj"><i class="fa-solid fa-folder-plus"></i> New sub-project</button>
+  <hr class="ctx-sep">
+  <button class="ctx-item danger" id="ctx-delete"><i class="fa-solid fa-trash"></i> Delete</button>
+</div>
+
+<!-- Clipboard banner -->
+<div class="clipboard-banner" id="clipboard-banner">
+  <i class="fa-solid fa-clipboard" style="color:var(--accent2);"></i>
+  <span style="font-size:12px;color:var(--text2);" id="clipboard-label">1 entry copied</span>
+  <button class="btn btn-xs" onclick="clearClipboard()">Clear</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// DATA MODEL
+// ═══════════════════════════════════════════════════════
+// Project: { id, name, desc, icon, parentId, children:[], fields:[], variables:[], tags:[], entries:[], order:N }
+// Entry:   { id, name, parentId, projId, children:[], fields:{fieldId:value}, variables:[], tags:[], order:N }
+// Field:   { id, name, type, desc, required }
+// Variable:{ id, name, value, scope:'local'|'exclusive' }
+
+const LS_KEY = 'utm_data_v1';
+let state = {
+  projects: [],       // flat array, parentId for nesting
+  globalVars: [],
+  globalTags: [],
+};
+
+// ── ID gen ──
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
+
+// ── Helpers ──
+function getProj(id){ return state.projects.find(p=>p.id===id); }
+function getAllEntries(proj){ // flatten all entries in a project
+  const res=[];
+  function walk(list){ list.forEach(e=>{ res.push(e); if(e.children) walk(e.children); }); }
+  if(proj) walk(proj.entries);
+  return res;
+}
+function findEntry(proj,id){
+  return getAllEntries(proj).find(e=>e.id===id);
+}
+function findEntryParent(proj,id){
+  function walk(list,par){ for(const e of list){ if(e.id===id) return par; const r=walk(e.children||[],e); if(r!==undefined) return r; } return undefined; }
+  return walk(proj.entries,null);
+}
+function removeEntryFromTree(proj,id){
+  function walk(list){ const i=list.findIndex(e=>e.id===id); if(i!==-1){list.splice(i,1);return true;} return list.some(e=>walk(e.children||[])); }
+  walk(proj.entries);
+}
+function deepCloneEntry(e){
+  const n=JSON.parse(JSON.stringify(e));
+  function reId(x){x.id=uid();(x.children||[]).forEach(reId);}
+  reId(n); return n;
+}
+
+// ── Root projects & sub-projects ──
+function rootProjects(){ return state.projects.filter(p=>!p.parentId); }
+function childProjects(parentId){ return state.projects.filter(p=>p.parentId===parentId); }
+function allDescendantProjIds(id){
+  const ids=[id];
+  childProjects(id).forEach(c=>ids.push(...allDescendantProjIds(c.id)));
+  return ids;
+}
+
+// ═══════════════════════════════════════════════════════
+// STORAGE
+// ═══════════════════════════════════════════════════════
+function saveToLS(){
+  try{ localStorage.setItem(LS_KEY,JSON.stringify(state)); showToast('Saved','success'); }
+  catch(e){ showToast('Save failed','error'); }
+}
+function loadFromLS(){
+  try{
+    const r=localStorage.getItem(LS_KEY);
+    if(r){ state=JSON.parse(r); return true; }
+  }catch(e){}
+  return false;
+}
+
+// ═══════════════════════════════════════════════════════
+// CURRENT STATE
+// ═══════════════════════════════════════════════════════
+let currentProjId = null;
+let currentProjTab = 'data';
+let clipboard = null; // {type:'entry'|'project', data:...}
+let deleteTarget = null;
+let editingEntryId = null;
+let addVarTarget = null; // {scope:'global'|'project'|'entry', projId, entryId}
+let relationPickCallback = null;
+let holdTimer = null;
+
+function currentProj(){ return getProj(currentProjId); }
+
+// ═══════════════════════════════════════════════════════
+// SIDEBAR / PROJECT TREE
+// ═══════════════════════════════════════════════════════
+function renderProjTree(){
+  const el=document.getElementById('proj-tree');
+  el.innerHTML='';
+  renderProjChildren(el, null);
+}
+function renderProjChildren(container, parentId){
+  const children=state.projects.filter(p=>p.parentId===parentId);
+  children.forEach(p=>{
+    const node=document.createElement('div');
+    node.className='proj-node';
+    const hasChildren=state.projects.some(c=>c.parentId===p.id);
+    const isActive=p.id===currentProjId;
+    node.innerHTML=`
+      <div class="proj-item${isActive?' active':''}" data-proj="${p.id}"
+        draggable="true"
+        onclick="openProject('${p.id}')"
+        oncontextmenu="openCtxProj(event,'${p.id}')"
+        ontouchstart="startHold(event,'proj','${p.id}')" ontouchend="endHold()" ontouchmove="endHold()">
+        <span class="drag-handle"><i class="fa-solid fa-grip-vertical"></i></span>
+        <span class="proj-icon">${p.icon||'📁'}</span>
+        <span class="proj-name">${escHtml(p.name)}</span>
+        ${hasChildren?`<span class="proj-chevron${p._open?' open':''}" id="chevron-${p.id}"><i class="fa-solid fa-chevron-right"></i></span>`:''}
+        <span class="proj-actions">
+          <button class="btn btn-ghost btn-icon" style="width:18px;height:18px;font-size:9px;" onclick="event.stopPropagation();openNewProjModal('${p.id}')" title="New sub-project"><i class="fa-solid fa-plus"></i></button>
+        </span>
+      </div>`;
+    const itemEl=node.querySelector('.proj-item');
+    // drag
+    itemEl.addEventListener('dragstart',e=>{ e.dataTransfer.setData('proj-id',p.id); itemEl.classList.add('dragging'); });
+    itemEl.addEventListener('dragend',()=>itemEl.classList.remove('dragging'));
+    itemEl.addEventListener('dragover',e=>{ e.preventDefault(); itemEl.classList.add('drag-over'); });
+    itemEl.addEventListener('dragleave',()=>itemEl.classList.remove('drag-over'));
+    itemEl.addEventListener('drop',e=>{ e.preventDefault(); itemEl.classList.remove('drag-over'); const from=e.dataTransfer.getData('proj-id'); if(from&&from!==p.id) moveProjAfter(from,p.id); });
+    if(hasChildren){
+      const chevEl=node.querySelector('.proj-chevron');
+      chevEl.addEventListener('click',e=>{ e.stopPropagation(); p._open=!p._open; renderProjTree(); });
+      if(p._open){
+        const childContainer=document.createElement('div');
+        childContainer.className='proj-children';
+        renderProjChildren(childContainer,p.id);
+        node.appendChild(childContainer);
+      }
+    }
+    container.appendChild(node);
+  });
+}
+function moveProjAfter(fromId,afterId){
+  const from=getProj(fromId);
+  if(!from)return;
+  const after=getProj(afterId);
+  const newParent=after?after.parentId:null;
+  from.parentId=newParent;
+  saveToLS();renderProjTree();renderHomeGrid();
+}
+
+// ═══════════════════════════════════════════════════════
+// HOME
+// ═══════════════════════════════════════════════════════
+function renderHomeGrid(){
+  const el=document.getElementById('home-proj-grid');
+  const roots=rootProjects();
+  if(!roots.length){
+    el.innerHTML='<div class="empty" style="grid-column:1/-1"><i class="fa-solid fa-folder-open"></i>No projects yet. Create one!</div>';
+    return;
+  }
+  el.innerHTML=roots.map(p=>{
+    const entCount=getAllEntries(p).length;
+    const subCount=childProjects(p.id).length;
+    const tagsHtml=(p.tags||[]).slice(0,3).map(t=>`<span class="tag tag-default">${escHtml(t)}</span>`).join('');
+    return`<div class="home-proj-card" onclick="openProject('${p.id}')" oncontextmenu="openCtxProj(event,'${p.id}')">
+      <div class="hpc-icon">${p.icon||'📁'}</div>
+      <div class="hpc-name">${escHtml(p.name)}</div>
+      <div class="hpc-meta">${entCount} entries · ${subCount} sub-projects</div>
+      ${tagsHtml?`<div class="hpc-tags">${tagsHtml}</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════════
+function showHome(){
+  currentProjId=null;
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-home').classList.add('active');
+  document.getElementById('topbar-breadcrumb').innerHTML=`<span class="crumb active">Home</span>`;
+  document.getElementById('topbar-actions').innerHTML='';
+  document.querySelectorAll('.proj-item').forEach(i=>i.classList.remove('active'));
+  renderHomeGrid();
+}
+function showSearch(){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-search').classList.add('active');
+  document.getElementById('topbar-breadcrumb').innerHTML=`<span class="crumb" onclick="showHome()">Home</span><span class="sep">/</span><span class="crumb active">Search</span>`;
+}
+function openProject(id){
+  currentProjId=id;
+  const p=getProj(id);if(!p)return;
+  p._open=true;
+  document.querySelectorAll('.panel').forEach(el=>el.classList.remove('active'));
+  document.getElementById('panel-project').classList.add('active');
+  // breadcrumb
+  const crumbs=buildBreadcrumb(id);
+  document.getElementById('topbar-breadcrumb').innerHTML=crumbs;
+  document.getElementById('topbar-actions').innerHTML=`
+    <button class="btn btn-sm btn-primary" onclick="openNewEntryModal(null)"><i class="fa-solid fa-plus"></i> New entry</button>`;
+  document.getElementById('proj-view-title').innerHTML=`${p.icon||'📁'} ${escHtml(p.name)}`;
+  document.getElementById('proj-view-sub').textContent=p.desc||'';
+  renderProjTree();
+  switchProjTab(currentProjTab);
+}
+function buildBreadcrumb(id){
+  const chain=[];
+  let cur=getProj(id);
+  while(cur){ chain.unshift(cur); cur=cur.parentId?getProj(cur.parentId):null; }
+  let html=`<span class="crumb" onclick="showHome()">Home</span>`;
+  chain.forEach((p,i)=>{
+    html+=`<span class="sep">/</span>`;
+    if(i===chain.length-1) html+=`<span class="crumb active">${escHtml(p.name)}</span>`;
+    else html+=`<span class="crumb" onclick="openProject('${p.id}')">${escHtml(p.name)}</span>`;
+  });
+  return html;
+}
+
+// ═══════════════════════════════════════════════════════
+// PROJECT TABS
+// ═══════════════════════════════════════════════════════
+function switchProjTab(tab){
+  currentProjTab=tab;
+  document.querySelectorAll('.proj-tab').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.proj-tab-panel').forEach(p=>p.style.display='none');
+  document.querySelector(`.proj-tab[onclick="switchProjTab('${tab}')"]`).classList.add('active');
+  document.getElementById(`proj-tab-${tab}`).style.display='block';
+  const p=currentProj();if(!p)return;
+  if(tab==='data') renderEntryList(p.entries||[],document.getElementById('entry-list-root'),0);
+  if(tab==='fields') renderFieldDefs(p);
+  if(tab==='variables'){ renderProjVars(p); renderGlobalVars('proj'); }
+  if(tab==='tags'){ renderProjTags(p); renderGlobalTags('proj'); }
+  if(tab==='settings'){ document.getElementById('proj-setting-name').value=p.name||''; document.getElementById('proj-setting-desc').value=p.desc||''; document.getElementById('proj-setting-icon').value=p.icon||''; }
+}
+
+// ═══════════════════════════════════════════════════════
+// ENTRIES
+// ═══════════════════════════════════════════════════════
+function renderEntryList(entries, container, depth){
+  container.innerHTML='';
+  if(!entries.length){
+    container.innerHTML='<div class="empty"><i class="fa-solid fa-table-rows"></i>No entries yet.</div>';
+    return;
+  }
+  entries.forEach(e=>{
+    const row=document.createElement('div');
+    row.className='entry-row';
+    row.dataset.entryId=e.id;
+    const hasChildren=(e.children||[]).length>0;
+    const tagsBit=(e.tags||[]).map(t=>`<span class="tag tag-default" style="font-size:9px;padding:1px 5px;">${escHtml(t)}</span>`).join('');
+    const fieldsBit=Object.entries(e.fields||{}).slice(0,3).map(([k,v])=>{
+      const p=currentProj();
+      const fd=p?(p.fields||[]).find(f=>f.id===k):null;
+      return fd?`<span style="font-size:10px;color:var(--text3);font-family:var(--mono);">${escHtml(fd.name)}: <span style="color:var(--text2);">${escHtml(String(v||''))}</span></span>`:'';
+    }).filter(Boolean).join(' · ');
+    row.innerHTML=`
+      <div class="entry-header"
+        draggable="true"
+        oncontextmenu="openCtxEntry(event,'${e.id}')"
+        ontouchstart="startHold(event,'entry','${e.id}')" ontouchend="endHold()" ontouchmove="endHold()">
+        <span class="entry-drag"><i class="fa-solid fa-grip-vertical"></i></span>
+        <span class="entry-chevron${hasChildren?' ':''}${e._open?' open':''}" onclick="toggleEntryOpen('${e.id}',this)">
+          ${hasChildren?'<i class="fa-solid fa-chevron-right"></i>':'<span style="display:inline-block;width:9px;"></span>'}
+        </span>
+        <div class="entry-main">
+          <div class="entry-name">
+            <span class="entry-name-text" onclick="openEditEntryModal('${e.id}')">${escHtml(e.name||'Unnamed')}</span>
+            ${(e.variables||[]).some(v=>v.scope==='exclusive')?'<span class="scope-badge scope-exclusive" style="font-size:8px;">exclusive vars</span>':''}
+            ${tagsBit}
+          </div>
+          ${fieldsBit?`<div class="entry-sub">${fieldsBit}</div>`:''}
+        </div>
+        <div class="entry-actions">
+          <button class="btn btn-ghost btn-icon" onclick="openEditEntryModal('${e.id}')" title="Edit"><i class="fa-solid fa-pen"></i></button>
+          <button class="btn btn-ghost btn-icon" onclick="copyEntry('${e.id}')" title="Copy"><i class="fa-solid fa-copy"></i></button>
+          <button class="btn btn-ghost btn-icon" onclick="openNewEntryModal('${e.id}')" title="Add child"><i class="fa-solid fa-plus"></i></button>
+          <button class="btn btn-ghost btn-icon" onclick="openCtxEntry(event,'${e.id}')"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+        </div>
+      </div>
+      <div class="entry-children${e._open?' open':''}" id="children-${e.id}"></div>`;
+    // drag
+    const header=row.querySelector('.entry-header');
+    header.addEventListener('dragstart',ev=>{ ev.dataTransfer.setData('entry-id',e.id); row.classList.add('dragging'); });
+    header.addEventListener('dragend',()=>row.classList.remove('dragging'));
+    row.addEventListener('dragover',ev=>{ ev.preventDefault(); const half=row.getBoundingClientRect().height/2; if(ev.offsetY<half) row.classList.add('drag-over-top'); else row.classList.add('drag-over-bot'); });
+    row.addEventListener('dragleave',()=>{ row.classList.remove('drag-over-top','drag-over-bot'); });
+    row.addEventListener('drop',ev=>{ ev.preventDefault(); const fromId=ev.dataTransfer.getData('entry-id'); row.classList.remove('drag-over-top','drag-over-bot'); if(fromId&&fromId!==e.id) moveEntry(fromId,e.id); });
+    container.appendChild(row);
+    if(hasChildren && e._open){
+      const childContainer=row.querySelector(`#children-${e.id}`);
+      renderEntryList(e.children,childContainer,depth+1);
+    }
+  });
+}
+function toggleEntryOpen(id,chevEl){
+  const p=currentProj();if(!p)return;
+  const e=findEntry(p,id);if(!e)return;
+  e._open=!e._open;
+  chevEl.classList.toggle('open',e._open);
+  const childDiv=document.getElementById('children-'+id);
+  if(childDiv){ childDiv.classList.toggle('open',e._open); if(e._open) renderEntryList(e.children||[],childDiv,1); }
+}
+function moveEntry(fromId,toId){
+  const p=currentProj();if(!p)return;
+  const from=findEntry(p,fromId);if(!from)return;
+  removeEntryFromTree(p,fromId);
+  const to=findEntry(p,toId);
+  if(to){ if(!to.children) to.children=[]; to.children.push(from); from.parentId=toId; }
+  saveToLS(); switchProjTab('data');
+}
+
+// ═══════════════════════════════════════════════════════
+// CREATE / EDIT
+// ═══════════════════════════════════════════════════════
+function openNewProjModal(parentId){
+  document.getElementById('np-name').value='';
+  document.getElementById('np-desc').value='';
+  document.getElementById('np-icon').value='';
+  document.getElementById('np-parent').value=parentId||'';
+  openModal('modal-new-proj');
+  setTimeout(()=>document.getElementById('np-name').focus(),100);
+}
+function createProject(){
+  const name=document.getElementById('np-name').value.trim();
+  if(!name){showToast('Name required','error');return;}
+  const parentId=document.getElementById('np-parent').value||null;
+  const proj={
+    id:uid(),name,
+    desc:document.getElementById('np-desc').value.trim(),
+    icon:document.getElementById('np-icon').value.trim()||'📁',
+    parentId,entries:[],fields:[],variables:[],tags:[],_open:false
+  };
+  state.projects.push(proj);
+  saveToLS();closeModal('modal-new-proj');
+  renderProjTree();renderHomeGrid();
+  showToast('Project created','success');
+  openProject(proj.id);
+}
+function openNewEntryModal(parentEntryId){
+  document.getElementById('ne-name').value='';
+  document.getElementById('ne-parent-entry').value=parentEntryId||'';
+  openModal('modal-new-entry');
+  setTimeout(()=>document.getElementById('ne-name').focus(),100);
+}
+function createEntry(){
+  const p=currentProj();if(!p)return;
+  const name=document.getElementById('ne-name').value.trim();
+  if(!name){showToast('Name required','error');return;}
+  const parentEntryId=document.getElementById('ne-parent-entry').value||null;
+  const entry={id:uid(),name,parentId:parentEntryId,projId:p.id,children:[],fields:{},variables:[],tags:[],_open:false};
+  if(parentEntryId){
+    const par=findEntry(p,parentEntryId);
+    if(par){if(!par.children)par.children=[];par.children.push(entry);par._open=true;}
+  }else{ p.entries.push(entry); }
+  saveToLS();closeModal('modal-new-entry');
+  switchProjTab('data');
+  showToast('Entry created','success');
+}
+function openEditEntryModal(entryId){
+  const p=currentProj();if(!p)return;
+  const e=findEntry(p,entryId);if(!e)return;
+  editingEntryId=entryId;
+  document.getElementById('ee-title').innerHTML=`<i class="fa-solid fa-pen"></i> Edit: ${escHtml(e.name)}`;
+  document.getElementById('ee-name').value=e.name||'';
+  // fields
+  const fvEl=document.getElementById('ee-field-vals');
+  const fields=p.fields||[];
+  if(!fields.length){fvEl.innerHTML='<div style="font-size:11px;color:var(--text3);">No fields defined. Add fields in the Fields tab.</div>';}
+  else{
+    fvEl.innerHTML=fields.map(f=>{
+      const val=e.fields?.[f.id]??'';
+      return`<div class="field-val-row">
+        <div class="fvr-label">${escHtml(f.name)}<br><span class="ftype ftype-${f.type}">${f.type}</span></div>
+        <div class="fvr-value">${renderFieldInput(f,val,`ee-fv-${f.id}`)}</div>
+      </div>`;
+    }).join('');
+  }
+  // variables
+  renderEntryVarList(e);
+  // tags
+  renderEntryTagsEdit(e);
+  openModal('modal-edit-entry');
+}
+function renderFieldInput(field,val,inputId){
+  switch(field.type){
+    case 'boolean': return`<div class="bool-toggle"><label class="bool-switch"><input type="checkbox" id="${inputId}"${val?'checked':''}><span class="bool-switch-slider"></span></label><span style="font-size:11px;color:var(--text2);">${val?'Yes':'No'}</span></div>`;
+    case 'number': return`<input type="number" id="${inputId}" value="${escAttr(String(val))}">`;
+    case 'date': return`<input type="date" id="${inputId}" value="${escAttr(String(val))}">`;
+    case 'relation':{
+      const p=currentProj();
+      const linked=val?findEntry(p,val):null;
+      return`<div class="relation-pick" id="${inputId}-wrap" onclick="openRelationPicker('${field.id}','${inputId}')">
+        <i class="fa-solid fa-link" style="font-size:10px;color:var(--text3);"></i>
+        <span id="${inputId}-label">${linked?escHtml(linked.name):'Click to link entry…'}</span>
+        <input type="hidden" id="${inputId}" value="${escAttr(String(val))}">
+        ${val?`<span class="rp-clear" onclick="event.stopPropagation();clearRelation('${inputId}')"><i class="fa-solid fa-xmark"></i></span>`:''}
+      </div>`;
+    }
+    case 'text': default: return`<input type="text" id="${inputId}" value="${escAttr(String(val))}">`;
+    case 'mixed': return`<textarea id="${inputId}">${escHtml(String(val))}</textarea>`;
+  }
+}
+function saveEditEntry(){
+  const p=currentProj();if(!p)return;
+  const e=findEntry(p,editingEntryId);if(!e)return;
+  e.name=document.getElementById('ee-name').value.trim()||e.name;
+  (p.fields||[]).forEach(f=>{
+    const inp=document.getElementById(`ee-fv-${f.id}`);
+    if(!inp)return;
+    if(f.type==='boolean') e.fields[f.id]=inp.checked;
+    else e.fields[f.id]=inp.value;
+  });
+  saveToLS();closeModal('modal-edit-entry');switchProjTab('data');
+  showToast('Entry saved','success');
+}
+function clearRelation(inputId){
+  const inp=document.getElementById(inputId);
+  const lbl=document.getElementById(inputId+'-label');
+  if(inp) inp.value='';
+  if(lbl) lbl.textContent='Click to link entry…';
+}
+function openRelationPicker(fieldId,inputId){
+  const p=currentProj();if(!p)return;
+  const all=getAllEntries(p).filter(e=>e.id!==editingEntryId);
+  relationPickCallback=(pickedId)=>{
+    const inp=document.getElementById(inputId);
+    const lbl=document.getElementById(inputId+'-label');
+    if(inp) inp.value=pickedId;
+    const picked=findEntry(p,pickedId);
+    if(lbl&&picked) lbl.textContent=picked.name;
+    closeModal('modal-relation-pick');
+  };
+  filterRelationPicker('');
+  openModal('modal-relation-pick');
+}
+function filterRelationPicker(q){
+  const p=currentProj();if(!p)return;
+  const all=getAllEntries(p).filter(e=>e.id!==editingEntryId);
+  const filtered=q?all.filter(e=>e.name.toLowerCase().includes(q.toLowerCase())):all;
+  const el=document.getElementById('rel-pick-list');
+  el.innerHTML=filtered.map(e=>`<div class="search-hit" onclick="if(relationPickCallback)relationPickCallback('${e.id}')">
+    <div class="search-hit-title">${escHtml(e.name)}</div>
+    <div class="search-hit-preview">${escHtml(e.id)}</div>
+  </div>`).join('');
+}
+
+// ═══════════════════════════════════════════════════════
+// COPY / PASTE / DUPLICATE
+// ═══════════════════════════════════════════════════════
+function copyEntry(id){
+  const p=currentProj();if(!p)return;
+  const e=findEntry(p,id);if(!e)return;
+  clipboard={type:'entry',data:deepCloneEntry(e)};
+  showClipboardBanner(`"${e.name}" copied`);
+  showToast('Entry copied','success');
+}
+function pasteAsChild(parentId){
+  if(!clipboard||clipboard.type!=='entry'){showToast('Nothing to paste','error');return;}
+  const p=currentProj();if(!p)return;
+  const clone=deepCloneEntry(clipboard.data);
+  clone.parentId=parentId;
+  if(parentId){
+    const par=findEntry(p,parentId);
+    if(par){if(!par.children)par.children=[];par.children.push(clone);}
+  }else{p.entries.push(clone);}
+  saveToLS();switchProjTab('data');showToast('Pasted','success');
+}
+function duplicateEntry(id){
+  const p=currentProj();if(!p)return;
+  const e=findEntry(p,id);if(!e)return;
+  const clone=deepCloneEntry(e);
+  clone.name=clone.name+' (copy)';
+  const par=findEntryParent(p,id);
+  if(par){if(!par.children)par.children=[];par.children.push(clone);}
+  else{p.entries.push(clone);}
+  saveToLS();switchProjTab('data');showToast('Duplicated','success');
+}
+function showClipboardBanner(label){
+  const b=document.getElementById('clipboard-banner');
+  document.getElementById('clipboard-label').textContent=label;
+  b.classList.add('show');
+}
+function clearClipboard(){ clipboard=null; document.getElementById('clipboard-banner').classList.remove('show'); }
+
+// ═══════════════════════════════════════════════════════
+// FIELDS
+// ═══════════════════════════════════════════════════════
+const FIELD_TYPE_LABELS={text:'Text',number:'Number',date:'Date',boolean:'Boolean',mixed:'Mixed',relation:'Relation'};
+function renderFieldDefs(p){
+  const el=document.getElementById('field-def-list');
+  const fields=p.fields||[];
+  if(!fields.length){el.innerHTML='<div style="font-size:11px;color:var(--text3);">No fields yet.</div>';return;}
+  el.innerHTML=fields.map((f,i)=>`
+    <div class="field-def-row" draggable="true" data-field-id="${f.id}">
+      <span class="fd-drag"><i class="fa-solid fa-grip-vertical"></i></span>
+      <span class="ftype ftype-${f.type}">${f.type}</span>
+      <span class="field-def-name">${escHtml(f.name)}${f.required?'<span style="color:var(--red);margin-left:3px;">*</span>':''}</span>
+      ${f.desc?`<span style="font-size:10px;color:var(--text3);">${escHtml(f.desc)}</span>`:''}
+      <div class="field-def-actions">
+        <button class="btn btn-ghost btn-xs" onclick="deleteField('${f.id}')"><i class="fa-solid fa-trash" style="color:var(--red);"></i></button>
+      </div>
+    </div>`).join('');
+  // drag to reorder fields
+  el.querySelectorAll('.field-def-row').forEach(row=>{
+    row.addEventListener('dragstart',e=>{ e.dataTransfer.setData('field-id',row.dataset.fieldId); row.style.opacity='.4'; });
+    row.addEventListener('dragend',()=>row.style.opacity='');
+    row.addEventListener('dragover',e=>{ e.preventDefault(); row.style.borderTop='2px solid var(--accent)'; });
+    row.addEventListener('dragleave',()=>row.style.borderTop='');
+    row.addEventListener('drop',e=>{ e.preventDefault(); row.style.borderTop=''; const fid=e.dataTransfer.getData('field-id'); reorderField(fid,row.dataset.fieldId); });
+  });
+}
+function openAddFieldModal(){
+  document.getElementById('af-name').value='';
+  document.getElementById('af-desc').value='';
+  document.getElementById('af-type').value='text';
+  document.getElementById('af-required').checked=false;
+  openModal('modal-add-field');
+  setTimeout(()=>document.getElementById('af-name').focus(),100);
+}
+function addField(){
+  const p=currentProj();if(!p)return;
+  const name=document.getElementById('af-name').value.trim();
+  if(!name){showToast('Name required','error');return;}
+  const field={id:uid(),name,type:document.getElementById('af-type').value,desc:document.getElementById('af-desc').value.trim(),required:document.getElementById('af-required').checked};
+  if(!p.fields)p.fields=[];
+  p.fields.push(field);
+  saveToLS();closeModal('modal-add-field');renderFieldDefs(p);
+  showToast('Field added','success');
+}
+function deleteField(id){
+  const p=currentProj();if(!p)return;
+  p.fields=(p.fields||[]).filter(f=>f.id!==id);
+  getAllEntries(p).forEach(e=>{ delete e.fields?.[id]; });
+  saveToLS();renderFieldDefs(p);showToast('Field removed','success');
+}
+function reorderField(fromId,toId){
+  const p=currentProj();if(!p)return;
+  const fields=p.fields||[];
+  const fi=fields.findIndex(f=>f.id===fromId);
+  const ti=fields.findIndex(f=>f.id===toId);
+  if(fi===-1||ti===-1)return;
+  const [item]=fields.splice(fi,1);
+  fields.splice(ti,0,item);
+  saveToLS();renderFieldDefs(p);
+}
+
+// ═══════════════════════════════════════════════════════
+// VARIABLES
+// ═══════════════════════════════════════════════════════
+function renderProjVars(p){
+  const el=document.getElementById('proj-var-list');
+  const vars=p.variables||[];
+  if(!vars.length){el.innerHTML='<div style="font-size:11px;color:var(--text3);">No project variables.</div>';return;}
+  el.innerHTML=vars.map((v,i)=>`<div class="var-row">
+    <span class="scope-badge scope-${v.scope==='exclusive'?'exclusive':'local'}">${v.scope}</span>
+    <span class="vr-name">${escHtml(v.name)}</span>
+    <span class="row-eq" style="color:var(--text3);font-family:var(--mono);font-size:11px;">=</span>
+    <span class="vr-val">${escHtml(String(v.value))}</span>
+    <button class="btn btn-ghost btn-xs" onclick="deleteVar('project',${i})"><i class="fa-solid fa-trash" style="color:var(--red);font-size:10px;"></i></button>
+  </div>`).join('');
+}
+function renderGlobalVars(ctx){
+  const elId=ctx==='proj'?'global-var-list-proj':'global-var-list';
+  const el=document.getElementById(elId);if(!el)return;
+  const vars=state.globalVars||[];
+  if(!vars.length){el.innerHTML='<div style="font-size:11px;color:var(--text3);">No global variables.</div>';return;}
+  el.innerHTML=vars.map((v,i)=>`<div class="var-row">
+    <span class="scope-badge scope-global">global</span>
+    <span class="vr-name">${escHtml(v.name)}</span>
+    <span style="color:var(--text3);font-family:var(--mono);font-size:11px;">=</span>
+    <span class="vr-val">${escHtml(String(v.value))}</span>
+    <button class="btn btn-ghost btn-xs" onclick="deleteVar('global',${i})"><i class="fa-solid fa-trash" style="color:var(--red);font-size:10px;"></i></button>
+  </div>`).join('');
+}
+function renderEntryVarList(e){
+  const el=document.getElementById('ee-var-list');if(!el)return;
+  const vars=e.variables||[];
+  if(!vars.length){el.innerHTML='<div style="font-size:11px;color:var(--text3);">No entry variables.</div>';return;}
+  el.innerHTML=vars.map((v,i)=>`<div class="var-row">
+    <span class="scope-badge scope-${v.scope==='exclusive'?'exclusive':'local'}">${v.scope}</span>
+    <span class="vr-name">${escHtml(v.name)}</span>
+    <span style="color:var(--text3);font-family:var(--mono);font-size:11px;">=</span>
+    <span class="vr-val">${escHtml(String(v.value))}</span>
+    <button class="btn btn-ghost btn-xs" onclick="deleteVar('entry',${i})"><i class="fa-solid fa-trash" style="color:var(--red);font-size:10px;"></i></button>
+  </div>`).join('');
+}
+function openAddVarModal(target){
+  addVarTarget=target;
+  document.getElementById('av-name').value='';
+  document.getElementById('av-value').value='';
+  document.getElementById('av-scope').value='local';
+  if(target==='global') document.getElementById('av-scope').value='local';
+  openModal('modal-add-var');
+  setTimeout(()=>document.getElementById('av-name').focus(),100);
+}
+function addVariable(){
+  const name=document.getElementById('av-name').value.trim();
+  const value=document.getElementById('av-value').value.trim();
+  const scope=document.getElementById('av-scope').value;
+  if(!name){showToast('Name required','error');return;}
+  const v={id:uid(),name,value,scope};
+  if(addVarTarget==='global'){
+    if(!state.globalVars)state.globalVars=[];
+    state.globalVars.push(v);
+    saveToLS();closeModal('modal-add-var');renderGlobalVars('proj');
+  } else if(addVarTarget==='project'){
+    const p=currentProj();if(!p)return;
+    if(!p.variables)p.variables=[];
+    p.variables.push(v);
+    saveToLS();closeModal('modal-add-var');renderProjVars(p);
+  } else if(addVarTarget==='entry'){
+    const p=currentProj();if(!p)return;
+    const e=findEntry(p,editingEntryId);if(!e)return;
+    if(!e.variables)e.variables=[];
+    e.variables.push(v);
+    saveToLS();renderEntryVarList(e);closeModal('modal-add-var');
+  }
+  showToast('Variable added','success');
+}
+function deleteVar(target,idx){
+  if(target==='global'){ state.globalVars.splice(idx,1); saveToLS(); renderGlobalVars('proj'); }
+  else if(target==='project'){ const p=currentProj(); p.variables.splice(idx,1); saveToLS(); renderProjVars(p); }
+  else if(target==='entry'){ const p=currentProj(); const e=findEntry(p,editingEntryId); e.variables.splice(idx,1); saveToLS(); renderEntryVarList(e); }
+  showToast('Removed','success');
+}
+
+// ═══════════════════════════════════════════════════════
+// TAGS
+// ═══════════════════════════════════════════════════════
+const TAG_COLORS=['#6e57ff','#3dd68c','#ff5c6b','#f5a623','#4ea8de','#e879b6','#2dd4bf','#a78bfa','#facc15','#fb7185'];
+function tagColor(tag){ let h=0; for(let c of tag) h=(h*31+c.charCodeAt(0))&0xffffffff; return TAG_COLORS[Math.abs(h)%TAG_COLORS.length]; }
+function tagHtml(t,onRemove){
+  const col=tagColor(t);
+  return`<span class="tag" style="background:${col}22;color:${col};border:1px solid ${col}44;">${escHtml(t)}${onRemove?`<button class="tag-remove" onclick="${onRemove}"><i class="fa-solid fa-xmark"></i></button>`:''}</span>`;
+}
+function renderProjTags(p){
+  const el=document.getElementById('proj-tags-list');if(!el)return;
+  const tags=p.tags||[];
+  el.innerHTML=tags.length?tags.map((t,i)=>tagHtml(t,`removeProjTag(${i})`)).join(''):'<span style="font-size:11px;color:var(--text3);">No tags yet.</span>';
+}
+function renderGlobalTags(ctx){
+  const elId=ctx==='proj'?'global-tags-list-proj':'global-tags-list';
+  const el=document.getElementById(elId);if(!el)return;
+  const tags=state.globalTags||[];
+  el.innerHTML=tags.length?tags.map((t,i)=>tagHtml(t,`removeGlobalTag(${i})`)).join(''):'<span style="font-size:11px;color:var(--text3);">No global tags.</span>';
+}
+function renderEntryTagsEdit(e){
+  const el=document.getElementById('ee-tags');if(!el)return;
+  const tags=e.tags||[];
+  el.innerHTML=tags.length?tags.map((t,i)=>tagHtml(t,`removeEntryTag(${i})`)).join(''):'<span style="font-size:11px;color:var(--text3);">No tags.</span>';
+}
+function addProjTag(){
+  const p=currentProj();if(!p)return;
+  const inp=document.getElementById('new-tag-input');
+  const t=inp.value.trim();if(!t)return;
+  if(!p.tags)p.tags=[];
+  if(!p.tags.includes(t))p.tags.push(t);
+  inp.value='';saveToLS();renderProjTags(p);
+}
+function addGlobalTag(){
+  const inp=document.getElementById('new-global-tag-input');
+  const t=inp.value.trim();if(!t)return;
+  if(!state.globalTags)state.globalTags=[];
+  if(!state.globalTags.includes(t))state.globalTags.push(t);
+  inp.value='';saveToLS();renderGlobalTags('proj');
+}
+function addEntryTag(){
+  const p=currentProj();if(!p)return;
+  const e=findEntry(p,editingEntryId);if(!e)return;
+  const inp=document.getElementById('ee-tag-input');
+  const t=inp.value.trim();if(!t)return;
+  if(!e.tags)e.tags=[];
+  if(!e.tags.includes(t))e.tags.push(t);
+  inp.value='';saveToLS();renderEntryTagsEdit(e);
+}
+function removeProjTag(i){ const p=currentProj();if(!p)return; p.tags.splice(i,1);saveToLS();renderProjTags(p); }
+function removeGlobalTag(i){ state.globalTags.splice(i,1);saveToLS();renderGlobalTags('proj'); }
+function removeEntryTag(i){ const p=currentProj();if(!p)return; const e=findEntry(p,editingEntryId);if(!e)return; e.tags.splice(i,1);saveToLS();renderEntryTagsEdit(e); }
+
+// ═══════════════════════════════════════════════════════
+// PROJECT SETTINGS
+// ═══════════════════════════════════════════════════════
+function updateProjSetting(key,val){
+  const p=currentProj();if(!p)return;
+  p[key]=val;
+  if(key==='name'){ document.getElementById('proj-view-title').innerHTML=`${p.icon||'📁'} ${escHtml(val)}`; renderProjTree(); renderHomeGrid(); }
+  if(key==='icon'){ document.getElementById('proj-view-title').innerHTML=`${val||'📁'} ${escHtml(p.name)}`; renderProjTree(); renderHomeGrid(); }
+  saveToLS();
+}
+function deleteCurrentProject(){
+  const p=currentProj();if(!p)return;
+  deleteTarget={type:'project',id:p.id};
+  document.getElementById('del-title').textContent=`Delete "${p.name}"?`;
+  document.getElementById('del-body').textContent=`This will delete the project and ALL its entries and sub-projects. This cannot be undone.`;
+  openModal('modal-delete');
+}
+function confirmDelete(){
+  if(!deleteTarget)return;
+  if(deleteTarget.type==='project'){
+    const ids=allDescendantProjIds(deleteTarget.id);
+    state.projects=state.projects.filter(p=>!ids.includes(p.id));
+    saveToLS();closeModal('modal-delete');showHome();renderProjTree();renderHomeGrid();
+    showToast('Project deleted','success');
+  } else if(deleteTarget.type==='entry'){
+    const p=currentProj();if(!p)return;
+    removeEntryFromTree(p,deleteTarget.id);
+    saveToLS();closeModal('modal-delete');switchProjTab('data');
+    showToast('Entry deleted','success');
+  }
+  deleteTarget=null;
+}
+
+// ═══════════════════════════════════════════════════════
+// GLOBAL SEARCH
+// ═══════════════════════════════════════════════════════
+let searchDebounce=null;
+function globalSearchInput(q){
+  clearTimeout(searchDebounce);
+  if(!q.trim()){if(currentProjId)openProject(currentProjId);else showHome();return;}
+  searchDebounce=setTimeout(()=>runSearch(q),200);
+}
+function runSearch(q){
+  const ql=q.toLowerCase();
+  const hits=[];
+  state.projects.forEach(p=>{
+    if(p.name.toLowerCase().includes(ql)||( p.desc&&p.desc.toLowerCase().includes(ql)))
+      hits.push({type:'project',projId:p.id,path:getProjPath(p.id),title:p.name,preview:p.desc||''});
+    getAllEntries(p).forEach(e=>{
+      const matchName=e.name.toLowerCase().includes(ql);
+      const matchFields=Object.entries(e.fields||{}).some(([,v])=>String(v).toLowerCase().includes(ql));
+      const matchTags=(e.tags||[]).some(t=>t.toLowerCase().includes(ql));
+      if(matchName||matchFields||matchTags){
+        const preview=matchFields?Object.entries(e.fields||{}).filter(([,v])=>String(v).toLowerCase().includes(ql)).map(([k,v])=>{const fd=(p.fields||[]).find(f=>f.id===k);return fd?`${fd.name}: ${v}`:''}).filter(Boolean).join(' · '):'';
+        hits.push({type:'entry',projId:p.id,entryId:e.id,path:getProjPath(p.id)+' / '+e.name,title:e.name,preview});
+      }
+    });
+  });
+  showSearch();
+  document.getElementById('search-sub').textContent=`${hits.length} result${hits.length!==1?'s':''} for "${q}"`;
+  const el=document.getElementById('search-results-list');
+  if(!hits.length){el.innerHTML='<div class="empty"><i class="fa-solid fa-magnifying-glass"></i>No results found.</div>';return;}
+  el.innerHTML=hits.map(h=>`<div class="search-hit" onclick="${h.type==='project'?`openProject('${h.projId}')`:`openProject('${h.projId}');setTimeout(()=>openEditEntryModal('${h.entryId}'),400)`}">
+    <div class="search-hit-path">${h.type==='project'?'📁 Project':'📄 Entry'} · ${escHtml(h.path)}</div>
+    <div class="search-hit-title">${highlight(h.title,q)}</div>
+    ${h.preview?`<div class="search-hit-preview">${highlight(h.preview,q)}</div>`:''}
+  </div>`).join('');
+}
+function getProjPath(id){
+  const chain=[];let cur=getProj(id);
+  while(cur){chain.unshift(cur.name);cur=cur.parentId?getProj(cur.parentId):null;}
+  return chain.join(' / ');
+}
+function highlight(text,q){
+  const re=new RegExp('('+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi');
+  return escHtml(text).replace(re,'<mark>$1</mark>');
+}
+
+// ═══════════════════════════════════════════════════════
+// IMPORT / EXPORT
+// ═══════════════════════════════════════════════════════
+function exportProject(){
+  const p=currentProj();if(!p)return;
+  const blob=new Blob([JSON.stringify(p,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`${p.name}-export.json`;a.click();
+  showToast('Exported','success');
+}
+function openImportModal(){ openModal('modal-import'); }
+function handleImport(e){
+  const file=e.target.files[0];if(!file)return;
+  const r=new FileReader();r.onload=ev=>{
+    try{
+      const data=JSON.parse(ev.target.result);
+      if(data.entries&&data.fields){
+        // it's a project export
+        data.id=uid();data.parentId=null;
+        state.projects.push(data);
+        saveToLS();renderProjTree();renderHomeGrid();
+        closeModal('modal-import');showToast('Imported project','success');
+        openProject(data.id);
+      }else{showToast('Invalid file format','error');}
+    }catch(err){showToast('Invalid JSON','error');}
+  };r.readAsText(file);
+  e.target.value='';
+}
+
+// ═══════════════════════════════════════════════════════
+// CONTEXT MENU
+// ═══════════════════════════════════════════════════════
+let ctxTarget=null;
+let holdTimer2=null;
+function openCtxEntry(event,id){
+  event.preventDefault();event.stopPropagation();
+  ctxTarget={type:'entry',id};
+  const hasPaste=clipboard&&clipboard.type==='entry';
+  document.getElementById('ctx-open').style.display='none';
+  document.getElementById('ctx-edit').style.display='flex';
+  document.getElementById('ctx-copy').style.display='flex';
+  document.getElementById('ctx-paste').style.display=hasPaste?'flex':'none';
+  document.getElementById('ctx-duplicate').style.display='flex';
+  document.getElementById('ctx-new-sub').style.display='flex';
+  document.getElementById('ctx-new-subproj').style.display='none';
+  document.getElementById('ctx-delete').style.display='flex';
+  positionCtx(event);
+  document.getElementById('ctx-edit').onclick=()=>{closeCtx();openEditEntryModal(id);};
+  document.getElementById('ctx-copy').onclick=()=>{closeCtx();copyEntry(id);};
+  document.getElementById('ctx-paste').onclick=()=>{closeCtx();pasteAsChild(id);};
+  document.getElementById('ctx-duplicate').onclick=()=>{closeCtx();duplicateEntry(id);};
+  document.getElementById('ctx-new-sub').onclick=()=>{closeCtx();openNewEntryModal(id);};
+  document.getElementById('ctx-delete').onclick=()=>{closeCtx();deleteTarget={type:'entry',id};document.getElementById('del-title').textContent='Delete entry?';document.getElementById('del-body').textContent='This will also delete all child entries.';openModal('modal-delete');};
+}
+function openCtxProj(event,id){
+  event.preventDefault();event.stopPropagation();
+  ctxTarget={type:'project',id};
+  document.getElementById('ctx-open').style.display='flex';
+  document.getElementById('ctx-edit').style.display='none';
+  document.getElementById('ctx-copy').style.display='none';
+  document.getElementById('ctx-paste').style.display='none';
+  document.getElementById('ctx-duplicate').style.display='none';
+  document.getElementById('ctx-new-sub').style.display='none';
+  document.getElementById('ctx-new-subproj').style.display='flex';
+  document.getElementById('ctx-delete').style.display='flex';
+  positionCtx(event);
+  document.getElementById('ctx-open').onclick=()=>{closeCtx();openProject(id);};
+  document.getElementById('ctx-new-subproj').onclick=()=>{closeCtx();openNewProjModal(id);};
+  document.getElementById('ctx-delete').onclick=()=>{closeCtx();deleteTarget={type:'project',id};const p=getProj(id);document.getElementById('del-title').textContent=`Delete "${p?.name}"?`;document.getElementById('del-body').textContent='This will delete the project and ALL its entries and sub-projects.';openModal('modal-delete');};
+}
+function positionCtx(event){
+  const menu=document.getElementById('ctx-menu');
+  menu.classList.add('open');
+  let x=event.clientX,y=event.clientY;
+  menu.style.left='0';menu.style.top='0';
+  requestAnimationFrame(()=>{
+    menu.style.left=Math.min(x,window.innerWidth-menu.offsetWidth-8)+'px';
+    menu.style.top=Math.min(y,window.innerHeight-menu.offsetHeight-8)+'px';
+  });
+}
+function closeCtx(){ document.getElementById('ctx-menu').classList.remove('open'); }
+function startHold(event,type,id){
+  endHold();
+  holdTimer=setTimeout(()=>{
+    holdTimer=null;
+    if(type==='entry') openCtxEntry(event,id);
+    else openCtxProj(event,id);
+  },500);
+}
+function endHold(){ if(holdTimer!==null){clearTimeout(holdTimer);holdTimer=null;} }
+document.addEventListener('click',e=>{ if(!document.getElementById('ctx-menu').contains(e.target)) closeCtx(); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'){closeCtx();document.querySelectorAll('.modal-bg.open').forEach(m=>m.classList.remove('open'));} if((e.metaKey||e.ctrlKey)&&e.key==='k'){e.preventDefault();document.getElementById('global-search-input').focus();} });
+
+// ═══════════════════════════════════════════════════════
+// MODAL HELPERS
+// ═══════════════════════════════════════════════════════
+function openModal(id){ document.getElementById(id).classList.add('open'); }
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-bg').forEach(bg=>{
+  bg.addEventListener('click',e=>{ if(e.target===bg) bg.classList.remove('open'); });
+});
+
+// ═══════════════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════════════
+let toastTimer=null;
+function showToast(msg,type=''){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.className='toast show'+(type?' '+type:'');
+  clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+// ═══════════════════════════════════════════════════════
+// MOBILE
+// ═══════════════════════════════════════════════════════
+function toggleMobileMenu(){
+  const sb=document.getElementById('sidebar');
+  const ov=document.getElementById('sidebar-overlay');
+  sb.classList.toggle('mobile-open');
+  ov.classList.toggle('show',sb.classList.contains('mobile-open'));
+}
+function closeMobileMenu(){
+  document.getElementById('sidebar').classList.remove('mobile-open');
+  document.getElementById('sidebar-overlay').classList.remove('show');
+}
+function checkMobile(){
+  const isMobile=window.innerWidth<=700;
+  document.getElementById('mobile-menu-btn').style.display=isMobile?'flex':'none';
+}
+window.addEventListener('resize',checkMobile);
+
+// ═══════════════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════════════
+function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function escAttr(s){ return String(s).replace(/"/g,'&quot;'); }
+
+// ═══════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════
+// PANEL NAVIGATION (extra panels)
+// ═══════════════════════════════════════════════════════
+function showPanel(name){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+  document.getElementById('topbar-breadcrumb').innerHTML=
+    `<span class="crumb" onclick="showHome()">Home</span><span class="sep">/</span><span class="crumb active">${name==='audit'?'Audit Log':name==='versions'?'Version History':'Drive Sync'}</span>`;
+  document.getElementById('topbar-actions').innerHTML='';
+  if(name==='audit') renderAuditLog();
+  if(name==='versions') renderVH();
+  if(name==='drive') updateDriveUI();
+}
+
+// ═══════════════════════════════════════════════════════
+// AUDIT LOG
+// ═══════════════════════════════════════════════════════
+const LS_AUDIT='utm_audit_v1';
+let auditLog=[];
+function loadAudit(){ try{ const r=localStorage.getItem(LS_AUDIT); if(r) auditLog=JSON.parse(r); }catch(e){ auditLog=[]; } }
+function saveAudit(){ try{ localStorage.setItem(LS_AUDIT,JSON.stringify(auditLog.slice(-500))); }catch(e){} }
+function addAudit(type,msg){
+  auditLog.push({type,msg,ts:new Date().toLocaleString()});
+  saveAudit();
+}
+function renderAuditLog(){
+  const box=document.getElementById('audit-log-box');if(!box)return;
+  if(!auditLog.length){box.textContent='No entries yet.';return;}
+  box.innerHTML=[...auditLog].reverse().map(e=>{
+    const cls=e.type==='add'?'log-add':e.type==='remove'?'log-remove':e.type==='edit'?'log-edit':'log-system';
+    return`<span class="${cls}">[${e.ts}] ${e.msg}</span>`;
+  }).join('
+');
+}
+function copyAuditLog(){ navigator.clipboard.writeText(auditLog.map(e=>`[${e.ts}] ${e.msg}`).join('
+')).then(()=>showToast('Copied','success')); }
+function clearAuditLog(){ if(!confirm('Clear audit log?'))return; auditLog=[];saveAudit();renderAuditLog();showToast('Cleared','success'); }
+
+// ═══════════════════════════════════════════════════════
+// VERSION HISTORY
+// ═══════════════════════════════════════════════════════
+const LS_VH='utm_vh_v1';
+let snapshots=[];
+let previewSnapId=null;
+function loadSnapshots(){ try{ const r=localStorage.getItem(LS_VH); if(r) snapshots=JSON.parse(r); }catch(e){ snapshots=[]; } }
+function saveSnapshots(){ try{ localStorage.setItem(LS_VH,JSON.stringify(snapshots.slice(-50))); }catch(e){} }
+function saveSnapshot(label='auto'){
+  const snap={id:Date.now().toString(),label,ts:new Date().toLocaleString(),source:'local',data:JSON.parse(JSON.stringify(state))};
+  snapshots.push(snap);saveSnapshots();
+  if(driveReady) driveUploadSnapshots();
+  if(label!=='auto') showToast('Snapshot saved','success');
+}
+function renderVH(){
+  const list=document.getElementById('vh-list');if(!list)return;
+  if(!snapshots.length){list.innerHTML='<div class="empty"><i class="fa-solid fa-code-branch"></i>No snapshots yet.</div>';return;}
+  list.innerHTML=[...snapshots].reverse().map(s=>`
+    <div class="entry-row" style="padding:10px 12px;display:flex;align-items:center;gap:10px;">
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:11px;font-weight:500;color:var(--text);margin-bottom:2px;">${escHtml(s.label)}</div>
+        <div style="font-size:10px;color:var(--text3);font-family:var(--mono);">${s.ts} · <span style="color:${s.source==='drive'?'var(--blue)':'var(--green)'};">${s.source}</span></div>
+        <div style="font-size:10px;color:var(--text3);">${Object.keys(s.data.projects||{}).length} projects</div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-xs" onclick="previewSnap('${s.id}')"><i class="fa-solid fa-eye"></i></button>
+        <button class="btn btn-xs btn-danger" onclick="deleteSnap('${s.id}')"><i class="fa-solid fa-trash"></i></button>
+      </div>
+    </div>`).join('');
+}
+function previewSnap(id){
+  const s=snapshots.find(x=>x.id===id);if(!s)return;
+  previewSnapId=id;
+  document.getElementById('vh-preview-title').innerHTML=`<i class="fa-solid fa-code-branch"></i> ${escHtml(s.label)}`;
+  document.getElementById('vh-preview-meta').textContent=`${s.ts} · ${s.source} · ${(s.data.projects||[]).length} projects`;
+  document.getElementById('vh-preview-code').textContent=JSON.stringify(s.data,null,2).slice(0,1500)+'...';
+  document.getElementById('vh-restore-btn').onclick=()=>restoreSnap(id);
+  openModal('modal-vh-preview');
+}
+function restoreSnap(id){
+  const s=snapshots.find(x=>x.id===id);if(!s)return;
+  if(!confirm(`Restore snapshot "${s.label}" from ${s.ts}? Current state will be saved first.`))return;
+  saveSnapshot('Before restore: '+s.label);
+  state=JSON.parse(JSON.stringify(s.data));
+  saveToLS();renderProjTree();renderHomeGrid();
+  addAudit('system','Restored snapshot: '+s.label);
+  closeModal('modal-vh-preview');showToast('Restored!','success');showHome();
+}
+function deleteSnap(id){ snapshots=snapshots.filter(x=>x.id!==id);saveSnapshots();renderVH(); }
+function clearSnapshots(){ if(!confirm('Delete all snapshots?'))return; snapshots=[];saveSnapshots();renderVH();showToast('Cleared','success'); }
+
+// ═══════════════════════════════════════════════════════
+// GOOGLE DRIVE SYNC
+// ═══════════════════════════════════════════════════════
+const DRIVE_CLIENT_ID='6725026955-u73kupf0f0p8m9s866u37e87lfe9hrff.apps.googleusercontent.com';
+const DRIVE_SCOPES='https://www.googleapis.com/auth/drive.appdata';
+const DRIVE_FILE='utm-data.json';
+const DRIVE_VH_FILE='utm-snapshots.json';
+let driveReady=false,driveToken=null,driveFileId=null,driveVHFileId=null,pendingConflict=null;
+
+function driveInit(){
+  const stored=localStorage.getItem('utm_drive_token');
+  if(stored){
+    try{
+      const t=JSON.parse(stored);
+      if(t.expires>Date.now()){ driveToken=t.access_token;driveReady=true;updateDriveUI();driveSyncNow();return; }
+    }catch(e){}
+  }
+  updateDriveUI();
+}
+function driveToggle(){ showPanel('drive'); }
+function driveSignIn(){
+  if(typeof google==='undefined'||!google.accounts){showToast('Google API not ready','error');return;}
+  google.accounts.oauth2.initTokenClient({
+    client_id:DRIVE_CLIENT_ID,scope:DRIVE_SCOPES,
+    callback:(resp)=>{
+      if(resp.error){showToast('Sign-in failed: '+resp.error,'error');return;}
+      driveToken=resp.access_token;driveReady=true;
+      localStorage.setItem('utm_drive_token',JSON.stringify({access_token:resp.access_token,expires:Date.now()+(resp.expires_in||3600)*1000}));
+      updateDriveUI();addAudit('system','Signed in to Google Drive');showToast('Connected to Drive!','success');
+      driveSyncNow();
+    }
+  }).requestAccessToken();
+}
+function driveSignOut(){
+  if(!confirm('Disconnect Google Drive?'))return;
+  driveToken=null;driveReady=false;driveFileId=null;driveVHFileId=null;
+  localStorage.removeItem('utm_drive_token');updateDriveUI();
+  addAudit('system','Signed out from Google Drive');showToast('Disconnected','success');
+}
+function updateDriveUI(){
+  const btn=document.getElementById('drive-btn');
+  const statusTxt=document.getElementById('drive-status-text');
+  const actions=document.getElementById('drive-actions');
+  const connectBtn=document.getElementById('drive-connect-btn');
+  if(btn){btn.style.color=driveReady?'var(--green)':'';btn.title=driveReady?'Drive connected':'Connect Drive';}
+  if(statusTxt)statusTxt.textContent=driveReady?'Connected. Data syncs automatically on save.':'Not connected. Sign in to sync across devices.';
+  if(actions)actions.style.display=driveReady?'flex':'none';
+  if(connectBtn)connectBtn.style.display=driveReady?'none':'inline-flex';
+  const conflictCard=document.getElementById('drive-conflict-card');
+  if(conflictCard)conflictCard.style.display=pendingConflict?'block':'none';
+}
+async function driveReq(method,url,body){
+  const headers={'Authorization':'Bearer '+driveToken};
+  if(body&&!(body instanceof FormData)){headers['Content-Type']='application/json';body=JSON.stringify(body);}
+  const resp=await fetch(url,{method,headers,body});
+  if(resp.status===401){driveSignOut();throw new Error('Token expired');}
+  return resp;
+}
+async function driveFindFile(name){
+  const q=encodeURIComponent(`name='${name}' and spaces='appDataFolder' and trashed=false`);
+  const r=await driveReq('GET',`https://www.googleapis.com/drive/v3/files?q=${q}&spaces=appDataFolder&fields=files(id,modifiedTime)`);
+  const d=await r.json();return d.files&&d.files.length?d.files[0]:null;
+}
+async function driveReadFile(id){ const r=await driveReq('GET',`https://www.googleapis.com/drive/v3/files/${id}?alt=media`);return r.json(); }
+async function driveWriteFile(id,name,data){
+  const meta=JSON.stringify({name,parents:id?undefined:['appDataFolder']});
+  const body=new FormData();
+  body.append('metadata',new Blob([meta],{type:'application/json'}));
+  body.append('media',new Blob([JSON.stringify(data)],{type:'application/json'}));
+  const url=id?`https://www.googleapis.com/upload/drive/v3/files/${id}?uploadType=multipart`:`https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart`;
+  const r=await fetch(url,{method:id?'PATCH':'POST',headers:{'Authorization':'Bearer '+driveToken},body});
+  return r.json();
+}
+async function driveUpload(){
+  if(!driveReady)return;
+  try{
+    const data={...state,savedAt:new Date().toISOString()};
+    const f=driveFileId||(await driveFindFile(DRIVE_FILE))?.id||null;
+    const result=await driveWriteFile(f,DRIVE_FILE,data);
+    driveFileId=result.id||f;
+    addAudit('system','Uploaded to Google Drive');showToast('Uploaded to Drive','success');
+  }catch(e){showToast('Upload failed: '+e.message,'error');}
+}
+async function driveDownload(){
+  if(!driveReady)return;
+  try{
+    const file=await driveFindFile(DRIVE_FILE);
+    if(!file){showToast('No data on Drive','error');return;}
+    driveFileId=file.id;const data=await driveReadFile(file.id);
+    state={projects:data.projects||[],globalVars:data.globalVars||[],globalTags:data.globalTags||[]};
+    saveToLS();renderProjTree();renderHomeGrid();
+    addAudit('system','Downloaded from Google Drive');showToast('Downloaded from Drive','success');showHome();
+  }catch(e){showToast('Download failed: '+e.message,'error');}
+}
+async function driveSyncNow(){
+  if(!driveReady)return;
+  try{
+    const file=await driveFindFile(DRIVE_FILE);
+    if(!file){await driveUpload();return;}
+    driveFileId=file.id;const driveData=await driveReadFile(file.id);
+    const localTs=JSON.parse(localStorage.getItem('utm_data_v1')||'{}'  ).savedAt;
+    const driveTs=driveData.savedAt;
+    if(!localTs||!driveTs){await driveUpload();return;}
+    const diff=Math.abs(new Date(localTs)-new Date(driveTs));
+    if(diff<5000)return;
+    if(new Date(localTs)>new Date(driveTs)){await driveUpload();}
+    else{ pendingConflict=driveData; showConflict(driveData,localTs,driveTs); }
+  }catch(e){console.warn('Sync error:',e);}
+}
+function showConflict(driveData,localTs,driveTs){
+  const lInfo=document.getElementById('conflict-local-info');
+  const dInfo=document.getElementById('conflict-drive-info');
+  if(lInfo)lInfo.innerHTML=`${state.projects.length} projects<br><span style="font-size:10px;color:var(--text3);">${localTs||'unknown'}</span>`;
+  if(dInfo)dInfo.innerHTML=`${(driveData.projects||[]).length} projects<br><span style="font-size:10px;color:var(--text3);">${driveTs||'unknown'}</span>`;
+  const card=document.getElementById('drive-conflict-card');
+  if(card)card.style.display='block';
+  showPanel('drive');showToast('Conflict detected — check Drive panel','error');
+}
+function resolveConflict(choice){
+  if(choice==='drive'&&pendingConflict){
+    saveSnapshot('Before Drive merge');
+    state={projects:pendingConflict.projects||[],globalVars:pendingConflict.globalVars||[],globalTags:pendingConflict.globalTags||[]};
+    saveToLS();renderProjTree();renderHomeGrid();
+    addAudit('system','Conflict resolved: used Drive data');showToast('Using Drive data','success');showHome();
+  }else{
+    driveUpload();addAudit('system','Conflict resolved: kept local, uploaded to Drive');showToast('Kept local, uploaded','success');
+  }
+  pendingConflict=null;const card=document.getElementById('drive-conflict-card');if(card)card.style.display='none';
+}
+async function driveUploadSnapshots(){
+  if(!driveReady)return;
+  try{ const f=driveVHFileId||(await driveFindFile(DRIVE_VH_FILE))?.id||null; const r=await driveWriteFile(f,DRIVE_VH_FILE,snapshots); driveVHFileId=r.id||f; }catch(e){}
+}
+
+// ═══════════════════════════════════════════════════════
+// EXPORT (JSON + CSV + Excel-friendly)
+// ═══════════════════════════════════════════════════════
+function exportAllJSON(){
+  const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='utm-export.json';a.click();
+  showToast('Exported JSON','success');
+}
+function exportProjCSV(){
+  const p=currentProj();if(!p){showToast('Open a project first','error');return;}
+  const fields=p.fields||[];
+  const headers=['ID','Name','Parent','Tags',...fields.map(f=>f.name)];
+  const rows=[headers.join(',')];
+  getAllEntries(p).forEach(e=>{
+    const row=[e.id,`"${(e.name||'').replace(/"/g,'""')}"`,e.parentId||'',(e.tags||[]).join(';'),...fields.map(f=>{const v=e.fields?.[f.id]??'';return typeof v==='string'?`"${v.replace(/"/g,'""')}"`  :v;})];
+    rows.push(row.join(','));
+  });
+  const blob=new Blob([rows.join('
+')],{type:'text/csv'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`${p.name}-export.csv`;a.click();
+  showToast('Exported CSV','success');
+}
+function exportProjExcel(){
+  // Tab-separated, opens properly in Excel
+  const p=currentProj();if(!p){showToast('Open a project first','error');return;}
+  const fields=p.fields||[];
+  const headers=['ID','Name','Parent','Tags',...fields.map(f=>f.name)];
+  const rows=[headers.join('	')];
+  getAllEntries(p).forEach(e=>{
+    const row=[e.id,e.name||'',e.parentId||'',(e.tags||[]).join(';'),...fields.map(f=>e.fields?.[f.id]??'')];
+    rows.push(row.join('	'));
+  });
+  const blob=new Blob(['﻿'+rows.join('
+')],{type:'text/tab-separated-values'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`${p.name}-export.xls`;a.click();
+  showToast('Exported Excel','success');
+}
+
+// ═══════════════════════════════════════════════════════
+// PWA
+// ═══════════════════════════════════════════════════════
+let deferredPrompt=null;
+window.addEventListener('beforeinstallprompt',e=>{
+  e.preventDefault();deferredPrompt=e;
+  if(!localStorage.getItem('utm_pwa_dismissed'))document.getElementById('pwa-banner').classList.add('show');
+});
+function installPWA(){if(!deferredPrompt)return;deferredPrompt.prompt();deferredPrompt.userChoice.then(()=>{deferredPrompt=null;dismissPWA();});}
+function dismissPWA(){document.getElementById('pwa-banner').classList.remove('show');localStorage.setItem('utm_pwa_dismissed','1');}
+if('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+
+// ═══════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════
+let _saveCount=0;
+const _origSaveToLS=saveToLS;
+function saveToLS(){
+  try{
+    localStorage.setItem('utm_data_v1',JSON.stringify({...state,savedAt:new Date().toISOString()}));
+    showToast('Saved','success');
+    _saveCount++;if(_saveCount%10===0)saveSnapshot('Auto snapshot #'+(_saveCount/10));
+    if(driveReady)driveUpload();
+  }catch(e){showToast('Save failed','error');}
+}
+(function init(){
+  loadAudit();loadSnapshots();loadFromLS();
+  renderProjTree();renderHomeGrid();checkMobile();
+  updateDriveUI();
+  window.addEventListener('load',()=>{ if(typeof google!=='undefined'&&google.accounts) driveInit(); else setTimeout(driveInit,1500); });
+  // Patch createProject, createEntry, confirmDelete to add audit entries
+  const _cp=createProject;
+  addAudit('system','UTM session started');
+  showToast('UTM ready','success');
+})();
+</script>
+</body>
+</html>
